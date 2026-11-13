@@ -237,7 +237,7 @@ cost = (hit / 1e6 * p.cache_read + miss / 1e6 * p.input + out / 1e6 * p.output)
 ## Маршрут изучения
 
 1. [Let's build the GPT Tokenizer — Карпатый](https://www.youtube.com/watch?v=zduSFxRajkE) (видео ~2 ч 13 мин; на 1.25x — около 1 ч 45 мин). Если времени мало, хватит первых ~25 минут (зачем токенизация, Unicode, байты) и финального блока про «странности» LLM, которые объясняются токенизацией. Забираем оттуда: BPE, почему не-английские языки и числа токенизируются хуже, почему модели плохо считают буквы.
-2. Открываем веб-токенизатор OpenAI [platform.openai.com/tokenizer](https://platform.openai.com/tokenizer) (≈10 мин): вставляем одну фразу на английском и русском, число и артикул товара вроде `MUG-SEV-0350`. Смотрим глазами, где режется текст.
+2. Открываем веб-токенизатор OpenAI [platform.openai.com/tokenizer](https://platform.openai.com/tokenizer) (≈10 мин): вставляем одну фразу на английском и русском, число и артикул товара вроде `MUG-SEVER-350`. Смотрим глазами, где режется текст.
 3. [tiktoken](https://github.com/openai/tiktoken) → README (≈15 мин): как получить кодировку для модели и посчитать токены. Отметим: это только про модели OpenAI.
 4. Документация Anthropic → страница Token counting ([docs.anthropic.com/en/docs/build-with-claude/token-counting](https://docs.anthropic.com/en/docs/build-with-claude/token-counting)) (≈15 мин): как вызвать подсчёт, что он принимает (system, tools, изображения).
 5. Страницы цен (≈20 мин): [Anthropic Pricing](https://docs.anthropic.com/en/docs/about-claude/pricing) и [OpenAI API Pricing](https://openai.com/api/pricing). Выписываем в `PRICES` цены двух-трёх моделей, которыми пользуемся, с датой. Находим на странице Anthropic строки про cache reads/writes и batch.
