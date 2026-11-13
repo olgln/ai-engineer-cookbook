@@ -3,7 +3,7 @@
   "dateLocale": "ru-RU",
   "languageLabel": "Русский",
   "site": {
-    "title": "AI-инженер: учебник",
+    "title": "AI Engineer Cookbook",
     "indexTitle": "Учебник AI-инженера",
     "indexDescription": "Главы по неделям, теория, практика и тесты для самопроверки.",
     "indexIntro": "Главы по порядку прохождения: номер = неделя.порядок. Общий план и график — на странице [{planLabel}]({planPath}).",
