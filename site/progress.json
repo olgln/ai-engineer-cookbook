@@ -1,0 +1,18 @@
+{
+  "version": 1,
+  "chapters": {
+    "1-1": {
+      "checks": {
+        "0": false,
+        "1": false,
+        "2": false
+      },
+      "quiz": {
+        "2": {
+          "revealed": true
+        }
+      }
+    }
+  },
+  "updatedAt": "2026-11-13T20:07:11.788Z"
+}

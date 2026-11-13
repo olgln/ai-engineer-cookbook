@@ -1,0 +1,19 @@
+# macOS
+.DS_Store
+
+# site: dependencies and build output
+site/node_modules/
+site/dist/
+site/.astro/
+
+# site: generated from book/*.md by site/scripts/convert.mjs
+site/src/content/docs/
+site/src/sidebar.json
+site/src/chapters.json
+
+# site: temp file of progress writes (progress.json itself is tracked)
+site/progress.json.tmp
+
+# secrets, just in case
+.env
+.env.*

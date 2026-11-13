@@ -1,0 +1,19 @@
+{
+  "name": "ai-engineer-cookbook-site",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start": "npm run build && node scripts/serve.mjs",
+    "serve": "node scripts/serve.mjs",
+    "convert": "node scripts/convert.mjs",
+    "dev": "npm run convert && ASTRO_TELEMETRY_DISABLED=1 astro dev",
+    "build": "npm run convert && ASTRO_TELEMETRY_DISABLED=1 astro build"
+  },
+  "dependencies": {
+    "@astrojs/starlight": "0.42.7",
+    "@expressive-code/plugin-collapsible-sections": "0.44.3",
+    "@expressive-code/plugin-line-numbers": "0.44.3",
+    "astro": "7.4.2",
+    "mermaid": "12.2.0"
+  }
+}
