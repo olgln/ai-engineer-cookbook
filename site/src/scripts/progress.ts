@@ -1,5 +1,6 @@
-// Learning progress: stored in site/progress.json through the dev server,
-// mirrored to localStorage (and used alone when the dev API is unavailable).
+// Learning progress: stored in the progress file through the local server's API,
+// mirrored to localStorage (and used alone when the API is unavailable).
+import { PROGRESS_API_PATH, PROGRESS_FILE_HEADER, SAVE_DEBOUNCE_MS, STORAGE_KEY } from '../config/app.mjs';
 
 export interface QuizAnswer {
   picked?: string[];
@@ -17,9 +18,6 @@ export interface Progress {
   chapters: Record<string, ChapterProgress>;
 }
 
-const LS_KEY = 'ai-cookbook-progress';
-const API = '/api/progress';
-
 let state: Progress = { version: 1, chapters: {} };
 export let storage: 'file' | 'browser' = 'browser';
 export let storagePath = '';
@@ -33,7 +31,7 @@ function normalize(raw: unknown): Progress {
 
 function readLocal(): Progress | null {
   try {
-    const s = localStorage.getItem(LS_KEY);
+    const s = localStorage.getItem(STORAGE_KEY);
     return s ? normalize(JSON.parse(s)) : null;
   } catch {
     return null;
@@ -42,7 +40,7 @@ function readLocal(): Progress | null {
 
 function writeLocal() {
   try {
-    localStorage.setItem(LS_KEY, JSON.stringify(state));
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
   } catch {
     /* storage may be blocked */
   }
@@ -53,11 +51,11 @@ const isEmpty = (p: Progress | null) => !p || Object.keys(p.chapters).length ===
 export async function load(): Promise<Progress> {
   const local = readLocal();
   try {
-    const res = await fetch(API, { cache: 'no-store' });
+    const res = await fetch(PROGRESS_API_PATH, { cache: 'no-store' });
     if (!res.ok || !(res.headers.get('content-type') ?? '').includes('json')) throw new Error('no api');
     const file = normalize(await res.json());
     storage = 'file';
-    storagePath = decodeURIComponent(res.headers.get('x-progress-file') ?? '');
+    storagePath = decodeURIComponent(res.headers.get(PROGRESS_FILE_HEADER) ?? '');
     // first run with the file: keep whatever the browser already had
     if (isEmpty(file) && !isEmpty(local)) {
       state = local!;
@@ -76,9 +74,9 @@ export async function load(): Promise<Progress> {
 let timer: ReturnType<typeof setTimeout> | undefined;
 async function pushToFile() {
   try {
-    await fetch(API, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(state) });
+    await fetch(PROGRESS_API_PATH, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(state) });
   } catch {
-    /* dev server gone: localStorage still has it */
+    /* server gone: localStorage still has it */
   }
 }
 
@@ -87,7 +85,7 @@ export function save() {
   writeLocal();
   if (storage === 'file') {
     clearTimeout(timer);
-    timer = setTimeout(pushToFile, 250);
+    timer = setTimeout(pushToFile, SAVE_DEBOUNCE_MS);
   }
   listeners.forEach((fn) => fn());
 }

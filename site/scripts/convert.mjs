@@ -1,13 +1,45 @@
-// Converts ../book/*.md and ../README.md into Starlight pages.
-// Source of truth stays in book/; everything under src/content/docs is generated.
+// Converts the book chapters and the root README.md into Starlight pages.
+// Source of truth stays in the book directory; everything under the docs directory is generated.
+// All Russian text (site wording and the headings used to parse the book) lives in src/locales/ru.json.
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { BOOK_DIR, CHAPTER_PREFIX, CHAPTERS_FILE, DOCS_DIR, PLAN_PATH, REPO_ONLY_END, REPO_ONLY_START, SIDEBAR_FILE } from '../src/config/app.mjs';
+import { escapeRegExp, format } from '../src/locales/format.mjs';
+import strings from '../src/locales/ru.json' with { type: 'json' };
 
 const SITE = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const ROOT = path.resolve(SITE, '..');
-const BOOK = path.join(ROOT, 'book');
-const OUT = path.join(SITE, 'src/content/docs');
+const BOOK = path.join(ROOT, BOOK_DIR);
+const OUT = path.join(SITE, DOCS_DIR);
+
+const { site, book } = strings;
+const weekLabel = (n, title) => format(site.week, { n, title });
+const chapterFile = (n) => `${CHAPTER_PREFIX}${n}.md`;
+
+// Patterns built from the configurable chapter prefix and the book's own headings.
+const PREFIX = escapeRegExp(CHAPTER_PREFIX);
+const RE = {
+  tocWeek: new RegExp(`^## ${escapeRegExp(book.weekHeading)} (\\d+) · (.+)$`),
+  tocChapter: new RegExp(`^- \\[(\\d+)\\.(\\d+) · (.+?)\\]\\(${PREFIX}(\\d+)\\.md\\)`),
+  tocNoPage: new RegExp(`^- (\\d+)\\.(\\d+) · (.+?) _\\(${escapeRegExp(book.noChapterNote)}\\)_`),
+  // [text](AIL-N.md#anchor)
+  fileLink: new RegExp(`\\]\\(${PREFIX}(\\d+)\\.md(#[^)]*)?\\)`, 'g'),
+  // "1.2 · Title (AIL-56)"
+  titledRef: new RegExp(`(\\d+\\.\\d+ · [^()\\[\\]]+?)\\s+\\(${PREFIX}(\\d+)\\)(?!\\])`, 'g'),
+  // link text starting with the chapter code: "[AIL-19 · Chunking](...)"
+  linkText: new RegExp(`\\[${PREFIX}(\\d+)(?=[^\\]]*\\]\\()`, 'g'),
+  // bare AIL-N not already inside a link target
+  bareRef: new RegExp(`(?<![\\[/\\w-])${PREFIX}(\\d+)(?!\\d|\\.md)`, 'g'),
+  titleSuffix: new RegExp(`\\s*\\(${PREFIX}\\d+\\)\\s*$`),
+  chapterFile: new RegExp(`^${PREFIX}(\\d+)\\.md$`),
+  planBookLink: new RegExp(`\\]\\(${escapeRegExp(BOOK_DIR)}/${PREFIX}(\\d+)\\.md`, 'g'),
+  bookReadmeLink: new RegExp(`\\]\\((?:\\./)?${escapeRegExp(BOOK_DIR)}/README\\.md\\)`, 'g'),
+  repoOnly: new RegExp(`${escapeRegExp(REPO_ONLY_START)}[\\s\\S]*?${escapeRegExp(REPO_ONLY_END)}\\n*`, 'g'),
+  // option letters at the start of an answer: "b)", "a, c.", "a <and> c:"
+  answerLetters: new RegExp(`^\\**\\s*([a-d](?:\\s*(?:,|${escapeRegExp(book.and)})\\s*[a-d])*)\\s*[.):]?\\**\\s*[.):]?`),
+  answerStart: new RegExp(`^\\**\\s*[a-d]\\s*(?:(?:,|${escapeRegExp(book.and)})\\s*[a-d](?![A-Za-z])\\s*)*[.):*,]`),
+};
 
 const warnings = [];
 const stats = { chapters: 0, questions: 0, choice: 0, choiceWithKey: 0, checks: 0, mermaid: 0 };
@@ -17,11 +49,11 @@ function parseToc() {
   const weeks = [];
   for (const line of fs.readFileSync(path.join(BOOK, 'README.md'), 'utf8').split('\n')) {
     let m;
-    if ((m = line.match(/^## Неделя (\d+) · (.+)$/))) {
+    if ((m = line.match(RE.tocWeek))) {
       weeks.push({ n: +m[1], title: m[2].trim(), items: [] });
-    } else if ((m = line.match(/^- \[(\d+)\.(\d+) · (.+?)\]\(AIL-(\d+)\.md\)/))) {
+    } else if ((m = line.match(RE.tocChapter))) {
       weeks.at(-1).items.push({ num: `${m[1]}.${m[2]}`, title: m[3], ail: +m[4] });
-    } else if ((m = line.match(/^- (\d+)\.(\d+) · (.+?) _\(без отдельной главы\)_/))) {
+    } else if ((m = line.match(RE.tocNoPage))) {
       weeks.at(-1).items.push({ num: `${m[1]}.${m[2]}`, title: m[3], noPage: true });
     }
   }
@@ -73,34 +105,32 @@ function outsideInlineCode(line, fn) {
 
 function chapterLink(ail) {
   const it = byAil.get(+ail);
-  if (!it) warnings.push(`unknown chapter reference AIL-${ail}`);
+  if (!it) warnings.push(`unknown chapter reference ${CHAPTER_PREFIX}${ail}`);
   return it;
 }
 
 function rewriteLinks(line) {
   return outsideInlineCode(line, (s) =>
     s
-      // [text](AIL-N.md#anchor)
-      .replace(/\]\(AIL-(\d+)\.md(#[^)]*)?\)/g, (all, n, hash = '') => {
+      .replace(RE.fileLink, (all, n, hash = '') => {
         const it = chapterLink(n);
         return it ? `](${it.href}${hash})` : all;
       })
-      .replace(/\]\((?:\.\/)?book\/README\.md\)/g, '](/)')
-      .replace(/\]\((?:\.\/)?README\.md\)/g, '](/plan/)')
+      .replace(RE.bookReadmeLink, '](/)')
+      .replace(/\]\((?:\.\/)?README\.md\)/g, `](${PLAN_PATH})`)
       // "1.2 · Title (AIL-56)" -> link on the title
-      .replace(/(\d+\.\d+ · [^()\[\]]+?)\s+\(AIL-(\d+)\)(?!\])/g, (all, label, n) => {
+      .replace(RE.titledRef, (all, label, n) => {
         const it = chapterLink(n);
         return it ? `[${label.trim()}](${it.href})` : all;
       })
-      // link text starting with AIL-N: "[AIL-19 · Chunking](...)" -> "[4.3 · Chunking](...)"
-      .replace(/\[AIL-(\d+)(?=[^\]]*\]\()/g, (all, n) => {
+      // "[AIL-19 · Chunking](...)" -> "[4.3 · Chunking](...)"
+      .replace(RE.linkText, (all, n) => {
         const it = chapterLink(n);
         return it ? `[${it.num}` : all;
       })
-      // bare AIL-N not already inside a link target
-      .replace(/(?<![\[/\w-])AIL-(\d+)(?!\d|\.md)/g, (all, n) => {
+      .replace(RE.bareRef, (all, n) => {
         const it = chapterLink(n);
-        return it ? `[гл. ${it.num}](${it.href})` : all;
+        return it ? `[${format(site.chapterRef, { num: it.num })}](${it.href})` : all;
       }),
   );
 }
@@ -211,8 +241,8 @@ function splitInline(s) {
 /** Find the correct option letter(s) at the start of an answer. */
 function answerKey(answerLines) {
   const first = answerLines[0] ?? '';
-  const m = first.match(/^\**\s*([a-d](?:\s*(?:,|и)\s*[a-d])*)\s*[.):]?\**\s*[.):]?/);
-  if (!m || !/^\**\s*[a-d]\s*(?:[,и]\s*[a-d](?![A-Za-z])\s*)*[.):*,]/.test(first)) return null;
+  const m = first.match(RE.answerLetters);
+  if (!m || !RE.answerStart.test(first)) return null;
   return [...m[1].matchAll(/[a-d]/g)].map((x) => x[0]);
 }
 
@@ -236,7 +266,7 @@ function buildQuiz(chapterId, testLines, answerLines) {
     if (key) stats.choiceWithKey++;
     if (opts && !key) warnings.push(`${chapterId} q${q.n}: options but no answer letter: "${(ans?.[0] ?? '').slice(0, 40)}"`);
     const attrs = [`data-n="${q.n}"`, key ? `data-correct="${key.join(',')}"` : ''].filter(Boolean).join(' ');
-    out.push(`<section class="quiz-q" ${attrs}>`, '', `<p class="quiz-q-num">Вопрос ${q.n}</p>`, '');
+    out.push(`<section class="quiz-q" ${attrs}>`, '', `<p class="quiz-q-num">${format(site.questionLabel, { n: q.n })}</p>`, '');
     out.push(...(opts ? opts.question : q.lines), '');
     if (opts) {
       out.push('<div class="quiz-options">', '');
@@ -244,7 +274,7 @@ function buildQuiz(chapterId, testLines, answerLines) {
       out.push('', '</div>', '');
     }
     out.push('<div class="quiz-answer" data-pagefind-ignore>', '');
-    out.push(...(ans ?? ['_Ответа нет в исходнике._']), '');
+    out.push(...(ans ?? [site.noAnswer]), '');
     out.push('</div>', '', '</section>', '');
   }
   out.push('</div>');
@@ -266,19 +296,19 @@ function buildChecklist(chapterId, lines) {
 const yamlStr = (s) => JSON.stringify(s);
 
 function convertChapter(it, prev, next) {
-  const src = fs.readFileSync(path.join(BOOK, `AIL-${it.ail}.md`), 'utf8');
+  const src = fs.readFileSync(path.join(BOOK, chapterFile(it.ail)), 'utf8');
   const h1 = src.match(/^# (.+)$/m);
-  const title = h1 ? h1[1].replace(/\s*\(AIL-\d+\)\s*$/, '').trim() : `${it.num} · ${it.title}`;
+  const title = h1 ? h1[1].replace(RE.titleSuffix, '').trim() : `${it.num} · ${it.title}`;
   const body = h1 ? src.replace(h1[0], '') : src;
   const sections = splitSections(body);
-  const test = sections.find((s) => s.heading === 'Тест для самопроверки');
-  const answers = sections.find((s) => s.heading === 'Ответы');
+  const test = sections.find((s) => s.heading === book.testHeading);
+  const answers = sections.find((s) => s.heading === book.answersHeading);
   const parts = [];
   for (const s of sections) {
     if (s === answers && test) continue;
     if (s.heading) parts.push(`## ${s.heading}`);
     if (s === test && answers) parts.push(buildQuiz(it.id, s.lines, answers.lines));
-    else if (s.heading === 'Готово, когда') parts.push(buildChecklist(it.id, s.lines));
+    else if (s.heading === book.doneHeading) parts.push(buildChecklist(it.id, s.lines));
     else parts.push(s.lines.join('\n').trim());
     parts.push('');
   }
@@ -287,13 +317,13 @@ function convertChapter(it, prev, next) {
   const fm = [
     '---',
     `title: ${yamlStr(title)}`,
-    `description: ${yamlStr(`Неделя ${it.week} · ${it.title}`)}`,
+    `description: ${yamlStr(weekLabel(it.week, it.title))}`,
     `editUrl: false`,
     prev ? `prev: { link: ${yamlStr(prev.href)}, label: ${yamlStr(`${prev.num} · ${prev.title}`)} }` : 'prev: false',
     next ? `next: { link: ${yamlStr(next.href)}, label: ${yamlStr(`${next.num} · ${next.title}`)} }` : 'next: false',
     '---',
     '',
-    `<!-- Generated from book/AIL-${it.ail}.md by scripts/convert.mjs. Edit the source, not this file. -->`,
+    `<!-- Generated from ${BOOK_DIR}/${chapterFile(it.ail)} by scripts/convert.mjs. Edit the source, not this file. -->`,
     '',
   ].join('\n');
   const file = path.join(OUT, `${it.slug}.md`);
@@ -307,32 +337,31 @@ function convertPlan() {
   const h1 = src.match(/^# (.+)$/m);
   const body = src
     .replace(h1[0], '')
-    // the "Сайт учебника" section is for the repo README only
-    .replace(/^## Сайт учебника\n[\s\S]*?(?=^## )/m, '')
-    .replace(/ · сайт учебника — см\. раздел «Сайт учебника» ниже/, '')
-    .replace(/\]\(book\/AIL-(\d+)\.md/g, '](AIL-$1.md');
+    // repo-only blocks (e.g. the pointer to site/README.md) are not part of the plan page
+    .replace(RE.repoOnly, '')
+    .replace(RE.planBookLink, `](${CHAPTER_PREFIX}$1.md`);
   const fm = ['---', `title: ${yamlStr(h1[1].trim())}`, 'editUrl: false', '---', ''].join('\n');
-  fs.writeFileSync(path.join(OUT, 'plan.md'), fm + transformBody(body));
+  fs.writeFileSync(path.join(OUT, `${PLAN_PATH.replaceAll('/', '')}.md`), fm + transformBody(body));
 }
 
 function convertIndex() {
   const lines = [
     '---',
-    'title: Учебник AI-инженера',
-    'description: Главы по неделям, теория, практика и тесты для самопроверки.',
+    `title: ${yamlStr(site.indexTitle)}`,
+    `description: ${yamlStr(site.indexDescription)}`,
     'editUrl: false',
     'tableOfContents: false',
     'prev: false',
     `next: { link: ${yamlStr(weeks[0].items[0].href)}, label: ${yamlStr(`${weeks[0].items[0].num} · ${weeks[0].items[0].title}`)} }`,
     '---',
     '',
-    'Главы по порядку прохождения: номер = неделя.порядок. Общий план и график — на странице [План курса](/plan/).',
+    format(site.indexIntro, { planLabel: site.planLabel, planPath: PLAN_PATH }),
     '',
     '<div class="course-progress"></div>',
     '',
   ];
   for (const w of weeks) {
-    lines.push(`<section class="week-card" data-week="${w.n}">`, '', `### Неделя ${w.n} · ${w.title}`, '');
+    lines.push(`<section class="week-card" data-week="${w.n}">`, '', `### ${weekLabel(w.n, w.title)}`, '');
     lines.push('<div class="week-progress"></div>', '');
     for (const it of w.items) {
       if (it.noPage) lines.push(`- ${it.num} · ${it.title}`);
@@ -345,22 +374,22 @@ function convertIndex() {
 
 function writeSidebar() {
   const sidebar = [
-    { label: 'Оглавление', link: '/' },
-    { label: 'План курса', link: '/plan/' },
+    { label: site.tocLabel, link: '/' },
+    { label: site.planLabel, link: PLAN_PATH },
     // weeks without chapter pages (e.g. the spare week) appear only on the index page
     ...weeks
       .filter((w) => w.items.some((it) => !it.noPage))
       .map((w) => ({
-        label: `Неделя ${w.n} · ${w.title}`,
+        label: weekLabel(w.n, w.title),
         collapsed: true,
         items: w.items
           .filter((it) => !it.noPage)
           .map((it) => ({ label: `${it.num} · ${it.title}`, link: it.href, attrs: { 'data-chapter': it.id } })),
       })),
   ];
-  fs.writeFileSync(path.join(SITE, 'src/sidebar.json'), JSON.stringify(sidebar, null, 2));
+  fs.writeFileSync(path.join(SITE, SIDEBAR_FILE), JSON.stringify(sidebar, null, 2));
   const chapters = weeks.flatMap((w) => w.items.filter((i) => !i.noPage).map((i) => ({ id: i.id, week: w.n, num: i.num, title: i.title, href: i.href })));
-  fs.writeFileSync(path.join(SITE, 'src/chapters.json'), JSON.stringify(chapters, null, 2));
+  fs.writeFileSync(path.join(SITE, CHAPTERS_FILE), JSON.stringify(chapters, null, 2));
 }
 
 // ---------- run ----------
@@ -368,8 +397,8 @@ fs.rmSync(OUT, { recursive: true, force: true });
 fs.mkdirSync(OUT, { recursive: true });
 const flat = weeks.flatMap((w) => w.items.filter((i) => !i.noPage));
 flat.forEach((it, i) => convertChapter(it, flat[i - 1], flat[i + 1]));
-const missing = fs.readdirSync(BOOK).filter((f) => /^AIL-\d+\.md$/.test(f) && !byAil.has(+f.match(/\d+/)[0]));
-if (missing.length) warnings.push(`files not in book/README.md: ${missing.join(', ')}`);
+const missing = fs.readdirSync(BOOK).filter((f) => RE.chapterFile.test(f) && !byAil.has(+f.match(RE.chapterFile)[1]));
+if (missing.length) warnings.push(`files not in ${BOOK_DIR}/README.md: ${missing.join(', ')}`);
 convertPlan();
 convertIndex();
 writeSidebar();
