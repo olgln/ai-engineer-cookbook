@@ -29,6 +29,17 @@ Example: `PROGRESS_FILE=~/path/progress.json npm start`.
 
 The progress API answers only to local host names (`localhost`, `127.0.0.1`, `[::1]` and the `HOST` value) and refuses requests from other pages open in the browser. Keep `HOST` on `127.0.0.1`: the server has no authentication, so `0.0.0.0` would let anyone on the network read the site.
 
+## Tests
+
+```bash
+cd site
+npm test         # unit tests of the converter and the progress API + checks of the book itself
+```
+
+Tests use the built-in `node:test`, no extra dependencies; the Python syntax check of the book's examples needs `python3` and is skipped without it. `npm run build` also fails when the converter reports a warning.
+
+A git pre-commit hook runs `npm test` before every commit. Enable it once per clone, from the repository root: `git config core.hooksPath .githooks`.
+
 ## Language
 
 Code, comments, logs and docs are in English. Russian is used only for what the reader sees on the site: the book (`book/*.md`), the course plan (root `README.md`) and the interface strings in `src/locales/ru.json`.
@@ -41,7 +52,10 @@ Code, comments, logs and docs are in English. Russian is used only for what the 
 | `src/config/server.mjs` | reads the environment (`.env`) into the server settings |
 | `src/config/app.mjs` | constants shared by the browser, the server and the build: API route, storage key, paths |
 | `src/locales/ru.json` | every Russian string: site title, interface texts, the book headings the converter looks for |
-| `scripts/convert.mjs` | `book/*.md` → pages: table of contents, `AIL-N` references → chapter links, quizzes, checklists, mermaid diagrams |
+| `scripts/convert.mjs` | `book/*.md` → pages: reads the book, writes the generated files, fails on warnings |
+| `scripts/lib/render.mjs` | the conversion itself, without file access: table of contents, `AIL-N` references → chapter links, quizzes, checklists, mermaid diagrams |
+| `tests/*.test.mjs` | `npm test`: converter, progress API, checks of the book (`book.test.mjs`) |
+| `../.githooks/pre-commit` | runs `npm test` before every commit |
 | `scripts/serve.mjs` | local server for `npm start` |
 | `src/scripts/main.ts`, `progress.ts` | quizzes, checklists, chapter marks, progress storage |
 | `src/integrations/progress-handler.mjs` | `GET/PUT /api/progress` → the progress file |

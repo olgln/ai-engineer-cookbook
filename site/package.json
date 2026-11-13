@@ -7,7 +7,8 @@
     "serve": "node scripts/serve.mjs",
     "convert": "node scripts/convert.mjs",
     "dev": "npm run convert && ASTRO_TELEMETRY_DISABLED=1 astro dev",
-    "build": "npm run convert && ASTRO_TELEMETRY_DISABLED=1 astro build"
+    "build": "npm run convert && ASTRO_TELEMETRY_DISABLED=1 astro build",
+    "test": "node --test \"tests/**/*.test.mjs\""
   },
   "dependencies": {
     "@astrojs/starlight": "0.42.7",
