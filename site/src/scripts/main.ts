@@ -301,8 +301,8 @@ function initIndex() {
       const list = chapters.filter((c) => c.week === week);
       const d = list.filter((c) => done(c.id)).length;
       const slot = card.querySelector<HTMLElement>('.week-progress');
-      slot?.replaceChildren(bar(d, list.length), el('span', { class: 'week-progress-label', textContent: `${d}/${list.length}` }));
-      card.classList.toggle('complete', d === list.length);
+      if (list.length) slot?.replaceChildren(bar(d, list.length), el('span', { class: 'week-progress-label', textContent: `${d}/${list.length}` }));
+      card.classList.toggle('complete', list.length > 0 && d === list.length);
     }
   };
   render();

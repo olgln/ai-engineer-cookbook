@@ -8,7 +8,6 @@ const SITE = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const ROOT = path.resolve(SITE, '..');
 const BOOK = path.join(ROOT, 'book');
 const OUT = path.join(SITE, 'src/content/docs');
-const LINEAR_BOARD = 'https://linear.app/hilgi/team/AIL/active';
 
 const warnings = [];
 const stats = { chapters: 0, questions: 0, choice: 0, choiceWithKey: 0, checks: 0, mermaid: 0 };
@@ -22,8 +21,8 @@ function parseToc() {
       weeks.push({ n: +m[1], title: m[2].trim(), items: [] });
     } else if ((m = line.match(/^- \[(\d+)\.(\d+) · (.+?)\]\(AIL-(\d+)\.md\)/))) {
       weeks.at(-1).items.push({ num: `${m[1]}.${m[2]}`, title: m[3], ail: +m[4] });
-    } else if ((m = line.match(/^- (\d+)\.(\d+) · (.+?) _\(только в Linear\)_/))) {
-      weeks.at(-1).items.push({ num: `${m[1]}.${m[2]}`, title: m[3], linearOnly: true });
+    } else if ((m = line.match(/^- (\d+)\.(\d+) · (.+?) _\(без отдельной главы\)_/))) {
+      weeks.at(-1).items.push({ num: `${m[1]}.${m[2]}`, title: m[3], noPage: true });
     }
   }
   return weeks;
@@ -33,7 +32,7 @@ const weeks = parseToc();
 const byAil = new Map();
 for (const w of weeks) {
   for (const it of w.items) {
-    if (it.linearOnly) continue;
+    if (it.noPage) continue;
     it.week = w.n;
     it.id = it.num.replace('.', '-');
     it.slug = `week-${String(w.n).padStart(2, '0')}/${it.id}`;
@@ -327,7 +326,7 @@ function convertIndex() {
     `next: { link: ${yamlStr(weeks[0].items[0].href)}, label: ${yamlStr(`${weeks[0].items[0].num} · ${weeks[0].items[0].title}`)} }`,
     '---',
     '',
-    `Главы по порядку прохождения: номер = неделя.порядок, как в задачах [Linear](${LINEAR_BOARD}). Общий план и график — на странице [План курса](/plan/).`,
+    'Главы по порядку прохождения: номер = неделя.порядок. Общий план и график — на странице [План курса](/plan/).',
     '',
     '<div class="course-progress"></div>',
     '',
@@ -336,7 +335,7 @@ function convertIndex() {
     lines.push(`<section class="week-card" data-week="${w.n}">`, '', `### Неделя ${w.n} · ${w.title}`, '');
     lines.push('<div class="week-progress"></div>', '');
     for (const it of w.items) {
-      if (it.linearOnly) lines.push(`- ${it.num} · ${it.title} — [в Linear](${LINEAR_BOARD})`);
+      if (it.noPage) lines.push(`- ${it.num} · ${it.title}`);
       else lines.push(`- [${it.num} · ${it.title}](${it.href})`);
     }
     lines.push('', '</section>', '');
@@ -348,25 +347,26 @@ function writeSidebar() {
   const sidebar = [
     { label: 'Оглавление', link: '/' },
     { label: 'План курса', link: '/plan/' },
-    ...weeks.map((w) => ({
-      label: `Неделя ${w.n} · ${w.title}`,
-      collapsed: true,
-      items: w.items.map((it) =>
-        it.linearOnly
-          ? { label: `${it.num} · ${it.title}`, link: LINEAR_BOARD, badge: { text: 'Linear', variant: 'note' }, attrs: { target: '_blank', class: 'linear-only' } }
-          : { label: `${it.num} · ${it.title}`, link: it.href, attrs: { 'data-chapter': it.id } },
-      ),
-    })),
+    // weeks without chapter pages (e.g. the spare week) appear only on the index page
+    ...weeks
+      .filter((w) => w.items.some((it) => !it.noPage))
+      .map((w) => ({
+        label: `Неделя ${w.n} · ${w.title}`,
+        collapsed: true,
+        items: w.items
+          .filter((it) => !it.noPage)
+          .map((it) => ({ label: `${it.num} · ${it.title}`, link: it.href, attrs: { 'data-chapter': it.id } })),
+      })),
   ];
   fs.writeFileSync(path.join(SITE, 'src/sidebar.json'), JSON.stringify(sidebar, null, 2));
-  const chapters = weeks.flatMap((w) => w.items.filter((i) => !i.linearOnly).map((i) => ({ id: i.id, week: w.n, num: i.num, title: i.title, href: i.href })));
+  const chapters = weeks.flatMap((w) => w.items.filter((i) => !i.noPage).map((i) => ({ id: i.id, week: w.n, num: i.num, title: i.title, href: i.href })));
   fs.writeFileSync(path.join(SITE, 'src/chapters.json'), JSON.stringify(chapters, null, 2));
 }
 
 // ---------- run ----------
 fs.rmSync(OUT, { recursive: true, force: true });
 fs.mkdirSync(OUT, { recursive: true });
-const flat = weeks.flatMap((w) => w.items.filter((i) => !i.linearOnly));
+const flat = weeks.flatMap((w) => w.items.filter((i) => !i.noPage));
 flat.forEach((it, i) => convertChapter(it, flat[i - 1], flat[i + 1]));
 const missing = fs.readdirSync(BOOK).filter((f) => /^AIL-\d+\.md$/.test(f) && !byAil.has(+f.match(/\d+/)[0]));
 if (missing.length) warnings.push(`files not in book/README.md: ${missing.join(', ')}`);
