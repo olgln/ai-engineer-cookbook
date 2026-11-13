@@ -142,7 +142,7 @@ flowchart LR
    DEEPSEEK_API_KEY=
    ANSWER_MODEL=                 # e.g. deepseek-flash; check api-docs.deepseek.com
    REWRITE_MODEL=
-   OLLAMA_BASE_URL=http://localhost:11434
+   OLLAMA_BASE_URL=http://localhost:11434/v1
    ANSWER_MODEL_LOCAL=           # e.g. qwen3:4b, for the offline mode (8 GB RAM)
    EMBED_BACKEND=ollama          # ollama | st
    EMBED_MODEL=                  # e.g. bge-m3
