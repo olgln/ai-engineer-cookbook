@@ -1,44 +1,46 @@
-# 1.1 · Python: отличия от TypeScript  (AIL-1)
+# 1.1 · Python для тех, кто уже программирует  (AIL-1)
 
 > **Неделя 1** · Подготовка · ⏱ ~4 ч · Теория, Практика
 
 ## Зачем это AI-инженеру
 
-Почти весь AI-стек — SDK Anthropic и OpenAI, Pydantic, LangGraph, LlamaIndex, evals-фреймворки, примеры в документации — написан на Python. Код тебе часто будет генерировать модель, но отвечаешь за него ты: надо с первого взгляда видеть изменяемый default, проглоченное исключение или `float` там, где нужны деньги. На собеседованиях live-coding для AI-инженера почти всегда на Python. Цель главы — не выучить язык с нуля, а перенести то, что ты знаешь по TypeScript, и выучить только отличия.
+Почти весь AI-стек — SDK Anthropic и OpenAI, Pydantic, LangGraph, LlamaIndex, evals-фреймворки, примеры в документации — написан на Python. Код нам часто будет генерировать модель, но отвечаем за него мы: надо с первого взгляда видеть изменяемый default, проглоченное исключение или `float` там, где нужны деньги. На собеседованиях live-coding для AI-инженера почти всегда на Python. Цель главы — не выучить язык с нуля, а перенести то, что мы уже умеем в другом языке (JavaScript, Java, Go, C# — не важно), и разобрать только то, чем Python от них отличается.
+
+Сквозной пример курса — учебный интернет-магазин: заказы, товары, оплаты. На нём построены примеры кода в этой главе и все четыре проекта дальше.
 
 ## Теория
 
-### 1. Ментальная модель: чем Python отличается от TS в целом
+### 1. Ментальная модель: чем Python отличается от других языков
 
-| | TypeScript / Node | Python |
+| | Во многих языках | Python |
 |---|---|---|
-| Запуск | `node file.ts` (type stripping) или сборка | `python file.py` — интерпретатор, без сборки |
-| Типы | проверяются `tsc`, в рантайме стираются | type hints **вообще не проверяются** в рантайме; проверяют mypy/pyright/IDE |
+| Запуск | компиляция или сборка перед запуском | `python file.py` — интерпретатор, без сборки |
+| Типы | проверяет компилятор | type hints **вообще не проверяются** в рантайме; проверяют mypy/pyright/IDE |
 | Блоки | `{ }` | отступ (4 пробела), двоеточие в конце заголовка |
-| Пустое значение | `null` и `undefined` | один `None` |
-| Конкурентность | event loop всегда есть | синхронно по умолчанию; event loop — явно через `asyncio` (глава AIL-2) |
-| Пакеты | npm, `package.json`, `node_modules` | uv/pip, `pyproject.toml`, виртуальное окружение `.venv` (AIL-2) |
-| Числа | `number` (double) + `bigint` | `int` произвольной длины + `float` (double) + `Decimal` |
+| Пустое значение | `null`, иногда ещё и `undefined` | один `None` |
+| Конкурентность | потоки или встроенный event loop | синхронно по умолчанию; event loop — явно через `asyncio` (глава AIL-2) |
+| Пакеты | npm, Maven, Go modules и т.п. | uv/pip, `pyproject.toml`, виртуальное окружение `.venv` (AIL-2) |
+| Числа | целые фиксированного размера + double | `int` произвольной длины + `float` (double) + `Decimal` |
 
 Главное следствие второй строки: аннотация `def f(x: int)` — это документация и подсказка для IDE. `f("abc")` выполнится без ошибки, пока что-то внутри не сломается. Валидацию данных в рантайме делает Pydantic — это тема AIL-2.
 
 ### 2. Синтаксис: отступы, `None`, truthy/falsy
 
 ```python
-def classify(spread: float) -> str:
-    if spread > 0.5:
-        return "open"
-    elif spread < 0.1:      # elif, not "else if"
-        return "close"
+def stock_status(quantity: int) -> str:
+    if quantity > 20:
+        return "in_stock"
+    elif quantity < 1:      # elif, not "else if"
+        return "sold_out"
     else:
-        return "hold"
+        return "low"
 ```
 
-Логические операторы — словами: `and`, `or`, `not`. Тернарный оператор читается наоборот: `x if cond else y` (в TS `cond ? x : y`). Аналога `??` нет; `a or b` похож на `||` и срабатывает на любое falsy, включая `0`.
+Логические операторы — словами: `and`, `or`, `not`. Тернарный оператор читается наоборот: `x if cond else y` (в C-подобных языках `cond ? x : y`). Оператора «значение по умолчанию только для пустого значения» (как `??` в JavaScript и C#) нет; `a or b` срабатывает на любое falsy, включая `0`.
 
-**Falsy в Python:** `None`, `False`, `0`, `0.0`, `""`, `[]`, `{}`, `set()`, `()`. Важное отличие от JS: **пустой список и пустой словарь — falsy** (в JS `[]` и `{}` truthy). Поэтому идиома `if not positions:` значит «список пуст».
+**Falsy в Python:** `None`, `False`, `0`, `0.0`, `""`, `[]`, `{}`, `set()`, `()`. Важная особенность: **пустой список и пустой словарь — falsy** (в JavaScript, например, `[]` и `{}` truthy). Поэтому идиома `if not orders:` значит «список пуст».
 
-**`==` против `is`.** `==` сравнивает значения (как глубокое сравнение для списков и словарей: `[1, 2] == [1, 2]` → `True`, в JS было бы `false`). `is` сравнивает идентичность объекта. Используй `is` только с `None`: `if x is None:`. Сравнение строк или чисел через `is` иногда «работает» из-за кеширования интерпретатора и однажды перестаёт — это классический баг.
+**`==` против `is`.** `==` сравнивает значения, для списков и словарей — поэлементно: `[1, 2] == [1, 2]` → `True` (во многих языках такое сравнение проверяет ссылки и даёт `false`). `is` сравнивает идентичность объекта. `is` используем только с `None`: `if x is None:`. Сравнение строк или чисел через `is` иногда «работает» из-за кеширования интерпретатора и однажды перестаёт — это классический баг.
 
 ### 3. Числа
 
@@ -46,27 +48,27 @@ def classify(spread: float) -> str:
 - `/` **всегда** даёт `float`: `7 / 2 == 3.5`, `4 / 2 == 2.0`.
 - `//` — деление с округлением вниз (к минус бесконечности!): `7 // 2 == 3`, но `-7 // 2 == -4`.
 - `**` — степень, `%` — остаток (знак как у делителя: `-7 % 2 == 1`).
-- Для денег и объёмов, где важна точность, — `decimal.Decimal("0.1")` (строкой, не float). `0.1 + 0.2 == 0.30000000000000004` здесь так же, как в JS.
+- Для денег и всего, где важна точность, — `decimal.Decimal("0.1")` (строкой, не float). `0.1 + 0.2 == 0.30000000000000004` здесь так же, как в любом языке с double.
 
 ### 4. Коллекции
 
-| TS | Python | Заметки |
+| Привычное название | Python | Заметки |
 |---|---|---|
-| `Array<T>` | `list[T]`: `[1, 2, 3]` | изменяемый |
-| кортеж `[a, b]` | `tuple`: `(1, "a")` | неизменяемый, может быть ключом словаря |
-| `Record<K,V>` / `Map` | `dict[K, V]`: `{"btc": 1}` | порядок вставки сохраняется |
-| `Set<T>` | `set[T]`: `{1, 2}` | пустой — только `set()`, `{}` это пустой dict |
+| массив, список | `list[T]`: `[1, 2, 3]` | изменяемый |
+| кортеж | `tuple`: `(1, "a")` | неизменяемый, может быть ключом словаря |
+| словарь, map, хеш-таблица | `dict[K, V]`: `{"mug": 1}` | порядок вставки сохраняется |
+| множество | `set[T]`: `{1, 2}` | пустое — только `set()`, `{}` это пустой dict |
 
 Обращения:
 
 ```python
-prices = {"BTC": 97000.5, "ETH": 3400.1}
-prices["BTC"]            # KeyError if missing — NOT undefined
-prices.get("SOL")        # None
-prices.get("SOL", 0.0)   # default value
-"BTC" in prices          # key membership
-for symbol, price in prices.items():
-    print(symbol, price)
+prices = {"mug": 590.0, "notebook": 320.0}
+prices["mug"]            # KeyError if missing — not a silent empty value
+prices.get("pen")        # None
+prices.get("pen", 0.0)   # default value
+"mug" in prices          # key membership
+for product, price in prices.items():
+    print(product, price)
 ```
 
 **Срезы:** `a[start:stop:step]`, `stop` не включается, отрицательные индексы считают с конца.
@@ -79,49 +81,49 @@ xs[:2]     # [10, 20]
 xs[::-1]   # reversed copy
 ```
 
-**Comprehensions** заменяют `map`/`filter`:
+**Comprehensions** заменяют цепочки `map`/`filter`:
 
 ```python
-# TS: xs.filter(x => x > 0).map(x => x * 2)
+# "keep the positive ones and double them" in one expression
 doubled = [x * 2 for x in xs if x > 0]
-by_symbol = {t["symbol"]: t for t in trades}          # dict comprehension
-symbols = {t["symbol"] for t in trades}               # set comprehension
-total = sum(t["volume"] for t in trades)              # generator, no list built
+by_id = {o["id"]: o for o in orders}                  # dict comprehension
+categories = {o["category"] for o in orders}          # set comprehension
+total = sum(o["quantity"] for o in orders)            # generator, no list built
 ```
 
-**Распаковка** — аналог деструктуризации: `a, b = b, a`; `first, *rest = xs`; в цикле `for i, x in enumerate(xs):`. `zip(a, b)` идёт по двум спискам парами.
+**Распаковка** — то же, что деструктуризация в других языках: `a, b = b, a`; `first, *rest = xs`; в цикле `for i, x in enumerate(xs):`. `zip(a, b)` идёт по двум спискам парами.
 
-**Строки:** f-строки вместо template literals — `f"{symbol}: {spread:.3f}%"`. Строки неизменяемы; `"".join(parts)` вместо `parts.join("")`.
+**Строки:** f-строки подставляют значения прямо в текст — `f"{product}: {discount:.1f}%"`. Строки неизменяемы; склейка списка строк — `"".join(parts)`, метод вызывается у разделителя.
 
 ### 5. Функции
 
 ```python
-def place_preview(symbol: str, volume: float, *, side: str = "buy", **extra) -> dict:
-    return {"symbol": symbol, "volume": volume, "side": side, **extra}
+def order_preview(product: str, quantity: int, *, delivery: str = "pickup", **extra) -> dict:
+    return {"product": product, "quantity": quantity, "delivery": delivery, **extra}
 
-place_preview("BTCUSDT", 0.01, side="sell", note="test")
+order_preview("mug", 2, delivery="courier", note="gift")
 ```
 
-- Позиционные и **именованные** аргументы: `f(1, side="sell")`. Это не объект-параметр, а настоящая часть языка.
-- `*` в сигнатуре: всё после него — только по имени (keyword-only). Встретишь это в SDK постоянно: `client.messages.create(model=..., max_tokens=..., messages=...)`.
-- `*args` собирает лишние позиционные в кортеж, `**kwargs` — лишние именованные в словарь. При вызове `f(*xs, **opts)` — распаковка (аналог spread).
+- Позиционные и **именованные** аргументы: `f(1, delivery="courier")`. Это не объект с параметрами, а настоящая часть языка.
+- `*` в сигнатуре: всё после него — только по имени (keyword-only). В SDK это встречается постоянно: `client.messages.create(model=..., max_tokens=..., messages=...)`.
+- `*args` собирает лишние позиционные в кортеж, `**kwargs` — лишние именованные в словарь. При вызове `f(*xs, **opts)` — распаковка списка и словаря в аргументы.
 - `lambda x: x * 2` — только одно выражение.
 
 **Ловушка изменяемого default.** Значение по умолчанию вычисляется **один раз** при определении функции:
 
 ```python
-def add_trade(trade, log=[]):     # BUG: one list shared by all calls
-    log.append(trade)
-    return log
+def add_item(item, cart=[]):      # BUG: one list shared by all calls
+    cart.append(item)
+    return cart
 
-add_trade(1)  # [1]
-add_trade(2)  # [1, 2]  <- surprise
+add_item("mug")       # ["mug"]
+add_item("notebook")  # ["mug", "notebook"]  <- surprise
 
-def add_trade(trade, log=None):   # correct
-    if log is None:
-        log = []
-    log.append(trade)
-    return log
+def add_item(item, cart=None):    # correct
+    if cart is None:
+        cart = []
+    cart.append(item)
+    return cart
 ```
 
 **Области видимости.** Присваивание внутри функции создаёт локальную переменную. Чтобы изменить переменную внешней функции — `nonlocal`, модуля — `global` (почти никогда не нужно). Блоки `if`/`for` области видимости **не создают**: переменная из цикла живёт после цикла.
@@ -129,43 +131,43 @@ def add_trade(trade, log=None):   # correct
 ### 6. Классы и dataclass
 
 ```python
-class Exchange:
-    fee_rate: float = 0.0005            # class attribute
+class PaymentProvider:
+    fee_rate: float = 0.025             # class attribute
 
     def __init__(self, name: str):      # constructor
         self.name = name                # instance attribute, "this" is explicit
 
-    def fee(self, notional: float) -> float:
-        return notional * self.fee_rate
+    def fee(self, amount: float) -> float:
+        return amount * self.fee_rate
 
     def __repr__(self) -> str:          # like toString() for debugging
-        return f"Exchange({self.name!r})"
+        return f"PaymentProvider({self.name!r})"
 ```
 
-`self` явно передаётся первым параметром каждого метода. Приватности нет: `_name` — соглашение «не трогай», `__name` — искажение имени, не защита. Наследование: `class Bybit(Exchange):`, вызов родителя — `super().__init__(name)`.
+`self` явно передаётся первым параметром каждого метода. Приватности нет: `_name` — соглашение «не трогать снаружи», `__name` — искажение имени, не защита. Наследование: `class CardProvider(PaymentProvider):`, вызов родителя — `super().__init__(name)`.
 
-Для «просто данных» используй `@dataclass` — он генерирует `__init__`, `__repr__`, `__eq__`:
+Для «просто данных» берём `@dataclass` — он генерирует `__init__`, `__repr__`, `__eq__`:
 
 ```python
 from dataclasses import dataclass, field
 
 @dataclass(frozen=True)          # frozen = immutable, like a readonly type
-class Leg:
-    exchange: str
-    symbol: str
+class OrderItem:
+    product: str
+    quantity: int
     price: float
     tags: list[str] = field(default_factory=list)  # never "= []"
 ```
 
-Dunder-методы (`__init__`, `__len__`, `__eq__`, `__enter__`) — это «протоколы»: Python вызывает их сам, когда ты пишешь `len(x)`, `a == b`, `with x:`.
+Dunder-методы (`__init__`, `__len__`, `__eq__`, `__enter__`) — это «протоколы»: Python вызывает их сам, когда мы пишем `len(x)`, `a == b`, `with x:`.
 
 ### 7. Исключения
 
 ```python
-class ExchangeError(Exception):
-    """Base error for the exchange layer."""
+class ShopError(Exception):
+    """Base error for the shop data layer."""
 
-class RateLimited(ExchangeError):
+class OutOfStock(ShopError):
     pass
 
 try:
@@ -173,26 +175,26 @@ try:
 except FileNotFoundError:
     data = []
 except (ValueError, KeyError) as e:
-    raise ExchangeError(f"bad file {path}") from e   # keeps the cause
+    raise ShopError(f"bad file {path}") from e   # keeps the cause
 else:
     print("loaded")        # runs only if no exception
 finally:
     print("done")
 ```
 
-Отличия от TS: ловишь по **типу** (`except ValueError`), а не `catch (e)` с проверкой внутри. `except Exception:` без повторного `raise` — это почти всегда проглоченная ошибка. Голый `except:` ловит даже Ctrl+C — так не пиши.
+Исключения ловятся по **типу** (`except ValueError`), порядок веток важен: срабатывает первая подходящая. `except Exception:` без повторного `raise` — это почти всегда проглоченная ошибка. Голый `except:` ловит даже Ctrl+C — так не пишем.
 
-**Контекстный менеджер** `with` — гарантированное освобождение ресурса (аналог `try/finally` или `using` в новых TS):
+**Контекстный менеджер** `with` — гарантированное освобождение ресурса (то, что в других языках делают через `try/finally`, `using` или `defer`):
 
 ```python
-with open("trades.csv", encoding="utf-8") as f:
+with open("orders.csv", encoding="utf-8") as f:
     text = f.read()
 # file is closed here even on exception
 ```
 
 ### 8. Модули и импорты
 
-Файл = модуль, папка с файлами = пакет. `import json`, `from pathlib import Path`, `from .utils import spread` (относительный импорт внутри пакета). Импортировать модуль — значит выполнить его верхний уровень один раз. Отсюда идиома:
+Файл = модуль, папка с файлами = пакет. `import json`, `from pathlib import Path`, `from .utils import order_total` (относительный импорт внутри пакета). Импортировать модуль — значит выполнить его верхний уровень один раз. Отсюда идиома:
 
 ```python
 def main() -> None:
@@ -202,7 +204,7 @@ if __name__ == "__main__":   # true only when run as a script, not when imported
     main()
 ```
 
-Аналог в Node — проверка `import.meta.url === pathToFileURL(process.argv[1]).href`. Тестам и ноутбукам это даёт импортировать функции, не запуская скрипт.
+Тестам и ноутбукам это даёт импортировать функции, не запуская скрипт.
 
 ### 9. Type hints
 
@@ -210,14 +212,14 @@ if __name__ == "__main__":   # true only when run as a script, not when imported
 from typing import Optional, Literal, Any
 from collections.abc import Iterable
 
-def mid(bid: float, ask: float) -> float: ...
-def find(symbol: str) -> dict[str, float] | None: ...    # modern form (3.10+)
-def find_old(symbol: str) -> Optional[dict[str, float]]: ...  # same thing
-Side = Literal["buy", "sell"]                             # like a TS union of literals
+def average(a: float, b: float) -> float: ...
+def find(product: str) -> dict[str, float] | None: ...    # modern form (3.10+)
+def find_old(product: str) -> Optional[dict[str, float]]: ...  # same thing
+Status = Literal["new", "paid", "shipped"]                # only these three strings are allowed
 def total(xs: Iterable[float]) -> float: ...
 ```
 
-`Optional[X]` значит «X или None», а не «необязательный аргумент». `list[str]`, `dict[str, int]` пишутся со строчной буквы (с Python 3.9); `List`, `Dict` из `typing` — старый стиль, встретишь в чужом коде. `Any` — как `any` в TS.
+`Optional[X]` значит «X или None», а не «необязательный аргумент». `list[str]`, `dict[str, int]` пишутся со строчной буквы (с Python 3.9); `List`, `Dict` из `typing` — старый стиль, он встречается в чужом коде. `Any` отключает проверку типа для значения.
 
 ### 10. Стандартная библиотека, которую стоит знать в лицо
 
@@ -225,7 +227,7 @@ def total(xs: Iterable[float]) -> float: ...
 
 ## DeepSeek и Ollama: как это сделать у нас
 
-Для этой главы провайдер почти не важен: Python один и тот же. Учиться ты будешь на DeepSeek (облако, дёшево, серверы в Китае) и локальной Ollama, а Claude и OpenAI останутся для сравнения (подробно — в главе 1.5 · Видео Карпатого + ключи API (AIL-3)). Отсюда две вещи, которые полезно уметь прочитать уже сейчас:
+Для этой главы провайдер почти не важен: Python один и тот же. Основные модели курса — DeepSeek (облако, дёшево) и локальная Ollama, а Claude и OpenAI остаются для сравнения (подробно — в главе 1.5 · Видео Карпатого + ключи API (AIL-3)). Отсюда две вещи, которые полезно уметь прочитать уже сейчас:
 
 ```python
 # illustrative: one SDK, two providers — only keyword arguments differ
@@ -236,68 +238,70 @@ deepseek = OpenAI(api_key=os.environ["DEEPSEEK_API_KEY"], base_url="https://api.
 local = OpenAI(api_key="ollama", base_url="http://localhost:11434/v1")   # Ollama ignores the key
 ```
 
-- **Именованные аргументы** (`base_url=...`, раздел 5) — то, на чём держится вся совместимость: ты не наследуешь и не переписываешь клиент, а передаёшь другой адрес. В SDK почти всё keyword-only (`*` в сигнатуре).
-- **`os.environ["X"]` против `os.environ.get("X")`.** Первое бросает `KeyError`, если переменной нет (громкая ошибка сразу), второе возвращает `None`, и ты получишь непонятную ошибку авторизации позже. В официальном примере DeepSeek стоит `.get` — для своего кода предпочитай `[]`.
-- **Безопасность и в упражнении «чтение чужого кода»:** просить модель сгенерировать учебный скрипт можно у любой, включая DeepSeek, — в запросе нет твоих данных. Код из своего приложения и данные сделок в DeepSeek не отправляй (серверы в Китае); для этого — локальная модель в Ollama.
+- **Именованные аргументы** (`base_url=...`, раздел 5) — то, на чём держится вся совместимость: клиент не нужно наследовать или переписывать, достаточно передать другой адрес. В SDK почти всё keyword-only (`*` в сигнатуре).
+- **`os.environ["X"]` против `os.environ.get("X")`.** Первое бросает `KeyError`, если переменной нет (громкая ошибка сразу), второе возвращает `None`, и непонятная ошибка авторизации появится позже. В официальном примере DeepSeek стоит `.get` — в своём коде предпочитаем `[]`.
+- **Что можно отправлять в облако.** Попросить модель сгенерировать учебный скрипт можно у любого провайдера: в запросе нет ничего личного. Рабочий код, данные клиентов и всё, что нельзя показывать посторонним, в облачные модели не отправляем — для этого есть локальная модель в Ollama. Это правило действует весь курс.
 
 ## Маршрут изучения
 
-1. Открой [Learn X in Y minutes: Python](https://learnxinyminutes.com/docs/python/) → пройди страницу целиком, **запуская** каждый блок в `python3` REPL или в файле (≈90 мин). Отмечай всё, что ведёт себя не как в TS, — это сырьё для шпаргалки.
-2. Открой [официальный туториал](https://docs.python.org/3/tutorial/) → главы 3–9 (≈90 мин, бегло). Подробно: 4.8 «More on Defining Functions» (аргументы, ловушка default), 5 «Data Structures» (comprehensions, словари), 8 «Errors and Exceptions», 9 «Classes» до раздела 9.8. Главы 6 (модули) и 7 (ввод-вывод, f-строки) — по диагонали.
-3. Открой [документацию dataclasses](https://docs.python.org/3/library/dataclasses.html) → первые примеры и `field(default_factory=...)` (≈10 мин).
-4. Открой [модуль csv](https://docs.python.org/3/library/csv.html) → `csv.DictReader` (≈10 мин) — пригодится в практике.
+1. Открываем [Learn X in Y minutes: Python](https://learnxinyminutes.com/docs/python/) → проходим страницу целиком, **запуская** каждый блок в `python3` REPL или в файле (≈90 мин). Отмечаем всё, что ведёт себя не так, как в привычном языке, — это сырьё для шпаргалки.
+2. Открываем [официальный туториал](https://docs.python.org/3/tutorial/) → главы 3–9 (≈90 мин, бегло). Подробно: 4.8 «More on Defining Functions» (аргументы, ловушка default), 5 «Data Structures» (comprehensions, словари), 8 «Errors and Exceptions», 9 «Classes» до раздела 9.8. Главы 6 (модули) и 7 (ввод-вывод, f-строки) — по диагонали.
+3. Открываем [документацию dataclasses](https://docs.python.org/3/library/dataclasses.html) → первые примеры и `field(default_factory=...)` (≈10 мин).
+4. Открываем [модуль csv](https://docs.python.org/3/library/csv.html) → `csv.DictReader` (≈10 мин) — пригодится в практике.
 5. [PEP 8](https://peps.python.org/pep-0008/) → раздел Naming Conventions (≈10 мин): `snake_case` для функций и переменных, `PascalCase` для классов, `UPPER_CASE` для констант. Остальное сделает форматтер Ruff (AIL-2).
-6. [Real Python](https://realpython.com) — не читать подряд, а искать по мере вопросов («python args kwargs», «python decorators»). Одна статья — один вопрос.
-7. (≈5 мин, упражнение на чтение) Открой [DeepSeek Quick Start](https://api-docs.deepseek.com) → пример на Python. Прочитай его как Python-код: какие аргументы именованные, откуда берётся ключ, что вернёт `response.choices[0].message.content`. Запускать пока не нужно — ключ появится в главе 1.5.
+6. [Real Python](https://realpython.com) — не читаем подряд, а ищем по мере вопросов («python args kwargs», «python decorators»). Одна статья — один вопрос.
+7. (≈5 мин, упражнение на чтение) Открываем [DeepSeek Quick Start](https://api-docs.deepseek.com) → пример на Python. Читаем его как Python-код: какие аргументы именованные, откуда берётся ключ, что вернёт `response.choices[0].message.content`. Запускать пока не нужно — ключ появится в главе 1.5.
 
 ## На что обратить внимание
 
 - **Изменяемый default** (`def f(x=[])`, `x={}`) — самый частый баг в сгенерированном коде. В dataclass — `field(default_factory=list)`.
-- **`float` для денег.** Сумма комиссий за 1000 сделок в float разойдётся с биржей. Либо `Decimal` из строк, либо осознанное округление при выводе.
-- **`except Exception: pass`** — молча скрывает сбой. В AI-коде так часто «обрабатывают» ошибки API; при ревью требуй логирование или повторный `raise`.
+- **`float` для денег.** Сумма по 1000 заказов в float разойдётся с отчётом платёжной системы на копейки. Либо `Decimal` из строк, либо осознанное округление при выводе.
+- **`except Exception: pass`** — молча скрывает сбой. В AI-коде так часто «обрабатывают» ошибки API; на ревью требуем логирование или повторный `raise`.
 - **Отступы.** Смешение табов и пробелов даёт `TabError`; лишний отступ у `return` внутри цикла — функция выходит после первой итерации.
-- **Копирование.** `b = a` для списка — та же ссылка, как в JS. Копия — `a.copy()` или `list(a)`; глубокая — `copy.deepcopy(a)`.
-- **`dict[key]` бросает `KeyError`**, а не возвращает `undefined`. В данных от API используй `.get()`.
-- **Переменная цикла живёт после цикла**, а лямбды в цикле захватывают переменную, не значение (как `var` в старом JS).
+- **Копирование.** `b = a` для списка — та же ссылка, а не копия. Копия — `a.copy()` или `list(a)`; глубокая — `copy.deepcopy(a)`.
+- **`dict[key]` бросает `KeyError`**, а не возвращает пустое значение. Для данных от API — `.get()`.
+- **Переменная цикла живёт после цикла**, а лямбды в цикле захватывают переменную, не значение: все они увидят её последнее значение.
 - **Type hints не защищают.** Если функция объявлена `-> float`, а возвращает `None`, рантайм промолчит.
 - **`/` в индексах.** `xs[len(xs) / 2]` упадёт: индекс должен быть `int`, нужен `//`.
 
 ## Практика
 
-Работай в папке `exercises/week-01/` репозитория из AIL-56. Пока uv не настроен (это AIL-2), хватит системного `python3` (`python3 --version` — нужен 3.10+, для `X | None`).
+Работаем в папке `exercises/week-01/` репозитория из AIL-56. Пока uv не настроен (это AIL-2), хватит системного `python3` (`python3 --version` — нужен 3.10+, для `X | None`).
 
-- [ ] **Learn X in Y minutes с запуском.** Создай `exercises/week-01/lxiym.py` и перепечатывай (не копируй) блоки, которые тебя удивили. Минимум 10 «сюрпризов».
-- [ ] **Переписать функции из TS.** Возьми 2–3 чистые функции из своего арбитражного приложения (расчёт спреда между ценой шорта и лонга, перевод объёма из монет в контракты, процентное изменение) и перепиши в `exercises/week-01/spread.py`. Каркас:
+- [ ] **Learn X in Y minutes с запуском.** Создаём `exercises/week-01/lxiym.py` и перепечатываем (не копируем) блоки, которые удивили. Минимум 10 «сюрпризов».
+- [ ] **Три чистые функции для магазина.** Пишем в `exercises/week-01/pricing.py` функции без ввода-вывода: сумма заказа со скидкой, наценка в процентах, процентное изменение цены. Каркас:
 
   ```python
-  def spread_pct(short_bid: float, long_ask: float) -> float:
-      """Percent spread between selling on the short leg and buying on the long leg."""
+  def order_total(unit_price: float, quantity: int, discount_pct: float = 0.0) -> float:
+      """Order amount after a percent discount."""
       ...
 
-  def coins_to_contracts(volume: float, contract_size: float) -> float:
+  def markup_pct(price: float, cost: float) -> float:
+      """How much the price exceeds the cost, in percent of the cost."""
       ...
 
   if __name__ == "__main__":
-      print(spread_pct(101.0, 100.0))  # expected: 1.0
+      print(order_total(100.0, 3, discount_pct=10))  # expected: 270.0
+      print(markup_pct(150.0, 100.0))                # expected: 50.0
   ```
 
-  Работай только с самим кодом функций; ничего не подключай к биржам и не трогай базу.
-- [ ] **CSV руками, без AI.** Создай вымышленный `exercises/week-01/trades.csv` (20 строк, колонки `time,symbol,side,volume,price,pnl`; данные выдуманные). Напиши `stats.py`, который:
+  Если под рукой есть свой проект на другом языке, вместо этих функций можно перенести 2–3 чистые функции из него: так отличия Python видны лучше всего.
+- [ ] **CSV руками, без AI.** Создаём вымышленный `exercises/week-01/orders.csv` (20 строк, колонки `created_at,category,status,quantity,unit_price,discount`; статусы `paid`, `refunded`, `cancelled`). Пишем `stats.py`, который:
   1. читает файл через `csv.DictReader`;
-  2. переводит `volume`, `price`, `pnl` в числа (подумай, что делать со строкой, которая не парсится, — пропустить с предупреждением);
-  3. фильтрует сделки одной стороны;
-  4. считает по каждому символу: количество, суммарный PnL, средний PnL, винрейт (через `collections.defaultdict` или `Counter`);
-  5. печатает таблицу, отсортированную по суммарному PnL (`sorted(..., key=lambda r: r["pnl"], reverse=True)`).
+  2. переводит `quantity`, `unit_price`, `discount` в числа (что делать со строкой, которая не парсится? — пропустить с предупреждением);
+  3. отбрасывает отменённые заказы;
+  4. считает по каждой категории: количество заказов, выручку, средний чек, долю возвратов (через `collections.defaultdict` или `Counter`);
+  5. печатает таблицу, отсортированную по выручке (`sorted(..., key=lambda r: r["revenue"], reverse=True)`).
 
-  Ожидаемый результат: несколько строк вида `BTCUSDT  n=7  pnl=+12.40  avg=+1.77  win=57%`.
-- [ ] **Шпаргалка.** `notes/python-vs-ts.md` — таблица «TS → Python», минимум 25 строк: `null/undefined`, `===`, `??`, тернарник, `map/filter`, деструктуризация, spread, `try/catch`, `class/this`, `interface` → `dataclass`/Pydantic, `import`, `JSON.parse` → `json.loads`, `Object.entries` → `.items()`, `arr.length` → `len(arr)` и т.д.
-- [ ] **Чтение чужого кода.** Попроси модель (любой чат: DeepSeek, Claude, ChatGPT — в запросе нет твоих данных) сгенерировать «скрипт на 100 строк, который анализирует лог-файл веб-сервера» и объясни вслух (или письменно в `notes/`) каждую функцию, не запуская. Потом запусти и проверь себя.
+  Ожидаемый результат: несколько строк вида `books  n=7  revenue=8420.00  avg=1202.86  refunded=14%`.
+- [ ] **Шпаргалка.** `notes/python-cheatsheet.md` — таблица «как я привык → как в Python», минимум 25 строк: пустое значение, сравнение, тернарник, `map/filter` → comprehensions, деструктуризация → распаковка, обработка ошибок, классы и `self`, структуры данных → `dataclass`/Pydantic, импорты, разбор JSON → `json.loads`, обход словаря → `.items()`, длина → `len(x)` и т.д. Левую колонку заполняем на своём основном языке.
+- [ ] **Чтение чужого кода.** Просим модель (любой чат: DeepSeek, Claude, ChatGPT — в запросе нет ничего личного) сгенерировать «скрипт на 100 строк, который анализирует лог-файл веб-сервера» и объясняем вслух (или письменно в `notes/`) каждую функцию, не запуская. Потом запускаем и проверяем себя.
 
 ## Готово, когда
 
-- Можешь прочитать незнакомый Python-скрипт на 100 строк и объяснить, что он делает, включая comprehensions, `*args/**kwargs`, `with` и обработку исключений.
-- `spread.py` и `stats.py` работают, `stats.py` написан без AI.
-- `notes/python-vs-ts.md` лежит в репозитории и закоммичен.
+- Можем прочитать незнакомый Python-скрипт на 100 строк и объяснить, что он делает, включая comprehensions, `*args/**kwargs`, `with` и обработку исключений.
+- `pricing.py` и `stats.py` работают, `stats.py` написан без AI.
+- `notes/python-cheatsheet.md` лежит в репозитории и закоммичен.
 
 ## Тест для самопроверки
 
@@ -307,15 +311,15 @@ local = OpenAI(api_key="ollama", base_url="http://localhost:11434/v1")   # Ollam
 3. Чем `Optional[int]` отличается от «необязательного аргумента»?
 4. Что не так в этом коде?
    ```python
-   def collect(symbol, seen=set()):
-       seen.add(symbol)
+   def collect(category, seen=set()):
+       seen.add(category)
        return len(seen)
    ```
 5. Когда правильно использовать `is`, а не `==`?
 6. Что делает `if __name__ == "__main__":` и зачем он нужен, если файл будут импортировать тесты?
 7. Что вернёт `{t["s"]: t["p"] for t in [{"s": "A", "p": 1}, {"s": "A", "p": 2}]}`?
    a) `{"A": 1}` b) `{"A": 2}` c) `{"A": [1, 2]}` d) ошибку
-8. Функция объявлена `def mid(bid: float, ask: float) -> float`. Что произойдёт при вызове `mid("1", "2")`, если внутри `return (bid + ask) / 2`?
+8. Функция объявлена `def average(a: float, b: float) -> float`. Что произойдёт при вызове `average("1", "2")`, если внутри `return (a + b) / 2`?
 9. Что не так в обработке ошибки?
    ```python
    try:
@@ -348,9 +352,9 @@ local = OpenAI(api_key="ollama", base_url="http://localhost:11434/v1")   # Ollam
 10. Всё после `*` передаётся только по имени: `create(model="m", max_tokens=100)`; `create("m", 100)` даст `TypeError`. Так устроены SDK, чтобы порядок аргументов можно было менять без поломок.
 11. `copy.deepcopy(a)`. `a.copy()` и `list(a)` создают поверхностную копию: словари внутри будут общими.
 12. `{}` — литерал пустого словаря (так исторически сложилось). Пустое множество — `set()`.
-13. Для Python это один и тот же класс, разница только в именованных аргументах. Для данных — принципиальная: первый клиент шлёт запросы в OpenAI (ключ из `OPENAI_API_KEY`), второй — в DeepSeek, на серверы в Китае, куда нельзя отправлять реальные сделки и личные данные.
+13. Для Python это один и тот же класс, разница только в именованных аргументах. Для данных — принципиальная: первый клиент шлёт запросы в OpenAI (ключ из `OPENAI_API_KEY`), второй — в DeepSeek. В обоих случаях данные уходят на чужие серверы, поэтому рабочие и личные данные туда не отправляем.
 14. Опечатка в имени переменной: `.get` молча вернёт `None`, и ошибка проявится позже и непонятно (SDK пожалуется на отсутствие ключа или сервер вернёт 401). `os.environ["DEEPSEEK_API_KEY"]` упал бы сразу с `KeyError` и правильным именем в сообщении.
 
 ## Что дальше
 
-Дальше глава 1.2 · Репозиторий для учёбы: git, notes/, структура (AIL-56): заведёшь репозиторий, куда положишь шпаргалку и упражнения. Затем глава 1.3 · Python: uv, async, Pydantic (AIL-2) — настоящее окружение проекта, асинхронные запросы и валидация данных, без которых не обходится ни один LLM-проект.
+Дальше глава 1.2 · Репозиторий для учёбы: git, notes/, структура (AIL-56): заведём репозиторий, куда положим шпаргалку и упражнения. Затем глава 1.3 · Python: uv, async, Pydantic (AIL-2) — настоящее окружение проекта, асинхронные запросы и валидация данных, без которых не обходится ни один LLM-проект.

@@ -5,7 +5,7 @@
 
 ## Неделя 1 · Python + первый API
 
-- [1.1 · Python: отличия от TypeScript](AIL-1.md)
+- [1.1 · Python для тех, кто уже программирует](AIL-1.md)
 - [1.2 · Репозиторий для учёбы: git, notes/, структура](AIL-56.md)
 - [1.3 · Python: uv, async, Pydantic](AIL-2.md)
 - [1.4 · Jupyter-ноутбуки в VS Code](AIL-57.md)
