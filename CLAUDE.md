@@ -18,8 +18,9 @@ A Russian-language course for developers who want to become AI engineers, plus a
   `site/src/chapters.json` come from `site/scripts/convert.mjs`.
 - No hardcoded settings: machine-level values go through `.env` (`site/.env.example`,
   `site/src/config/server.mjs`), shared constants into `site/src/config/app.mjs`.
-- Verify a change with `cd site && npm run build`. The `convert:` line must report no warnings;
-  as of now it shows 58 chapters and 787 questions (109 multiple-choice, all with an answer key).
+- Verify a change with `cd site && npm run build`. The `convert:` line must report no warnings,
+  58 chapters, and every multiple-choice question with an answer key; the question count changes
+  only when a quiz does.
 - Dependencies are pinned and install scripts are disabled (`site/.npmrc`). Do not add or update a
   dependency without reviewing it first.
 
