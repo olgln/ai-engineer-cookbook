@@ -4,11 +4,13 @@ The chapters from `book/` are built into a local site: a table of contents by we
 
 ```bash
 cd site
-npm start        # build + http://127.0.0.1:4321 — for studying (with search)
+npm start        # build + http://127.0.0.1:4321 — for studying (with search), rebuilds on save
+npm run serve    # serve the last build as is, without watching
 npm run dev      # layout editing mode: live reload, but no search
 ```
 
-- **`book/*.md` is the source of truth.** The site pages are generated from it on every `npm start` (`scripts/convert.mjs`); generated files are not stored in git. After editing a chapter, restart `npm start`.
+- **`book/*.md` is the source of truth.** The site pages are generated from it on every build (`scripts/convert.mjs`); generated files are not stored in git.
+- **`npm start` follows your edits.** It watches `book/`, the root `README.md`, `src/` and the Astro configs; a few seconds after a save it rebuilds into `dist-next/`, swaps it in for `dist/` and reloads the open pages. If the build fails, the previous version keeps being served — fix the error and save again. No restart needed.
 - **Progress** (finished chapters, checklist ticks, quiz answers) is personal and never goes to git: it is stored outside the project, in `~/.ai-engineer-cookbook/progress.json`, with a copy in the browser's localStorage. The index page shows where the progress is written and has export / import.
 - **Stop the server:** `Ctrl+C` in the terminal where `npm start` is running.
 
