@@ -288,7 +288,7 @@ function initIndex() {
     overall.replaceChildren(
       el('div', { class: 'course-progress-head' },
         el('strong', {}, `Пройдено ${n} из ${total} ${plural(total, 'главы', 'глав', 'глав')}`),
-        el('span', { class: 'storage-note', textContent: P.storage === 'file' ? 'Сохраняется в site/progress.json' : 'Сохраняется только в этом браузере' }),
+        el('span', { class: 'storage-note', textContent: P.storage === 'file' ? `Сохраняется в ${P.storagePath || 'файл прогресса'}` : 'Сохраняется только в этом браузере' }),
       ),
       bar(n, total),
       el('div', { class: 'course-progress-actions' },

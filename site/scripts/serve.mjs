@@ -8,7 +8,7 @@ import { progressHandler } from '../src/integrations/progress-handler.mjs';
 const SITE = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const DIST = path.join(SITE, 'dist');
 const PORT = Number(process.env.PORT ?? 4321);
-const api = progressHandler(path.join(SITE, 'progress.json'));
+const api = progressHandler();
 const TYPES = {
   '.html': 'text/html; charset=utf-8', '.js': 'text/javascript', '.mjs': 'text/javascript', '.css': 'text/css',
   '.json': 'application/json', '.svg': 'image/svg+xml', '.png': 'image/png', '.jpg': 'image/jpeg', '.ico': 'image/x-icon',

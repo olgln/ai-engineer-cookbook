@@ -18,7 +18,7 @@ npm run dev      # режим правки вёрстки: перезагруз�
 ```
 
 - **Источник правды — `book/*.md`.** Страницы сайта генерируются из них при каждом `npm start` (`site/scripts/convert.mjs`), в git сгенерированное не хранится. Поправил главу — перезапусти `npm start`.
-- **Прогресс** (пройденные главы, галочки «Готово, когда», ответы в тестах) хранится в `site/progress.json` и коммитится вместе с заметками; копия — в localStorage браузера. На главной сайта есть экспорт и импорт.
+- **Прогресс** (пройденные главы, галочки «Готово, когда», ответы в тестах) у каждого свой и в git не попадает: он хранится вне проекта, в `~/.ai-engineer-cookbook/progress.json`, копия — в localStorage браузера. Другой путь (например, папка в iCloud Drive для резервной копии): `PROGRESS_FILE=~/путь/progress.json npm start`. На главной сайта видно, куда пишется прогресс, и есть экспорт / импорт.
 - **Остановить сервер:** `Ctrl+C` в терминале, где запущен `npm start`.
 
 | Файл в `site/` | Зачем |
@@ -26,7 +26,7 @@ npm run dev      # режим правки вёрстки: перезагруз�
 | `scripts/convert.mjs` | `book/*.md` → страницы: оглавление, ссылки AIL-N → главы, тесты, чек-листы, схемы mermaid |
 | `scripts/serve.mjs` | локальный сервер для `npm start` |
 | `src/scripts/main.ts`, `progress.ts` | тесты, чек-листы, отметки глав, хранение прогресса |
-| `src/integrations/progress-handler.mjs` | `GET/PUT /api/progress` → `site/progress.json` |
+| `src/integrations/progress-handler.mjs` | `GET/PUT /api/progress` → файл прогресса (`~/.ai-engineer-cookbook/progress.json` или `$PROGRESS_FILE`) |
 | `src/styles/custom.css`, `ec.config.mjs` | оформление и подсветка кода |
 
 **Зависимости** (Astro 7.4.2, Starlight 0.42.7, mermaid 12.2.0, плагины expressive-code 0.44.3) проверены перед установкой: версии точные (`save-exact`), всё дерево зафиксировано на 30.10.2026 (`before=` в `site/.npmrc`), install-скрипты запрещены (`ignore-scripts=true`), телеметрия Astro выключена. Обновлять только осознанно, с той же проверкой.
