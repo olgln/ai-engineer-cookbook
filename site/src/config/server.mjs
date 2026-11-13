@@ -26,9 +26,16 @@ function positiveInt(name) {
 /** Expand a leading ~ to the home directory and make the path absolute. */
 const expandHome = (p) => path.resolve(p.replace(/^~(?=$|\/)/, os.homedir()));
 
+/** Host names the progress API answers to; anything else (e.g. a DNS-rebinding domain) is refused. */
+const LOOPBACK_HOSTS = ['localhost', '127.0.0.1', '[::1]'];
+const WILDCARD_HOSTS = ['0.0.0.0', '::', '[::]'];
+
+const host = read('HOST');
+
 export const config = {
-  host: read('HOST'),
+  host,
   port: positiveInt('PORT'),
   progressFile: expandHome(read('PROGRESS_FILE')),
   progressMaxBytes: positiveInt('PROGRESS_MAX_BYTES'),
+  allowedHosts: new Set(WILDCARD_HOSTS.includes(host) ? LOOPBACK_HOSTS : [...LOOPBACK_HOSTS, host]),
 };

@@ -217,7 +217,7 @@ print(choice.finish_reason)                       # "stop" / "length" / "tool_ca
 print(r.usage)   # prompt_tokens, completion_tokens, prompt_cache_hit_tokens, prompt_cache_miss_tokens
 ```
 
-С включённым размышлением читаем `getattr(choice.message, "reasoning_content", None)` — это поле не входит в стандартную схему OpenAI, SDK кладёт его как «лишнее». В историю диалога без инструментов его возвращать не нужно (API его игнорирует); с инструментами — обязательно, иначе 400 (глава 2.6 · Tool calling).
+С включённым размышлением читаем `getattr(choice.message, "reasoning_content", None)` — это поле не входит в стандартную схему OpenAI, SDK кладёт его как «лишнее». В историю диалога без инструментов его возвращать не нужно (API его игнорирует); с инструментами — обязательно, иначе 400 (глава 2.6 · Tool calling: модель вызывает 3 функции (AIL-10)).
 
 Стриминг — как у OpenAI Chat Completions: `stream=True`, текст в `chunk.choices[0].delta.content`, рассуждение — в `delta.reasoning_content`; чтобы получить `usage`, добавляем `stream_options={"include_usage": True}` — он придёт в последнем чанке, у которого `choices` может быть пустым (проверяем `if chunk.choices`). Под нагрузкой DeepSeek держит соединение пустыми строками / SSE-комментариями `: keep-alive` — SDK их переваривает, а свой парсер SSE должен их пропускать.
 
@@ -273,7 +273,7 @@ print(resp.message.content, resp.done_reason, resp.prompt_eval_count, resp.eval_
 | Размышление | блоки `thinking` в `content` | reasoning items в `output` | поле `reasoning_content`, включено по умолчанию | поле `message.thinking` (нативно), параметр `think` |
 | Сервер хранит диалог | нет | опционально (`previous_response_id`) | нет | нет |
 | Где данные | США (провайдер) | США (провайдер) | **КНР** | наша машина |
-| Цена | за токен | за токен | за токен, очень дёшево (ночью и в выходные дешевле) | бесплатно, но платим RAM, диском и скоростью |
+| Цена | за токен | за токен | за токен, очень дёшево (вне пиковых часов вдвое дешевле, глава 1.5) | бесплатно, но платим RAM, диском и скоростью |
 
 Чего у нас нет по сравнению с Claude: эндпоинта `count_tokens` (у DeepSeek — только `usage` в ответе и офлайн-токенизатор-архив на сайте; глава 1.7), заголовка версии API, типизированных блоков `content`. Чего нет у Ollama: ограничений по деньгам и rate limits — зато есть ограничение по памяти и скорости, и контекст по умолчанию всего 4096 токенов (длинная история молча обрежется, если не поднять `num_ctx`).
 
@@ -310,7 +310,7 @@ print(resp.message.content, resp.done_reason, resp.prompt_eval_count, resp.eval_
 
 ## Практика
 
-Подготовка: Python 3.10+, виртуальное окружение, зависимости `openai`, `ollama`, `httpx`, `python-dotenv` (и `anthropic`, если будем сравнивать с Claude). Перед установкой сверяем точные имена пакетов на PyPI (это официальные пакеты OpenAI, Ollama (ollama/ollama-python), Anthropic, encode/httpx и theskumar/python-dotenv) и фиксируем версии в `requirements.txt`. В `.env` — `DEEPSEEK_API_KEY` (и, по желанию, `ANTHROPIC_API_KEY`, `OPENAI_API_KEY`). Ollama установлен и проверен (`codesign`/`spctl`), модель скачана.
+Подготовка: uv-проект из главы 1.3 (AIL-2), зависимости `openai`, `ollama`, `httpx`, `python-dotenv` (и `anthropic`, если будем сравнивать с Claude). Перед установкой сверяем точные имена пакетов на PyPI (это официальные пакеты OpenAI, Ollama (ollama/ollama-python), Anthropic, encode/httpx и theskumar/python-dotenv) и фиксируем версии (`uv add` записывает их в `uv.lock`). В `.env` — `DEEPSEEK_API_KEY` (и, по желанию, `ANTHROPIC_API_KEY`, `OPENAI_API_KEY`). Ollama установлен и проверен (`codesign`/`spctl`), модель скачана.
 
 Правило для всей практики: в DeepSeek уходят только учебные вопросы. Никаких данных клиентов, рабочего кода, логов, содержимого баз и `.env`.
 
@@ -335,7 +335,7 @@ while True:
     print(f"\n[in={usage.input_tokens} out={usage.output_tokens}]")
 ```
 
-Проверка: пишем «меня зовут Анна, я веду небольшой интернет-магазин посуды и подарков», через 3 реплики спрашиваем «чем я занимаюсь?». Потом `/reset` и тот же вопрос — модель не должна знать. Смотрим, как растёт `input_tokens` (у DeepSeek и Ollama — `prompt_tokens`) с каждой репликой. У DeepSeek заодно смотрим на `prompt_cache_hit_tokens`: история — это повторяющийся префикс, и он начнёт попадать в кэш (подробно — глава 2.7 · Стриминг, ретраи, rate limits, prompt caching).
+Проверка: пишем «меня зовут Анна, я веду небольшой интернет-магазин посуды и подарков», через 3 реплики спрашиваем «чем я занимаюсь?». Потом `/reset` и тот же вопрос — модель не должна знать. Смотрим, как растёт `input_tokens` (у DeepSeek и Ollama — `prompt_tokens`) с каждой репликой. У DeepSeek заодно смотрим на `prompt_cache_hit_tokens`: история — это повторяющийся префикс, и он начнёт попадать в кэш (подробно — глава 2.7 · Стриминг, ретраи, rate limits, prompt caching (AIL-11)).
 - [ ] **5. Стриминг.** Делаем в `chat.py` вывод по мере генерации: для DeepSeek/Ollama — `stream=True` + `stream_options={"include_usage": True}`, usage — из последнего чанка (у него пустой `choices`). Для сравнения у Claude — `messages.stream` и `get_final_message()`.
 - [ ] **6. Упереться в лимит.** Просим «Напиши подробное эссе про историю чая» с `max_tokens=50`. Ожидаемо: `finish_reason == "length"` у DeepSeek и Ollama (нативно у Ollama — `done_reason == "length"`). Для сравнения: `stop_reason == "max_tokens"` у Claude, `status == "incomplete"` с причиной `max_output_tokens` у OpenAI. Добиваемся, чтобы чат печатал предупреждение `⚠ ответ обрезан`. Включаем у DeepSeek размышление и повторяем с `max_tokens=50` — что окажется в `content`?
 - [ ] **6б. Контекст Ollama.** Вставляем в чат с Ollama текст на ~6000 токенов (например, публичную документацию API службы доставки) и спрашиваем о его начале. С контекстом по умолчанию (4096) модель «не увидит» начала; с `options={"num_ctx": 8192}` в нативном API — увидит. Смотрим в системном мониторе (Activity Monitor на macOS), сколько памяти заняла модель (на машине с 8 ГБ контекст сильно выше не поднимаем).

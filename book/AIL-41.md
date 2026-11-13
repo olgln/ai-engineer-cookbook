@@ -34,7 +34,7 @@
 
 | Вариант | Плюсы | Минусы | Как подключить MCP |
 |---|---|---|---|
-| Свой цикл (AIL-38 + AIL-65) | Полный контроль, всё видно, нет зависимостей | Клиент MCP, ретраи и трассировку пишем сами | MCP Python SDK содержит клиент: `ClientSession` + stdio |
+| Свой цикл (AIL-38 + AIL-65) | Полный контроль, всё видно, нет зависимостей | Клиент MCP, ретраи и трассировку пишем сами | MCP Python SDK содержит клиент: `Client` + stdio, как в `bridge.py` (в v1 — `ClientSession`) |
 | [LangGraph](https://langchain-ai.github.io/langgraph/) | Агент как граф состояний: явные узлы, ветвления, checkpoint, interrupt для human-in-the-loop | Абстракции LangChain, быстро меняется API | Через адаптеры MCP для LangChain (сверяемся с документацией) |
 | [OpenAI Agents SDK](https://openai.github.io/openai-agents-python/) | Простые примитивы: Agent, tools, handoffs, guardrails, встроенный tracing | Заточен под модели OpenAI (другие — через адаптеры) | Есть поддержка MCP-серверов (см. раздел MCP в документации) |
 | [Claude Agent SDK](https://github.com/anthropics/claude-agent-sdk-python) | Цикл Claude Code как библиотека: управление контекстом, MCP, разрешения, хуки | Имеет **встроенные мощные инструменты** (Bash, запись файлов, веб) — их нужно явно выключить | `mcp_servers` в опциях, разрешённые инструменты по имени |

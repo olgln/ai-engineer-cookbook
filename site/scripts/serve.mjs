@@ -21,8 +21,15 @@ http
   .createServer((req, res) => {
     const url = new URL(req.url, 'http://localhost');
     if (url.pathname === PROGRESS_API_PATH) return api(req, res);
-    let file = path.normalize(path.join(DIST, decodeURIComponent(url.pathname)));
-    if (!file.startsWith(DIST)) { res.statusCode = 403; return res.end(); }
+    let pathname;
+    try {
+      pathname = decodeURIComponent(url.pathname);
+    } catch {
+      res.statusCode = 400;
+      return res.end();
+    }
+    let file = path.normalize(path.join(DIST, pathname));
+    if (file !== DIST && !file.startsWith(DIST + path.sep)) { res.statusCode = 403; return res.end(); }
     if (fs.existsSync(file) && fs.statSync(file).isDirectory()) file = path.join(file, 'index.html');
     if (!fs.existsSync(file)) {
       res.statusCode = 404;

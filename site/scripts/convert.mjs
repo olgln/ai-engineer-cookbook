@@ -26,7 +26,8 @@ const RE = {
   // [text](AIL-N.md#anchor)
   fileLink: new RegExp(`\\]\\(${PREFIX}(\\d+)\\.md(#[^)]*)?\\)`, 'g'),
   // "1.2 · Title (AIL-56)"
-  titledRef: new RegExp(`(\\d+\\.\\d+ · [^()\\[\\]]+?)\\s+\\(${PREFIX}(\\d+)\\)(?!\\])`, 'g'),
+  // the title may hold one level of parentheses: "9.5 · MCP-сервер (только чтение) (AIL-39)"
+  titledRef: new RegExp(`(\\d+\\.\\d+ · (?:[^()\\[\\]]|\\([^()\\[\\]]*\\))+?)\\s+\\(${PREFIX}(\\d+)\\)(?!\\])`, 'g'),
   // link text starting with the chapter code: "[AIL-19 · Chunking](...)"
   linkText: new RegExp(`\\[${PREFIX}(\\d+)(?=[^\\]]*\\]\\()`, 'g'),
   // bare AIL-N not already inside a link target

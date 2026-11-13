@@ -50,7 +50,7 @@ CREATE TABLE IF NOT EXISTS chunks (
   category      TEXT NOT NULL,          -- delivery | payment | returns | warranty | promo | orders | products
   archived      INTEGER NOT NULL DEFAULT 0,  -- 1 = old version, excluded from search by default
   doc           TEXT NOT NULL,          -- page: kb/returns.md (or the web page URL)
-  url           TEXT NOT NULL,          -- citation target: kb/returns.md#vozvrat-vskrytogo-chaya
+  url           TEXT NOT NULL,          -- citation target: kb/returns.md#opened-tea-returns
   section       TEXT,
   text          TEXT NOT NULL,
   doc_hash      TEXT NOT NULL,          -- hash of the whole page content
@@ -145,20 +145,20 @@ sources.yaml ─► load (kb/*.md: front matter → метаданные)
 |---|---|---|
 | Правила магазина | `kb/delivery.md`, `payment.md`, `returns.md`, `warranty.md`, `promo.md`, `orders.md` | Длинные страницы с таблицами; ссылка раздела = файл + якорь |
 | Архив | `kb/returns-2025.md` (`archived: true`) | Старая версия правил возврата — ловушка для retrieval |
-| Карточки товаров | `kb/products/*.md` | Много коротких страниц; есть похожие (`lamp-svet.md` и `lamp-svet-mini.md` с разной гарантией) |
+| Карточки товаров | `kb/products/*.md` | Много коротких страниц; есть похожие (`lamp-light.md` и `lamp-light-mini.md` с разной гарантией) |
 
 Каждый файл начинается с front matter — отсюда `load.py` берёт метаданные:
 
 ```markdown
 ---
-title: Возврат и обмен
+title: Возврат товара
 category: returns
 updated: 2026-03-01
 ---
 
-# Возврат и обмен
+# Возврат товара
 
-## Возврат вскрытого чая {#vozvrat-vskrytogo-chaya}
+## Возврат вскрытого чая {#opened-tea-returns}
 ```
 
 `load.py` разбирает front matter (`yaml.safe_load`), проверяет `category` по допустимому списку и падает с именем файла, если front matter нет или он битый; в текст чанков front matter не попадает. Список источников держим в `sources.yaml`, а не в коде.
@@ -171,11 +171,11 @@ HTML → Markdown: сначала вырезаем основной контен
 
 ### Ссылка с якорем
 
-Для цитат (AIL-23) у чанка должна быть ссылка, ведущая как можно ближе к месту: `kb/returns.md#vozvrat-vskrytogo-chaya`, а не просто `kb/returns.md`. Заголовкам даём стабильные id: явный `{#anchor}` или детерминированный slug из текста заголовка. Явный id лучше — он не меняется, когда заголовок переформулируют. У веб-страницы якоря обычно есть в `id` у заголовков HTML — сохраняем их на этапе чистки. Якорь раздела записываем в `url` чанка.
+Для цитат (AIL-23) у чанка должна быть ссылка, ведущая как можно ближе к месту: `kb/returns.md#opened-tea-returns`, а не просто `kb/returns.md`. Заголовкам даём стабильные id: явный `{#anchor}` или детерминированный slug из текста заголовка. Явный id лучше — он не меняется, когда заголовок переформулируют. У веб-страницы якоря обычно есть в `id` у заголовков HTML — сохраняем их на этапе чистки. Якорь раздела записываем в `url` чанка.
 
 ## DeepSeek и Ollama: как это сделать у нас
 
-Индексация — единственное место проекта, где модель вызывается сотни и тысячи раз подряд, и это только эмбеддинги. У DeepSeek их нет (глава 4.1 · Эмбеддинги руками на numpy), поэтому весь ingestion работает **локально и бесплатно**: Ollama или Sentence Transformers. Облачный ключ для `ingest.py` не нужен вообще.
+Индексация — единственное место проекта, где модель вызывается сотни и тысячи раз подряд, и это только эмбеддинги. У DeepSeek их нет — это разобрано в главе 4.1 · Эмбеддинги руками на numpy (AIL-18). Поэтому весь ingestion работает **локально и бесплатно**: Ollama или Sentence Transformers. Облачный ключ для `ingest.py` не нужен вообще.
 
 ### `embed.py` с выбором бэкенда
 

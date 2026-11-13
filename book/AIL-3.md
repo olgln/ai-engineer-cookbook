@@ -31,7 +31,7 @@ prompt tokens ──▶ [ model ] ──▶ P(next token) ──▶ sample one �
 Модель не видит буквы и слова — она видит **токены**: куски текста из фиксированного словаря (десятки–сотни тысяч элементов), который строится алгоритмом вроде BPE (byte pair encoding): частые последовательности байтов склеиваются в один токен.
 
 ```
-"Delivery cost for MUG-SEVER-350"  →  ["Del", "ivery", " cost", " for", " MUG", "-SE", "VER", "-", "350"]   (illustrative)
+"Delivery cost for MUG-NORTH-350"  →  ["Del", "ivery", " cost", " for", " MUG", "-N", "ORTH", "-", "350"]   (illustrative)
 ```
 
 Что из этого следует на практике:
@@ -91,7 +91,7 @@ The Illustrated Transformer из маршрута разбирает это ка
 | Не знает свежих событий | knowledge cutoff | поиск, свежие данные в контексте |
 | Игнорирует инструкцию в середине длинного промпта | ослабленное внимание к середине | структура, повтор важного, короче контекст |
 | Разные ответы на одинаковый вопрос | сэмплирование | низкая temperature, structured output, evals |
-| «Слушается» текста из документа | для модели инструкции и данные — один поток токенов | разделение данных и инструкций, защита от prompt injection (неделя 10) |
+| «Слушается» текста из документа | для модели инструкции и данные — один поток токенов | разделение данных и инструкций, защита от prompt injection (неделя 9) |
 
 ### 7. Ключи API, деньги и безопасность
 
@@ -147,7 +147,7 @@ DeepSeek обрабатывает запросы в Китае; бесплатн
 | `deepseek-flash` | 1M | дешёвая основная; режимы thinking и non-thinking (по умолчанию thinking), есть vision |
 | `deepseek-v4-pro` | 1M | сильнее и дороже; thinking/non-thinking; vision нет |
 
-Цена за 1M токенов, USD. «Cache hit» — часть входа, которая совпала с префиксом недавних запросов (кеширование у DeepSeek автоматическое, подробно в главе 2.7 · Стриминг, ретраи, rate limits, prompt caching). Днём по будням есть пиковые часы (01:00–04:00 и 06:00–10:00 UTC, пн–пт), в них цена вдвое выше:
+Цена за 1M токенов, USD. «Cache hit» — часть входа, которая совпала с префиксом недавних запросов (кеширование у DeepSeek автоматическое, подробно в главе 2.7 · Стриминг, ретраи, rate limits, prompt caching (AIL-11)). Днём по будням есть пиковые часы (01:00–04:00 и 06:00–10:00 UTC, пн–пт), в них цена вдвое выше:
 
 | | flash, вне пика | flash, пик | pro, вне пика | pro, пик |
 |---|---|---|---|---|
@@ -186,7 +186,7 @@ Ollama — программа, которая будет работать пос
 ```bash
 ollama pull llama3.2:3b      # ~2.0 GB, 128K context, supports tools — quick checks
 ollama pull qwen3:4b         # ~2.5 GB, tools + thinking — tool calling later
-ollama pull nomic-embed-text # embeddings for week 4 (alternatives: embeddinggemma, bge-m3)
+ollama pull bge-m3           # embeddings for week 4 (alternatives: embeddinggemma, nomic-embed-text)
 ollama list                  # what is downloaded
 ollama ps                    # what is loaded in memory right now
 ```
@@ -196,7 +196,7 @@ ollama ps                    # what is loaded in memory right now
 - **16 ГБ** — комфортны модели 7–8B.
 - **32 ГБ и больше** — 14B и крупнее; 30B+ — для 32–64 ГБ.
 
-Модель по умолчанию в курсе — `qwen3:4b`: она работает даже на 8 ГБ, и все примеры рассчитаны на неё. Если памяти больше, можно взять модель крупнее. Скачиваем только из библиотеки ollama.com или официальных организаций на Hugging Face.
+Модель по умолчанию в курсе — `qwen3:4b`: она работает даже на 8 ГБ, и все примеры начиная с недели 2 рассчитаны на неё. `llama3.2:3b` нужна только для быстрой проверки установки: она отвечает без режима рассуждений, и короткий ответ не съедается лимитом токенов. Если памяти больше, можно взять модель крупнее. Скачиваем только из библиотеки ollama.com или официальных организаций на Hugging Face.
 
 ### Первый вызов: одна библиотека на оба провайдера
 
@@ -252,9 +252,9 @@ ask(ollama, os.environ["OLLAMA_MODEL"])
 
 ## Маршрут изучения
 
-1. [Intro to Large Language Models — Андрей Карпатый](https://www.youtube.com/watch?v=zjkBMFhNj_g) (1 ч, обязательно; с паузами ≈1,5 ч). Смотрим с блокнотом. Берём: «LLM = два файла» (параметры + код запуска), pretraining как сжатие интернета, стадии обучения, LLM как «операционная система», раздел про безопасность (jailbreak, prompt injection) — он вернётся на неделе 10.
+1. [Intro to Large Language Models — Андрей Карпатый](https://www.youtube.com/watch?v=zjkBMFhNj_g) (1 ч, обязательно; с паузами ≈1,5 ч). Смотрим с блокнотом. Берём: «LLM = два файла» (параметры + код запуска), pretraining как сжатие интернета, стадии обучения, LLM как «операционная система», раздел про безопасность (jailbreak, prompt injection) — он вернётся на неделе 9.
 2. [The Illustrated Transformer — Jay Alammar](https://jalammar.github.io/illustrated-transformer/) (≈45 мин). Читаем до раздела про декодер включительно; формулы можно пропускать. Берём: что такое embedding, как self-attention смешивает информацию токенов, зачем positional encoding. Не застреваем: цель — интуиция, а не реализация.
-3. [OpenAI Tokenizer](https://platform.openai.com/tokenizer) (≈10 мин). Вставляем: английское предложение, то же по-русски, число `97342.15`, артикул товара `MUG-SEVER-350`, кусок JSON. Сравниваем число токенов и как режутся числа.
+3. [OpenAI Tokenizer](https://platform.openai.com/tokenizer) (≈10 мин). Вставляем: английское предложение, то же по-русски, число `97342.15`, артикул товара `MUG-NORTH-350`, кусок JSON. Сравниваем число токенов и как режутся числа.
 4. [Deep Dive into LLMs like ChatGPT — Карпатый](https://www.youtube.com/watch?v=7xTGNNLPyMI) (3,5 ч, **частями в течение первых недель**, по 30–40 мин). Сейчас — первый час: данные pretraining, токенизация, обучение нейросети, инференс. Остальное — галлюцинации и использование инструментов, «модели нужны токены, чтобы думать», RL и reasoning — по ходу недель 1–2.
 5. (Опционально) [3Blue1Brown — Neural Networks](https://www.youtube.com/playlist?list=PLZHQObOWTQDNU6R1_67000Dx_ZCJB-3pi) — главы про трансформеры и attention (≈1 ч), если хочется визуальной интуиции глубже Alammar.
 6. **DeepSeek** (≈30 мин): [Quick start](https://api-docs.deepseek.com) (base URL, первый вызов), [Models & Pricing](https://api-docs.deepseek.com/quick_start/pricing) (модели, cache hit/miss, пиковые часы), [Thinking Mode](https://api-docs.deepseek.com/guides/thinking_mode) (что игнорируется в thinking, `reasoning_content`), [Rate Limit](https://api-docs.deepseek.com/quick_start/rate_limit) (лимит параллельных запросов, 429), [Token & Token Usage](https://api-docs.deepseek.com/quick_start/token_usage). Потом [platform.deepseek.com/api_keys](https://platform.deepseek.com/api_keys): пополнение и ключ. Берём: имена моделей на сегодня, цену входа/выхода, что thinking включён по умолчанию.
@@ -385,7 +385,7 @@ ask(ollama, os.environ["OLLAMA_MODEL"])
 12. Ошибка в первом же скрипте (бесконечные ретраи, неограниченный параллелизм) может потратить деньги до того, как дойдут руки до лимита; лимит и небольшая предоплата ограничивают ущерб с первой минуты. У DeepSeek роль лимита играет маленький предоплаченный баланс.
 13. **c.** Персональные данные покупателей нельзя отправлять в DeepSeek (серверы в Китае) и в облачные модели Ollama (выполняются на серверах Ollama). Только локальная модель, скачанная через `ollama pull`. И итоги всё равно считает код — модель только описывает готовые цифры.
 14. По умолчанию у DeepSeek включён режим thinking, а в нём `temperature` не действует (ошибки нет, эффекта тоже). Для экспериментов с температурой выключаем thinking: `extra_body={"thinking": {"type": "disabled"}}`.
-15. Клиент смотрит в локальную Ollama, а модель указана облачная, DeepSeek, — Ollama её не знает. К тому же эмбеддингов в документации DeepSeek нет вовсе. Нужна локальная embedding-модель, скачанная в Ollama, например `nomic-embed-text`.
+15. Клиент смотрит в локальную Ollama, а модель указана облачная, DeepSeek, — Ollama её не знает. К тому же эмбеддингов в документации DeepSeek нет вовсе. Нужна локальная embedding-модель, скачанная в Ollama, например `bge-m3`.
 
 ## Что дальше
 

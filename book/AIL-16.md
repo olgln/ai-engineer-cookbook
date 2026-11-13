@@ -227,14 +227,14 @@ def deepseek_cost(model: str, u: Usage, ts_utc) -> float:
 ## Маршрут изучения
 
 1. Открываем [Python: logging HOWTO](https://docs.python.org/3/howto/logging.html) → Basic Tutorial и начало Advanced Tutorial (loggers, handlers, formatters) (≈30 мин). Берём: `logging.getLogger(__name__)`, `log.exception` пишет traceback; для журнала запросов отдельный JSONL-файл проще, чем logging-handler.
-2. [Python: json](https://docs.python.org/3/library/json.html) → `json.dumps(..., ensure_ascii=False)` (≈5 мин) — иначе русский текст вопросов станет `к...`.
+2. [Python: json](https://docs.python.org/3/library/json.html) → `json.dumps(..., ensure_ascii=False)` (≈5 мин) — иначе русский текст вопросов станет `\u043a...`.
 3. [DeepSeek: Models & Pricing](https://api-docs.deepseek.com/quick_start/pricing) → цены cache hit / cache miss / output, пиковые часы (≈10 мин). Дату проверки записываем в `pricing.py`.
 4. [DeepSeek: Context Caching](https://api-docs.deepseek.com/guides/kv_cache) и [Create Chat Completion](https://api-docs.deepseek.com/api/create-chat-completion) → поля `usage` (`prompt_cache_hit_tokens`, `prompt_cache_miss_tokens`, `reasoning_tokens`), как работает автоматический кэш (≈15 мин).
 5. [Ollama: Chat API](https://docs.ollama.com/api/chat) → поля ответа `prompt_eval_count`, `eval_count`, длительности в наносекундах, `load_duration` (≈10 мин).
 6. (Для сравнения) [Anthropic: Pricing](https://docs.anthropic.com/en/docs/about-claude/pricing) и [Anthropic: Prompt caching](https://docs.anthropic.com/en/docs/build-with-claude/prompt-caching) → цены и поля usage для кэша (≈15 мин). Сравниваем: явные `cache_control` у Anthropic против автоматического кэша DeepSeek.
-5. [GitHub: Creating diagrams](https://docs.github.com/en/get-started/writing-on-github/working-with-advanced-formatting/creating-diagrams) → Mermaid flowchart (≈10 мин) — для схемы в README.
-6. [GitHub: Basic writing and formatting syntax](https://docs.github.com/en/get-started/writing-on-github/getting-started-with-writing-and-formatting-on-github/basic-writing-and-formatting-syntax) → изображения, таблицы, блоки кода (≈10 мин).
-7. README 2–3 известных проектов (например, [Anthropic Cookbook](https://github.com/anthropics/anthropic-cookbook), [Instructor](https://github.com/instructor-ai/instructor)) → как устроены первые экраны: что видно за 30 секунд (≈15 мин).
+7. [GitHub: Creating diagrams](https://docs.github.com/en/get-started/writing-on-github/working-with-advanced-formatting/creating-diagrams) → Mermaid flowchart (≈10 мин) — для схемы в README.
+8. [GitHub: Basic writing and formatting syntax](https://docs.github.com/en/get-started/writing-on-github/getting-started-with-writing-and-formatting-on-github/basic-writing-and-formatting-syntax) → изображения, таблицы, блоки кода (≈10 мин).
+9. README 2–3 известных проектов (например, [Anthropic Cookbook](https://github.com/anthropics/anthropic-cookbook), [Instructor](https://github.com/instructor-ai/instructor)) → как устроены первые экраны: что видно за 30 секунд (≈15 мин).
 
 ## На что обратить внимание
 

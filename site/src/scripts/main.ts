@@ -358,8 +358,19 @@ async function initMermaid() {
   }).observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
 }
 
+// ---------------- external links ----------------
+/** Links to other sites open in a new tab; links inside the study site stay in the same tab. */
+function openExternalLinksInNewTab() {
+  for (const a of $$<HTMLAnchorElement>('a[href]')) {
+    if (!/^https?:$/.test(a.protocol) || a.origin === location.origin) continue;
+    a.target = '_blank';
+    a.rel = 'noopener noreferrer';
+  }
+}
+
 // ---------------- boot ----------------
 async function boot() {
+  openExternalLinksInNewTab();
   void initMermaid();
   await P.load();
   $$<HTMLElement>('.quiz').forEach(initQuiz);

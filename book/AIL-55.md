@@ -77,7 +77,7 @@
 Пример (EN, цифры и отрасль — плейсхолдеры, подставляем свои):
 
 > Hi, I'm applying for the AI Engineer role on your support automation team.
-> You mention grounding answers in internal docs and measuring quality before release — that's exactly what I built: a support assistant over an online shop's help center that cites the exact section and hands off to a human when the answer isn't there; hybrid search and a reranker raised recall@5 from 0.71 to 0.89 on an 80-question eval set (repo: github.com/<you>/support-kb-rag, write-up: <link>).
+> You mention grounding answers in internal docs and measuring quality before release — that's exactly what I built: a support assistant over an online shop's help center that cites the exact section and hands off to a human when the answer isn't there; hybrid search and a reranker raised hit@5 from 0.71 to 0.89 on an 80-question eval set (repo: github.com/<you>/support-kb-rag, write-up: <link>).
 > Before moving into LLM work, I spent <N> years building backend services in <industry> — order processing, integrations with payment and delivery providers — so I'm used to production reliability, retries and cost control.
 > Happy to walk through the design and evals. — <Name>, github.com/<you> · linkedin.com/in/<you>
 

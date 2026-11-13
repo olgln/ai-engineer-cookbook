@@ -260,7 +260,7 @@ exercises/week-09/
 - [ ] (для сравнения, по желанию) Та же обёртка на `anthropic` / `openai` с их нативным structured output — смотрим, сколько кода ремонта JSON становится не нужно.
 - [ ] **01_chaining.py.** Цепочка из четырёх шагов:
   1. `extract(message) -> ProductUpdate` — модель из главы 2.2 (`product`, `supplier`, `update_type`) плюс `new_price` из 2.5;
-  2. gate: `update_type` не `None`; для `price_change` и `discontinued` товар однозначно находится в `products.json`. Иначе вывести «не про товар», «товар не найден» или «неоднозначно: LAMP-SVET, LAMP-SVET-MINI» и выйти;
+  2. gate: `update_type` не `None`; для `price_change` и `discontinued` товар однозначно находится в `products.json`. Иначе вывести «не про товар», «товар не найден» или «неоднозначно: LAMP-LIGHT, LAMP-LIGHT-MINI» и выйти;
   3. `draft_card(update) -> {"title": str, "text": str}` — до 400 символов, на русском;
   4. `check(draft, message) -> {"ok": bool, "problems": list[str]}` — LLM ищет факты, которых нет в письме; код сверяет цену с `new_price`. При `ok` — файл `outputs/drafts/<sku>.md`, иначе печать проблем.
   Прогоняем на 5 сообщениях на `deepseek` и на `ollama`; одно не про товар, одно с неоднозначным «Свет». Ожидаемо: эти два останавливаются на gate, остальные дают черновик. Записываем, сколько раз у каждого провайдера сработал повтор в `ask_json`.

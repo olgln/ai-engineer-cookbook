@@ -31,7 +31,7 @@ llm_utils.call_llm()     tools.run_tool(name, input)   ← валидация Py
 
 ### 2. Цикл агента
 
-Ниже цикл в формате Anthropic, как в главе 2.6 · Tool calling. Рабочая версия бота — на OpenAI-формате для Ollama и DeepSeek, она в разделе «DeepSeek и Ollama» ниже; логика та же, отличаются имена полей.
+Ниже цикл в формате Anthropic, как в главе 2.6 · Tool calling: модель вызывает 3 функции (AIL-10). Рабочая версия бота — на OpenAI-формате для Ollama и DeepSeek, она в разделе «DeepSeek и Ollama» ниже; логика та же, отличаются имена полей.
 
 ```python
 # bot/agent.py (illustrative, Anthropic format - kept for comparison)

@@ -131,7 +131,7 @@ def dedup(questions: list[str], vectors: np.ndarray, threshold: float = 0.9) -> 
  "reference_answer": "Нет: чай и кофе на развес во вскрытой упаковке возврату не подлежат.",
  "must_include": ["вскрытый чай не возвращается"],
  "evidence": ["Чай и кофе на развес во вскрытой упаковке возврату не подлежат."],
- "source_chunk_keys": ["3f9a…"], "source_urls": ["kb/returns.md#vozvrat-vskrytogo-chaya"],
+ "source_chunk_keys": ["3f9a…"], "source_urls": ["kb/returns.md#opened-tea-returns"],
  "category": "returns", "type": "factual", "handoff": null, "difficulty": "easy",
  "tags": ["colloquial"], "origin": "synthetic", "reviewed": false,
  "generator": {"model": "...", "prompt_version": "gen-v1"}}
@@ -141,7 +141,7 @@ def dedup(questions: list[str], vectors: np.ndarray, threshold: float = 0.9) -> 
 
 ### Промпт генератора
 
-Пример (иллюстративный; вызов SDK см. в главах про structured output недель 2–3 и в текущей документации провайдера):
+Пример (иллюстративный; вызов SDK см. в главе [2.2 · Structured output: Pydantic + Instructor](AIL-8.md) и в текущей документации провайдера):
 
 ```python
 GEN_PROMPT = """You create test questions for the customer support assistant of the online shop "Полка"
@@ -313,7 +313,7 @@ vectors = embed([c["q"] for c in candidates])
 kept = dedup([c["q"] for c in candidates], vectors, threshold=0.9)
 ```
 
-Вопросы у нас на русском, с опечатками и вкраплениями латиницы (`LAMP-SVET-MINI`, `TEA15`), поэтому нужна многоязычная модель эмбеддингов: `bge-m3` из библиотеки Ollama (567M параметров, выбор курса по умолчанию, помещается и в 8 ГБ). Если индекс проекта 2 построен другой моделью, для поиска дублей это не страшно, но порог подбираем заново по примерам.
+Вопросы у нас на русском, с опечатками и вкраплениями латиницы (`LAMP-LIGHT-MINI`, `TEA15`), поэтому нужна многоязычная модель эмбеддингов: `bge-m3` из библиотеки Ollama (567M параметров, выбор курса по умолчанию, помещается и в 8 ГБ). Если индекс проекта 2 построен другой моделью, для поиска дублей это не страшно, но порог подбираем заново по примерам.
 
 ### Сравнение провайдеров для этой главы
 
@@ -366,11 +366,12 @@ kept = dedup([c["q"] for c in candidates], vectors, threshold=0.9)
 - [ ] Проверяем вручную минимум 30. Записываем в `notes/evals.md`: сколько принято, сколько отклонено и по каким причинам (копипаст, неверный эталон, неоднозначный, бессмысленный, «не похоже на клиента»).
 - [ ] Прогоняем принятые вопросы о своём заказе через `ask()`: ни один с номером не дошёл до облака, причина в `outputs/handoff.jsonl` совпадает с полем `handoff` (`personal_data` или `refused`).
 
-Ожидаемо: из 60 кандидатов после фильтров остаётся ~40–50, после ручной проверки ~25–35. Если принято меньше половины, улучшаем промпт генератора и повторяем на 20 штуках.
 - [ ] Основной генератор — DeepSeek: клиент OpenAI SDK с `base_url="https://api.deepseek.com"`, ключ `DEEPSEEK_API_KEY` из окружения, JSON mode, ретрай на пустой `content`, запись `resp.model` в поле `generator`.
 - [ ] Эмбеддинги для `dedup` через Ollama (`ollama pull bge-m3` или другая многоязычная модель из официальной библиотеки); версию библиотеки `ollama` закрепляем в `pyproject.toml`.
 - [ ] (Опционально) Генерируем те же 20 комбинаций локальной моделью через `format=Candidate.model_json_schema()` и сравниваем долю брака с DeepSeek. Записываем в `notes/evals.md`.
 - [ ] (Опционально, для сравнения) Прогоняем исходный скелет на Anthropic SDK или OpenAI на тех же 20 комбинациях: доля брака и цена против DeepSeek.
+
+Ожидаемо: из 60 кандидатов после фильтров остаётся ~40–50, после ручной проверки ~25–35. Если принято меньше половины, улучшаем промпт генератора и повторяем на 20 штуках.
 
 ## Готово, когда
 
