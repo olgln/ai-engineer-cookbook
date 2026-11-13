@@ -290,7 +290,7 @@ Python-библиотека `ollama` умеет и сама превращать
   ```python
   TOOLS = {
       "get_sales": (GetSalesArgs, get_sales, "description for the model..."),
-      ...
+      # ... one entry per tool
   }
   def tool_definitions(fmt="openai") -> list[dict]: ...   # OpenAI format by default, "anthropic" for comparison
   ```
