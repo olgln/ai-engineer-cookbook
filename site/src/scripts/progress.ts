@@ -22,6 +22,7 @@ const API = '/api/progress';
 
 let state: Progress = { version: 1, chapters: {} };
 export let storage: 'file' | 'browser' = 'browser';
+export let storagePath = '';
 const listeners = new Set<() => void>();
 
 function normalize(raw: unknown): Progress {
@@ -56,6 +57,7 @@ export async function load(): Promise<Progress> {
     if (!res.ok || !(res.headers.get('content-type') ?? '').includes('json')) throw new Error('no api');
     const file = normalize(await res.json());
     storage = 'file';
+    storagePath = decodeURIComponent(res.headers.get('x-progress-file') ?? '');
     // first run with the file: keep whatever the browser already had
     if (isEmpty(file) && !isEmpty(local)) {
       state = local!;
