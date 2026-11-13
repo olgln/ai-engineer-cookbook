@@ -16,6 +16,7 @@ site/src/chapters.json
 site/progress.json
 site/progress.json.tmp
 
-# secrets, just in case
+# local settings and secrets; only the example is committed
 .env
 .env.*
+!.env.example

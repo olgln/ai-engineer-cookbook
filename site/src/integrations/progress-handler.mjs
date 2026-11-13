@@ -1,26 +1,20 @@
-// Shared handler for GET/PUT /api/progress.
-// Progress lives outside the repo so nobody has to commit it:
-// $PROGRESS_FILE, or ~/.ai-engineer-cookbook/progress.json by default.
+// Shared handler for GET/PUT of the progress API.
+// Progress lives outside the repo so nobody has to commit it; the location comes
+// from PROGRESS_FILE (see .env.example and src/config/server.mjs).
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
-
-export function progressFile() {
-  const custom = process.env.PROGRESS_FILE?.trim();
-  if (custom) return path.resolve(custom.replace(/^~(?=$|\/)/, os.homedir()));
-  return path.join(os.homedir(), '.ai-engineer-cookbook', 'progress.json');
-}
+import { PROGRESS_FILE_HEADER } from '../config/app.mjs';
+import { config } from '../config/server.mjs';
 
 /** Path for display: home directory shortened to ~ */
 const displayPath = (file) => (file.startsWith(os.homedir() + path.sep) ? '~' + file.slice(os.homedir().length) : file);
 
-const MAX_BYTES = 2 * 1024 * 1024;
-
-export function progressHandler(file = progressFile()) {
+export function progressHandler(file = config.progressFile, maxBytes = config.progressMaxBytes) {
   return (req, res) => {
     const send = (code, body) => {
       res.statusCode = code;
-      res.setHeader('X-Progress-File', encodeURIComponent(displayPath(file)));
+      res.setHeader(PROGRESS_FILE_HEADER, encodeURIComponent(displayPath(file)));
       res.setHeader('Content-Type', 'application/json; charset=utf-8');
       res.setHeader('Cache-Control', 'no-store');
       res.end(body);
@@ -33,7 +27,7 @@ export function progressHandler(file = progressFile()) {
     const chunks = [];
     req.on('data', (c) => {
       size += c.length;
-      if (size > MAX_BYTES) req.destroy();
+      if (size > maxBytes) req.destroy();
       else chunks.push(c);
     });
     req.on('end', () => {

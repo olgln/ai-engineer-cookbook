@@ -1,5 +1,9 @@
 import * as P from './progress';
 import chapters from '../chapters.json';
+import strings from '../locales/ru.json';
+import { format, plural as pluralForm } from '../locales/format.mjs';
+
+const ui = strings.ui;
 
 const $$ = <T extends Element = HTMLElement>(sel: string, root: ParentNode = document) =>
   Array.from(root.querySelectorAll<T & Element>(sel)) as unknown as T[];
@@ -13,12 +17,7 @@ function el<K extends keyof HTMLElementTagNameMap>(tag: K, props: Partial<HTMLEl
   return node;
 }
 
-const plural = (n: number, one: string, few: string, many: string) => {
-  const m10 = n % 10, m100 = n % 100;
-  if (m10 === 1 && m100 !== 11) return one;
-  if (m10 >= 2 && m10 <= 4 && (m100 < 12 || m100 > 14)) return few;
-  return many;
-};
+const plural = (n: number, forms: Record<string, string>) => pluralForm(strings.lang, n, forms);
 
 // ---------------- stats ----------------
 interface QuizStats { total: number; answered: number; correct: number }
@@ -43,8 +42,8 @@ const sameSet = (a: string[], b: string[]) => a.length === b.length && a.every((
 function initQuiz(quiz: HTMLElement) {
   const id = quiz.dataset.chapter!;
   const summary = el('div', { class: 'quiz-summary' });
-  const showAll = el('button', { class: 'quiz-btn ghost', type: 'button', textContent: 'Показать все ответы' });
-  const reset = el('button', { class: 'quiz-btn ghost', type: 'button', textContent: 'Начать тест заново' });
+  const showAll = el('button', { class: 'quiz-btn ghost', type: 'button', textContent: ui.showAllAnswers });
+  const reset = el('button', { class: 'quiz-btn ghost', type: 'button', textContent: ui.restartQuiz });
   const bar = el('div', { class: 'quiz-toolbar' }, summary, el('div', { class: 'quiz-toolbar-actions' }, showAll, reset));
   quiz.prepend(bar);
 
@@ -54,22 +53,22 @@ function initQuiz(quiz: HTMLElement) {
   const renderSummary = () => {
     const s = quizStats(quiz, id);
     summary.textContent = s.answered
-      ? `Отвечено ${s.answered} из ${s.total} · верно ${s.correct}`
-      : `${s.total} ${plural(s.total, 'вопрос', 'вопроса', 'вопросов')}. Сначала ответь сам, потом проверяй.`;
+      ? format(ui.quizSummary, { ...s })
+      : format(ui.quizIntro, { total: s.total, questions: plural(s.total, ui.questions) });
     summary.classList.toggle('complete', s.answered === s.total && s.total > 0);
   };
   renderSummary();
   P.onChange(renderSummary);
 
   showAll.addEventListener('click', () => {
-    if (!confirm('Открыть ответы на все вопросы? Неотвеченные вопросы засчитаются как открытые без ответа.')) return;
+    if (!confirm(ui.confirmShowAll)) return;
     const st = (P.chapter(id).quiz ??= {});
     for (const q of $$<HTMLElement>('.quiz-q', quiz)) (st[q.dataset.n!] ??= {}).revealed = true;
     P.save();
     renders.forEach((r) => r());
   });
   reset.addEventListener('click', () => {
-    if (!confirm('Сбросить все ответы этого теста?')) return;
+    if (!confirm(ui.confirmResetQuiz)) return;
     P.chapter(id).quiz = {};
     P.save();
     renders.forEach((r) => r());
@@ -83,16 +82,16 @@ function initQuestion(q: HTMLElement, id: string): () => void {
   const options = $$<HTMLLIElement>('.quiz-options li', q);
   const actions = el('div', { class: 'quiz-actions' });
   answerBox.before(actions);
-  answerBox.prepend(el('p', { class: 'quiz-answer-label', textContent: 'Ответ' }));
+  answerBox.prepend(el('p', { class: 'quiz-answer-label', textContent: ui.answerLabel }));
 
   const st = () => ((P.chapter(id).quiz ??= {})[n] ??= {});
   let picked: string[] = [...(P.chapter(id).quiz?.[n]?.picked ?? [])];
 
-  const check = el('button', { class: 'quiz-btn primary', type: 'button', textContent: 'Проверить' });
-  const show = el('button', { class: 'quiz-btn', type: 'button', textContent: 'Показать ответ' });
-  const knew = el('button', { class: 'quiz-btn good', type: 'button', textContent: '✓ Знал' });
-  const didnt = el('button', { class: 'quiz-btn bad', type: 'button', textContent: '✗ Не знал' });
-  const again = el('button', { class: 'quiz-btn ghost', type: 'button', textContent: 'Ещё раз' });
+  const check = el('button', { class: 'quiz-btn primary', type: 'button', textContent: ui.check });
+  const show = el('button', { class: 'quiz-btn', type: 'button', textContent: ui.showAnswer });
+  const knew = el('button', { class: 'quiz-btn good', type: 'button', textContent: ui.knew });
+  const didnt = el('button', { class: 'quiz-btn bad', type: 'button', textContent: ui.didntKnow });
+  const again = el('button', { class: 'quiz-btn ghost', type: 'button', textContent: ui.again });
   const verdict = el('span', { class: 'quiz-verdict' });
 
   const letterOf = (li: HTMLLIElement) => (li.querySelector('strong')?.textContent ?? '').replace(/[^a-d]/g, '');
@@ -151,24 +150,24 @@ function initQuestion(q: HTMLElement, id: string): () => void {
     if (key) {
       if (!revealed) {
         check.disabled = !picked.length;
-        actions.append(check, el('span', { class: 'quiz-hint', textContent: key.length > 1 ? 'Несколько правильных вариантов' : '' }));
+        actions.append(check, el('span', { class: 'quiz-hint', textContent: key.length > 1 ? ui.multipleCorrect : '' }));
       } else {
         const ok = sameSet(s.picked ?? [], key);
-        verdict.textContent = !s.picked?.length ? 'Ответ открыт без попытки' : ok ? 'Верно' : 'Неверно';
+        verdict.textContent = !s.picked?.length ? ui.revealedWithoutAttempt : ok ? ui.correct : ui.wrong;
         verdict.className = `quiz-verdict ${s.picked?.length ? (ok ? 'good' : 'bad') : ''}`;
         q.classList.add(ok ? 'is-correct' : 'is-wrong');
         actions.append(verdict, again);
       }
     } else if (!revealed) {
-      actions.append(show, el('span', { class: 'quiz-hint', textContent: 'Сначала ответь сам: вслух или в заметках' }));
+      actions.append(show, el('span', { class: 'quiz-hint', textContent: ui.answerYourselfFirst }));
     } else {
       if (s.self) {
-        verdict.textContent = s.self === 'yes' ? 'Знал' : 'Не знал — вернись к теории';
+        verdict.textContent = s.self === 'yes' ? ui.verdictKnew : ui.verdictDidntKnow;
         verdict.className = `quiz-verdict ${s.self === 'yes' ? 'good' : 'bad'}`;
         q.classList.add(s.self === 'yes' ? 'is-correct' : 'is-wrong');
         actions.append(verdict, again);
       } else {
-        actions.append(el('span', { class: 'quiz-hint', textContent: 'Сравни со своим ответом:' }), knew, didnt);
+        actions.append(el('span', { class: 'quiz-hint', textContent: ui.compareWithYours }), knew, didnt);
       }
     }
   }
@@ -190,7 +189,7 @@ function initChecklist(box: HTMLElement) {
       inp.closest('li')?.classList.toggle('checked', inp.checked);
       if (inp.checked) done++;
     });
-    counter.textContent = `Выполнено ${done} из ${inputs.length}`;
+    counter.textContent = format(ui.checklistCount, { done, total: inputs.length });
     counter.classList.toggle('complete', done === inputs.length);
   };
   inputs.forEach((inp, i) => {
@@ -220,19 +219,19 @@ function initChapterDone(box: HTMLElement) {
     const inputs = $$('.done-list input[type="checkbox"]');
     const checks = Object.values(ch.checks ?? {}).filter(Boolean).length;
     const facts = el('ul', { class: 'chapter-done-facts' },
-      el('li', {}, `«Готово, когда»: ${checks} из ${inputs.length}`),
-      el('li', {}, `Тест: ${quiz.answered} из ${quiz.total} отвечено, верно ${quiz.correct}`),
+      el('li', {}, format(ui.doneFactChecklist, { heading: strings.book.doneHeading, done: checks, total: inputs.length })),
+      el('li', {}, format(ui.doneFactQuiz, { ...quiz })),
     );
     const btn = el('button', { type: 'button', class: `quiz-btn ${ch.done ? 'ghost' : 'primary'}` });
-    btn.textContent = ch.done ? 'Снять отметку' : 'Отметить главу пройденной';
+    btn.textContent = ch.done ? ui.unmarkChapter : ui.markChapterDone;
     btn.addEventListener('click', () => {
       if (ch.done) delete ch.done;
       else ch.done = new Date().toISOString();
       P.save();
     });
     const title = ch.done
-      ? `✓ Глава пройдена ${new Date(ch.done).toLocaleDateString('ru-RU', { day: 'numeric', month: 'long' })}`
-      : 'Закончил главу?';
+      ? format(ui.chapterDoneOn, { date: new Date(ch.done).toLocaleDateString(strings.dateLocale, { day: 'numeric', month: 'long' }) })
+      : ui.chapterDonePrompt;
     box.classList.toggle('is-done', !!ch.done);
     box.replaceChildren(el('p', { class: 'chapter-done-title', textContent: title }), facts, btn);
   };
@@ -281,18 +280,18 @@ function initIndex() {
     const total = chapters.length;
     const n = chapters.filter((c) => done(c.id)).length;
     const next = chapters.find((c) => !done(c.id));
-    const exp = el('button', { type: 'button', class: 'quiz-btn ghost', textContent: 'Экспорт прогресса' });
-    const imp = el('button', { type: 'button', class: 'quiz-btn ghost', textContent: 'Импорт' });
+    const exp = el('button', { type: 'button', class: 'quiz-btn ghost', textContent: ui.exportProgress });
+    const imp = el('button', { type: 'button', class: 'quiz-btn ghost', textContent: ui.importProgress });
     exp.addEventListener('click', exportProgress);
     imp.addEventListener('click', importProgress);
     overall.replaceChildren(
       el('div', { class: 'course-progress-head' },
-        el('strong', {}, `Пройдено ${n} из ${total} ${plural(total, 'главы', 'глав', 'глав')}`),
-        el('span', { class: 'storage-note', textContent: P.storage === 'file' ? `Сохраняется в ${P.storagePath || 'файл прогресса'}` : 'Сохраняется только в этом браузере' }),
+        el('strong', {}, format(ui.courseProgress, { done: n, total, chapters: plural(total, ui.chaptersOf) })),
+        el('span', { class: 'storage-note', textContent: P.storage === 'file' ? format(ui.savedTo, { path: P.storagePath || ui.progressFileFallback }) : ui.savedInBrowser }),
       ),
       bar(n, total),
       el('div', { class: 'course-progress-actions' },
-        ...(next ? [el('a', { class: 'quiz-btn primary', href: next.href, textContent: n ? `Продолжить: ${next.num} · ${next.title}` : `Начать: ${next.num} · ${next.title}` })] : [el('span', {}, 'Все главы пройдены 🎉')]),
+        ...(next ? [el('a', { class: 'quiz-btn primary', href: next.href, textContent: format(n ? ui.continueFrom : ui.startFrom, { chapter: `${next.num} · ${next.title}` }) })] : [el('span', {}, ui.allDone)]),
         exp, imp,
       ),
     );
@@ -323,12 +322,12 @@ function importProgress() {
     if (!f) return;
     try {
       const data = JSON.parse(await f.text());
-      if (!data?.chapters) throw new Error('нет поля chapters');
-      if (!confirm('Заменить текущий прогресс данными из файла?')) return;
+      if (!data?.chapters) throw new Error(ui.importMissingChapters);
+      if (!confirm(ui.confirmImport)) return;
       P.replaceAll(data);
       location.reload();
     } catch (e) {
-      alert(`Не получилось прочитать файл: ${(e as Error).message}`);
+      alert(format(ui.importFailed, { error: (e as Error).message }));
     }
   });
   input.click();
