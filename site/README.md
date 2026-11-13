@@ -25,6 +25,8 @@ Nothing has to be configured. To change a default, copy `.env.example` to `.env`
 
 Example: `PROGRESS_FILE=~/path/progress.json npm start`.
 
+The progress API answers only to local host names (`localhost`, `127.0.0.1`, `[::1]` and the `HOST` value) and refuses requests from other pages open in the browser. Keep `HOST` on `127.0.0.1`: the server has no authentication, so `0.0.0.0` would let anyone on the network read the site.
+
 ## Language
 
 Code, comments, logs and docs are in English. Russian is used only for what the reader sees on the site: the book (`book/*.md`), the course plan (root `README.md`) and the interface strings in `src/locales/ru.json`.

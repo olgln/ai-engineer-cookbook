@@ -73,7 +73,7 @@ from openai import OpenAI
 client = OpenAI()  # reads OPENAI_API_KEY from the environment
 resp = client.embeddings.create(
     model="text-embedding-3-small",
-    input=["можно ли вернуть вскрытый чай", "warranty for the Svet desk lamp"],  # batch of texts
+    input=["можно ли вернуть вскрытый чай", "warranty for the Light desk lamp"],  # batch of texts
 )
 vectors = [item.embedding for item in resp.data]
 ```
@@ -153,7 +153,7 @@ scores = M @ q  ──► argsort ──► топ-k текстов
 import numpy as np
 import ollama
 
-texts = ["можно ли вернуть вскрытый чай", "warranty for the Svet desk lamp"]
+texts = ["можно ли вернуть вскрытый чай", "warranty for the Light desk lamp"]
 res = ollama.embed(model="bge-m3", input=texts)   # a list -> one vector per text
 M = np.array(res["embeddings"], dtype=np.float32) # shape (2, 1024)
 print(M.shape, np.linalg.norm(M, axis=1))          # norms should be ~1.0
@@ -205,7 +205,7 @@ V = st.encode(texts, normalize_embeddings=True)    # numpy (N, 1024)
 | Куда уходят тексты | В облако Voyage | В облако OpenAI | — | Никуда, всё локально |
 | Обходной путь | Ollama / Sentence Transformers | — | Ollama / Sentence Transformers | — |
 
-Для полноты: OpenRouter (глава 2.4 · OpenRouter: один API ко многим моделям) тоже даёт эмбеддинги через `POST https://openrouter.ai/api/v1/embeddings` (в документации примеры `openai/text-embedding-3-small` и другие) — это вариант «облачные эмбеддинги без отдельного аккаунта OpenAI». Бесплатные модели там могут обучаться на входных данных, поэтому годятся только для выдуманных или публичных текстов.
+Для полноты: OpenRouter из главы 2.4 · OpenRouter: один API ко многим моделям (AIL-69) тоже даёт эмбеддинги через `POST https://openrouter.ai/api/v1/embeddings` (в документации примеры `openai/text-embedding-3-small` и другие) — это вариант «облачные эмбеддинги без отдельного аккаунта OpenAI». Бесплатные модели там могут обучаться на входных данных, поэтому годятся только для выдуманных или публичных текстов.
 
 ### Что использовать в практике этой главы
 
@@ -242,7 +242,7 @@ V = st.encode(texts, normalize_embeddings=True)    # numpy (N, 1024)
 
 Проект для недель 4–5 — папка `projects/02-support-kb-rag/`: ассистент поддержки, который отвечает покупателям по базе знаний магазина. Эту задачу делаем в `projects/02-support-kb-rag/playground/`.
 
-- [ ] **Окружение.** `python -m venv .venv`, ставим с зафиксированными версиями `numpy`, `ollama`, `sentence-transformers`, `python-dotenv`, (опционально) `openai`, `scikit-learn`, `matplotlib`. Сразу добавляем `.env` и `.venv/` в `.gitignore`. Если делаем шаг «для сравнения» с OpenAI — ключ `OPENAI_API_KEY` только в `.env`.
+- [ ] **Окружение.** `uv init` (uv из главы 1.3), через `uv add` ставим (версии фиксирует `uv.lock`) `numpy`, `ollama`, `sentence-transformers`, `python-dotenv`, (опционально) `openai`, `scikit-learn`, `matplotlib`. Сразу добавляем `.env` и `.venv/` в `.gitignore`. Если делаем шаг «для сравнения» с OpenAI — ключ `OPENAI_API_KEY` только в `.env`.
 - [ ] **Ollama.** Ставим приложение с ollama.com (на macOS — проверка `codesign -dv` и `spctl -a -vv` до первого запуска), затем `ollama pull bge-m3`. Проверка: `ollama list` показывает модель, а `python -c "import ollama; print(len(ollama.embed(model='bge-m3', input='test')['embeddings'][0]))"` печатает размерность.
 - [ ] **Данные.** Файл `phrases.txt`: 100 фраз о магазине, по одной на строку, смесь русского и английского — вопросы покупателей и строки из базы знаний и инструкций к товарам. Группы по смыслу (по 8–12 фраз): доставка, возврат, гарантия, оплата, промокоды, статус заказа, уход за товаром и инструкции, шум (отзывы ни о чём, приветствия). Пример: «сколько идёт посылка в Казань», «opened tea and coffee cannot be returned», «где мой заказ, трек не обновляется», «do not use the lamp without the shade». Это выдуманные фразы — никаких реальных сообщений покупателей.
 - [ ] **Эмбеддинги через Ollama (основной путь).** `embed_ollama.py`: читает фразы, эмбеддит одним-двумя батчами через `ollama.embed(model="bge-m3", input=[...])`, сохраняет `emb_ollama.npy` и `meta.json` (бэкенд, модель, размерность, дата). Повторный запуск не пересчитывает, если файл есть. `load_duration` первого вызова выводится отдельно от остального времени.

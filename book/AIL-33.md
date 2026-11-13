@@ -130,7 +130,7 @@ def rerank(question: str, chunks: list[dict], top_k: int) -> list[dict]:
 
 Финальный продукт задачи — рекомендация в 5–8 предложениях, например в форме:
 
-> Для продакшена берём S+R: correctness 0,8x (разброс ±0,02), в пределах шума от L+R (расхождения 5/4, p ≈ 1), faithfulness 0,9x, стоимость в N раз ниже ($a против $b на 100 вопросов), p90 латентности x с против y с. Реранкер дал маленькой модели +Z п.п. correctness (расхождения 10/2), большой — в пределах шума. Ограничения: набор 58 вопросов, мелкие различия не различимы; на comparative-вопросах (n=12) L+R выглядит лучше, проверить на расширенном наборе. Финальная цифра на holdout: …
+> Для продакшена берём S+R: correctness 0,8x (разброс ±0,02), в пределах шума от L+R (расхождения 5/4, p ≈ 1), faithfulness 0,9x, стоимость в N раз ниже ($a против $b на 100 вопросов), p90 латентности x с против y с. Реранкер дал маленькой модели +Z п.п. correctness (расхождения 10/2), большой — в пределах шума. Ограничения: dev-набор 56 вопросов, мелкие различия не различимы; на comparative-вопросах (n=8) L+R выглядит лучше, проверить на расширенном наборе. Финальная цифра на holdout: …
 
 Здесь же финальную выбранную конфигурацию впервые прогоняем на **holdout** (один раз) — это та честная цифра, которая пойдёт в README.
 
@@ -154,7 +154,7 @@ def rerank(question: str, chunks: list[dict], top_k: int) -> list[dict]:
 Конфиги для `eval/run.py --config eval/configs/<name>.json` отличаются только моделью и реранкером (`retrieve_k` — новый ключ: сколько кандидатов гибридного поиска уходит в реранкер):
 
 ```json
-{"index": "index_ctx.db", "rewrite": true, "retriever": "hybrid", "retrieve_k": 20, "k": 5,
+{"index": "index_headings.db", "rewrite": true, "retriever": "hybrid", "retrieve_k": 20, "k": 5,
  "reranker": "BAAI/bge-reranker-v2-m3", "answer_model": "qwen3:4b", "answer_thinking": false,
  "answer_prompt": "answer_v2", "judge_model": "deepseek-v4-pro", "judge_prompt": "judge_v2"}
 ```

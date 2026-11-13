@@ -10,7 +10,7 @@ Tool calling (function calling) — механизм, на котором сто
 
 ### Модель не выполняет код
 
-Самое важное: модель **ничего не вызывает сама**. Она генерирует *структурированную просьбу*: «вызови `get_rate` с аргументами `{"base": "USD", "quote": "EUR"}`». Выполняет наш код, результат мы возвращаем модели следующим сообщением, и она продолжает.
+Самое важное: модель **ничего не вызывает сама**. Она генерирует *структурированную просьбу*: «вызови `get_exchange_rate` с аргументами `{"base": "USD", "quote": "EUR"}`». Выполняет наш код, результат мы возвращаем модели следующим сообщением, и она продолжает.
 
 Пример: поставщик магазина выставил счёт за три лампы по 100 USD, хотим знать сумму в EUR.
 
@@ -18,11 +18,11 @@ Tool calling (function calling) — механизм, на котором сто
  наш код                              модель
  ─────────────────────────────────────────────────────────────
  messages=[user: "100 USD в EUR × 3?"], tools=[...]  ──►
-                                    ◄── assistant: tool_use get_rate{USD,EUR}
+                                    ◄── assistant: tool_use get_exchange_rate{USD,EUR}
                                         stop_reason = "tool_use"
- выполняем get_rate → 0.92
+ выполняем get_exchange_rate → 0.92
  messages += [assistant(tool_use), user(tool_result 0.92)] ──►
-                                    ◄── assistant: tool_use calculator{"100*0.92*3"}
+                                    ◄── assistant: tool_use calculate{"100*0.92*3"}
  выполняем → 276
  messages += [assistant(tool_use), user(tool_result 276)] ──►
                                     ◄── assistant: "100 USD ≈ 92 EUR, ×3 = 276 EUR"
@@ -42,7 +42,7 @@ TOOLS = [
         "description": (
             "Get the latest official exchange rate between two fiat currencies "
             "(ECB reference rates, updated once per working day). "
-            "Use it for any currency conversion. Does not support crypto."
+            "Use it for any currency conversion. Returns only the latest rate, not historical ones."
         ),
         "input_schema": {
             "type": "object",
@@ -60,7 +60,7 @@ TOOLS = [
 
 У OpenAI (Responses API) почти то же: `{"type": "function", "name": ..., "description": ..., "parameters": {...}, "strict": True}`.
 
-**Имя и описание — это промпт.** Модель выбирает инструмент только по ним. Хорошее описание отвечает на вопросы: что делает, когда использовать, когда *не* использовать, что возвращает, какие ограничения (обновляется раз в день, не поддерживает криптовалюты). Плохое: `"name": "tool1", "description": "rates"`.
+**Имя и описание — это промпт.** Модель выбирает инструмент только по ним. Хорошее описание отвечает на вопросы: что делает, когда использовать, когда *не* использовать, что возвращает, какие ограничения (обновляется раз в рабочий день, отдаёт только последний курс). Плохое: `"name": "tool1", "description": "rates"`.
 
 ### Цикл (agentic loop)
 
@@ -161,7 +161,7 @@ TOOLS_OAI = [
     {"type": "function", "function": {
         "name": "get_exchange_rate",
         "description": "Get the latest official ECB exchange rate between two fiat currencies. "
-                       "Use it for any currency conversion. Does not support crypto.",
+                       "Use it for any currency conversion. Returns only the latest rate.",
         "parameters": {
             "type": "object",
             "properties": {

@@ -196,7 +196,7 @@ def write_note(filename: str, text: str) -> str:
 
 ```json
 {"step": 2, "thought": "Нужно найти срок гарантии лампы «Свет мини»", "tool": "rag_search",
- "input": {"query": "гарантия Свет мини"}, "result_preview": "[kb/products/lamp-svet-mini.md#...] Товары > Лампа «Свет мини» > Гарантия...",
+ "input": {"query": "гарантия Свет мини"}, "result_preview": "[kb/products/lamp-light-mini.md#...] Товары > Лампа «Свет мини» > Гарантия...",
  "tokens_in": 1830, "tokens_out": 96, "ms": 1420}
 ```
 

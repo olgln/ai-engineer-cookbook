@@ -153,7 +153,7 @@ p95 = statistics.quantiles(lat, n=100)[94]  # needs enough data points to be mea
 ```python
 # illustrative: one DeepSeek call as a Langfuse generation with your own cost
 from datetime import datetime, timezone
-from llm_utils import deepseek, deepseek_cost, ds_cache_tokens, is_peak
+from common.llm_utils import deepseek, deepseek_cost, ds_cache_tokens, is_peak
 
 with langfuse.start_as_current_observation(as_type="generation", name="answer",
                                            model="deepseek-flash") as gen:
@@ -243,13 +243,13 @@ meta = {
 ## Практика
 
 - [ ] Поднять Langfuse (self-hosted из AIL-66 или облако для демо-данных и вопросов из набора). Создать проект на каждый из четырёх учебных проектов или один проект с тегом `project:<name>` — выбрать и записать почему.
-- [ ] **Проект 2 (ассистент поддержки):** spans `plan_query`, `retrieve` (в output — `url` и score чанков), `rerank`, generation `answer` на DeepSeek со своей стоимостью (`deepseek_cost` из главы 11.2: hit/miss + пиковые часы) и `usage_details` с кэшем и `reasoning`. Задать 5 вопросов из набора (например, «можно ли вернуть вскрытый чай?», «какая гарантия на LAMP-SVET-MINI?»), открыть трейсы: дерево правильно вложено, стоимость совпадает с нашим расчётом.
+- [ ] **Проект 2 (ассистент поддержки):** spans `plan_query`, `retrieve` (в output — `url` и score чанков), `rerank`, generation `answer` на DeepSeek со своей стоимостью (`deepseek_cost` из главы 11.2: hit/miss + пиковые часы) и `usage_details` с кэшем и `reasoning`. Задать 5 вопросов из набора (например, «можно ли вернуть вскрытый чай?», «какая гарантия на LAMP-LIGHT-MINI?»), открыть трейсы: дерево правильно вложено, стоимость совпадает с нашим расчётом.
 - [ ] **Проект 2, настоящие сообщения:** в metadata трейса — результат `contains_personal_data` и причина `handoff`, если она была. Такие трейсы создаёт только Ollama и пишет только self-hosted Langfuse или маскирование до отправки.
 - [ ] **Проект 1 (Telegram-бот):** trace на сообщение, `session_id` = id чата, span на каждый read-only инструмент (аргументы и число строк, но не сами суммы — маскирование). Снимок базы — **только Ollama** и только self-hosted Langfuse; DeepSeek — только с **демо-базой**. В metadata — `provider`, `load_s`, `decode_tok_per_s`.
 - [ ] Добавить 👍/👎 в бот как score на трейс.
 - [ ] **Проект 3 (evals):** каждый прогон кейса — trace с тегом эксперимента; результат проверки — score. `flush()` в конце скрипта.
 - [ ] **Проект 4 (агент):** span на итерацию, generation на каждый вызов модели, span на tool call; в metadata трейса — число шагов и причина остановки.
-- [ ] В каждый трейс — фактически ответивший провайдер и модель (видно фолбэки DeepSeek → Ollama из главы 11.2).
+- [ ] В каждый трейс — фактически ответивший провайдер и модель (видно фолбэки DeepSeek → OpenRouter → Ollama из главы 11.2).
 - [ ] Сверить сумму `cost` за день с расходом в личном кабинете DeepSeek; расхождение больше нескольких процентов — разобраться (кэш, пиковые часы, reasoning).
 - [ ] Проверка приватности: тест или запрос к Langfuse, который находит трейсы проектов 1 и 4 со снимком базы и трейсы Проекта 2 с настоящими сообщениями клиентов, где `provider != "ollama"`. Должно быть ноль.
 - [ ] **Нагрузка для цифр:** прогнать по 50–100 запросов в каждом проекте (вопросы из eval-наборов; для агента — 20 случаев из AIL-42).

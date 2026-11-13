@@ -126,7 +126,7 @@ from typing import Literal
 from pydantic import BaseModel, Field, ValidationError, field_validator
 
 class OrderItem(BaseModel):
-    sku: str = Field(min_length=3, description="Product SKU, e.g. MUG-SEVER")
+    sku: str = Field(min_length=3, description="Product SKU, e.g. MUG-NORTH")
     unit: Literal["pcs", "g"]
     quantity: Decimal = Field(gt=0)
     unit_price: Decimal = Field(gt=0)
@@ -137,9 +137,9 @@ class OrderItem(BaseModel):
     def upper_sku(cls, v: str) -> str:
         return v.upper()
 
-raw = '{"sku": "mug-sever", "unit": "pcs", "quantity": "2", "unit_price": "890.00", "created_at": "2026-11-16T10:00:00Z"}'
+raw = '{"sku": "mug-north", "unit": "pcs", "quantity": "2", "unit_price": "890.00", "created_at": "2026-11-16T10:00:00Z"}'
 item = OrderItem.model_validate_json(raw)   # parse + validate JSON string
-print(item.sku, item.quantity)              # MUG-SEVER 2
+print(item.sku, item.quantity)              # MUG-NORTH 2
 
 try:
     OrderItem.model_validate({"sku": "x", "unit": "box", "quantity": -1, "unit_price": 1, "created_at": "nope"})
@@ -156,7 +156,7 @@ except ValidationError as e:
 ```json
 {
   "properties": {
-    "sku": {"description": "Product SKU, e.g. MUG-SEVER", "minLength": 3, "title": "Sku", "type": "string"},
+    "sku": {"description": "Product SKU, e.g. MUG-NORTH", "minLength": 3, "title": "Sku", "type": "string"},
     "unit": {"enum": ["pcs", "g"], "title": "Unit", "type": "string"},
     "quantity": {"anyOf": [{"exclusiveMinimum": 0, "type": "number"}, {"type": "string"}], "title": "Quantity"},
     ...
@@ -186,7 +186,7 @@ def test_sku_is_uppercased():
 @pytest.mark.parametrize("bad_unit", ["kg", "", "PCS "])
 def test_rejects_bad_unit(bad_unit):
     with pytest.raises(ValidationError):
-        OrderItem.model_validate({"sku": "MUG-SEVER", "unit": bad_unit, "quantity": "1", "unit_price": "1", "created_at": "2026-11-16T10:00:00Z"})
+        OrderItem.model_validate({"sku": "MUG-NORTH", "unit": bad_unit, "quantity": "1", "unit_price": "1", "created_at": "2026-11-16T10:00:00Z"})
 ```
 
 Файлы `test_*.py`, функции `test_*`, обычный `assert` (pytest сам покажет, что с чем сравнивалось). `pytest.raises` — ожидание исключения, `parametrize` — табличные тесты, **fixtures** — переиспользуемая подготовка (аргумент функции с именем фикстуры). Запуск: `uv run pytest -q`. Тесты не должны ходить в сеть — это правило для любого проекта.
@@ -274,7 +274,7 @@ async def main() -> None:
   uv run python -c "import httpx, pydantic; print(pydantic.VERSION)"
   ```
   Смотрим `pyproject.toml` и `uv.lock`, убеждаемся, что `.venv/` в игноре (`git status`).
-- [ ] **Async против последовательного.** `fetch_compare.py`: список из 5 публичных URL, каждый отвечает с задержкой 1 с (например `https://httpbin.org/delay/1` — публичный тестовый сервис, ничего не подписывает). Две функции: `sequential()` с циклом `await client.get(...)` и `parallel()` с `asyncio.gather`. Замер — `time.perf_counter()`. Ожидаемо: ~5 с против ~1 с. Добавляем `Semaphore(2)` в параллельную версию и до запуска предсказываем время (≈3 с). Если хочется взять другие публичные API — только открытые эндпоинты, без ключей и подписей.
+- [ ] **Async против последовательного.** `fetch_compare.py`: список из 5 публичных URL, каждый отвечает с задержкой 1 с (например `https://httpbin.org/delay/1` — публичный тестовый сервис). Две функции: `sequential()` с циклом `await client.get(...)` и `parallel()` с `asyncio.gather`. Замер — `time.perf_counter()`. Ожидаемо: ~5 с против ~1 с. Добавляем `Semaphore(2)` в параллельную версию и до запуска предсказываем время (≈3 с). Если хочется взять другие публичные API — только открытые эндпоинты, без ключей.
 - [ ] **Модель «Позиция заказа».** `models.py` с `OrderItem` (sku, unit, quantity, unit_price, created_at) как в теории, плюс одно своё правило (например, для `unit="pcs"` количество должно быть целым — через `model_validator(mode="after")`).
 - [ ] **10 JSON.** `order_items.jsonl` — 10 вымышленных строк, из них 4 невалидных разными способами (отрицательное количество, `unit: "kg"`, битая дата, нет поля). Скрипт `validate.py` читает построчно, печатает валидные и для невалидных — номер строки и `e.errors()` кратко (`loc` + `msg`). Ожидаемо: 6 OK, 4 с понятными причинами.
 - [ ] **Схема.** `print(json.dumps(OrderItem.model_json_schema(), indent=2))`. Отвечаем в `notes/week-01.md`: где в схеме описания полей, как выглядят `Literal` и `Decimal`, что попало в `required`. Добавляем `description` к каждому полю и смотрим, как изменилась схема.

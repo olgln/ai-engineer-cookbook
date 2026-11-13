@@ -10,7 +10,27 @@ import { config } from '../config/server.mjs';
 /** Path for display: home directory shortened to ~ */
 const displayPath = (file) => (file.startsWith(os.homedir() + path.sep) ? '~' + file.slice(os.homedir().length) : file);
 
-export function progressHandler(file = config.progressFile, maxBytes = config.progressMaxBytes) {
+/** Host name without the port: "127.0.0.1:4321" → "127.0.0.1", "[::1]:4321" → "[::1]". */
+const hostName = (value = '') => value.replace(/:\d+$/, '').toLowerCase();
+
+/**
+ * Only the study site itself may use the API: the Host header must be a known local name
+ * (blocks DNS rebinding), and a browser Origin, when sent, must be the same host (blocks
+ * other pages in the same browser).
+ */
+function isTrusted(req, allowedHosts) {
+  const host = hostName(req.headers.host);
+  if (!allowedHosts.has(host)) return false;
+  const origin = req.headers.origin;
+  if (!origin) return true;
+  try {
+    return new URL(origin).host.toLowerCase() === req.headers.host.toLowerCase();
+  } catch {
+    return false;
+  }
+}
+
+export function progressHandler(file = config.progressFile, maxBytes = config.progressMaxBytes, allowedHosts = config.allowedHosts) {
   return (req, res) => {
     const send = (code, body) => {
       res.statusCode = code;
@@ -19,6 +39,7 @@ export function progressHandler(file = config.progressFile, maxBytes = config.pr
       res.setHeader('Cache-Control', 'no-store');
       res.end(body);
     };
+    if (!isTrusted(req, allowedHosts)) return send(403, '{"error":"forbidden"}');
     if (req.method === 'GET') {
       return send(200, fs.existsSync(file) ? fs.readFileSync(file, 'utf8') : '{}');
     }
@@ -33,7 +54,8 @@ export function progressHandler(file = config.progressFile, maxBytes = config.pr
     req.on('end', () => {
       try {
         const data = JSON.parse(Buffer.concat(chunks).toString('utf8'));
-        if (!data || typeof data !== 'object' || Array.isArray(data) || typeof data.chapters !== 'object') throw new Error('bad shape');
+        const isObject = (v) => v !== null && typeof v === 'object' && !Array.isArray(v);
+        if (!isObject(data) || !isObject(data.chapters)) throw new Error('bad shape');
         fs.mkdirSync(path.dirname(file), { recursive: true });
         const tmp = file + '.tmp';
         fs.writeFileSync(tmp, JSON.stringify(data, null, 2) + '\n');
