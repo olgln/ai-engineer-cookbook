@@ -1,6 +1,7 @@
 /* ---------- theme ---------- */
 :root {
-  --sl-content-width: 50rem;
+  --sl-content-width: 66rem;
+  --toc-width: 16rem;
   --radius: 0.6rem;
 }
 :root[data-theme='dark'] {
@@ -23,6 +24,13 @@
   padding: 0.6rem 1rem;
   border-radius: 0 var(--radius) var(--radius) 0;
   color: var(--sl-color-white);
+}
+
+/* ---------- layout: narrower "On this page" column, wider content ---------- */
+@media (min-width: 72rem) {
+  .right-sidebar-container { width: var(--toc-width); }
+  [data-has-sidebar][data-has-toc] .main-pane { width: calc(100% - var(--toc-width)); }
+  .right-sidebar-panel .sl-container { width: calc(var(--toc-width) - 2 * var(--sl-sidebar-pad-x)); max-width: none; }
 }
 
 /* ---------- buttons ---------- */
