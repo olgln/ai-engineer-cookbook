@@ -4,6 +4,8 @@
 # site: dependencies and build output
 site/node_modules/
 site/dist/
+site/dist-next/
+site/dist-old/
 site/.astro/
 
 # site: generated from book/*.md by site/scripts/convert.mjs

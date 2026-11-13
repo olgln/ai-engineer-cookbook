@@ -3,7 +3,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "start": "npm run build && node scripts/serve.mjs",
+    "start": "npm run build && node scripts/serve.mjs --watch",
     "serve": "node scripts/serve.mjs",
     "convert": "node scripts/convert.mjs",
     "dev": "npm run convert && ASTRO_TELEMETRY_DISABLED=1 astro dev",
