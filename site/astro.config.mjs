@@ -9,9 +9,9 @@ import progressApi from './src/integrations/progress-api.mjs';
 import deployFiles from './src/integrations/deploy-files.mjs';
 import cspInlineHashes from './src/integrations/csp-inline-hashes.mjs';
 import { iconHead, seoHead } from './src/components/seo-head.mjs';
-import { withLastmod } from './scripts/lib/lastmod.mjs';
+import { inSitemap, withLastmod } from './scripts/lib/lastmod.mjs';
 import { webAnalyticsHead, withWebAnalytics } from './src/components/web-analytics.mjs';
-import { CSP } from './src/config/app.mjs';
+import { CSP, SITEMAP_EXCLUDED_PATHS } from './src/config/app.mjs';
 import { config } from './src/config/server.mjs';
 
 // Cloudflare Web Analytics only in builds with CLOUDFLARE_WEB_ANALYTICS_TOKEN; its origins join the CSP there.
@@ -58,7 +58,10 @@ export default defineConfig({
       },
     }),
     // Starlight adds this integration itself unless it is listed; listed here to give pages a <lastmod>.
-    sitemap({ serialize: (item) => withLastmod(item, lastmod) }),
+    sitemap({
+      filter: (page) => inSitemap(page, SITEMAP_EXCLUDED_PATHS),
+      serialize: (item) => withLastmod(item, lastmod),
+    }),
     progressApi(),
     cspInlineHashes(),
     deployFiles(),

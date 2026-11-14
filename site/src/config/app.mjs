@@ -118,6 +118,9 @@ export const PLAN_PATH = '/plan/';
 /** Route of the review page: quiz questions answered wrong or marked "didn't know", across all chapters. */
 export const REVIEW_PATH = '/review/';
 
+/** Pages left out of the sitemap: personal pages marked noindex (a noindex page in the sitemap is a Search Console error). */
+export const SITEMAP_EXCLUDED_PATHS = [REVIEW_PATH];
+
 /** Each quiz question is a link target: <chapter>#<QUESTION_ANCHOR_PREFIX><n>. */
 export const QUESTION_ANCHOR_PREFIX = 'q-';
 
