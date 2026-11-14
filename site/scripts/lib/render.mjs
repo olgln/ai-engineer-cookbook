@@ -1,7 +1,9 @@
 // Pure Markdown → Starlight rendering used by scripts/convert.mjs: strings in, strings out, no file access.
 // Kept separate from convert.mjs so it can be unit-tested (tests/render.test.mjs).
 // All Russian text (site wording and the headings used to parse the book) lives in src/locales/ru.json.
-import { BOOK_DIR, CHAPTER_PREFIX, PLAN_PATH, REPO_ONLY_END, REPO_ONLY_START } from '../../src/config/app.mjs';
+import {
+  BOOK_DIR, CHAPTER_PREFIX, DESCRIPTION_MARKER, DESCRIPTION_MAX_LENGTH, PLAN_PATH, REPO_ONLY_END, REPO_ONLY_START,
+} from '../../src/config/app.mjs';
 import { escapeRegExp, format } from '../../src/locales/format.mjs';
 import strings from '../../src/locales/ru.json' with { type: 'json' };
 
@@ -28,6 +30,8 @@ export const RE = {
   chapterFile: new RegExp(`^${PREFIX}(\\d+)\\.md$`),
   planBookLink: new RegExp(`\\]\\(${escapeRegExp(BOOK_DIR)}/${PREFIX}(\\d+)\\.md`, 'g'),
   bookReadmeLink: new RegExp(`\\]\\((?:\\./)?${escapeRegExp(BOOK_DIR)}/README\\.md\\)`, 'g'),
+  // <!-- description: … --> line of a chapter, with its line break
+  description: new RegExp(`^<!--\\s*${escapeRegExp(DESCRIPTION_MARKER)}\\s*(.*?)\\s*-->[ \\t]*\\n?`, 'gm'),
   repoOnly: new RegExp(`${escapeRegExp(REPO_ONLY_START)}[\\s\\S]*?${escapeRegExp(REPO_ONLY_END)}\\n*`, 'g'),
   // option letters at the start of an answer: "b)", "a, c.", "a <and> c:"
   answerLetters: new RegExp(`^\\**\\s*([a-d](?:\\s*(?:,|${escapeRegExp(book.and)})\\s*[a-d])*)\\s*[.):]?\\**\\s*[.):]?`),
@@ -297,11 +301,27 @@ export function createRenderer(weeks) {
     return [`<div class="done-list" data-chapter="${chapterId}">`, '', conv.join('\n').trim(), '', '</div>'].join('\n');
   }
 
+  /** Take the description comment out of a chapter body; exactly one, non-empty and short enough. */
+  function chapterDescription(it, text) {
+    const found = [...text.matchAll(RE.description)].map((m) => m[1]);
+    const body = text.replace(RE.description, '');
+    if (found.length !== 1) {
+      warnings.push(`${it.id}: ${found.length ? 'more than one' : 'missing'} description comment`);
+      return { body };
+    }
+    const [description] = found;
+    if (!description) warnings.push(`${it.id}: empty description`);
+    else if (description.length > DESCRIPTION_MAX_LENGTH) {
+      warnings.push(`${it.id}: description is ${description.length} characters, max ${DESCRIPTION_MAX_LENGTH}`);
+    }
+    return { description: description || undefined, body };
+  }
+
   /** Render one chapter's source into a Starlight page. */
   function renderChapter(src, it, prev, next) {
     const h1 = src.match(/^# (.+)$/m);
     const title = h1 ? h1[1].replace(RE.titleSuffix, '').trim() : `${it.num} · ${it.title}`;
-    const body = h1 ? src.replace(h1[0], '') : src;
+    const { description, body } = chapterDescription(it, h1 ? src.replace(h1[0], '') : src);
     const sections = splitSections(body);
     const test = sections.find((s) => s.heading === book.testHeading);
     const answers = sections.find((s) => s.heading === book.answersHeading);
@@ -319,7 +339,7 @@ export function createRenderer(weeks) {
     const fm = [
       '---',
       `title: ${yamlStr(title)}`,
-      `description: ${yamlStr(weekLabel(it.week, it.title))}`,
+      `description: ${yamlStr(description ?? weekLabel(it.week, it.title))}`,
       `editUrl: false`,
       prev ? `prev: { link: ${yamlStr(prev.href)}, label: ${yamlStr(`${prev.num} · ${prev.title}`)} }` : 'prev: false',
       next ? `next: { link: ${yamlStr(next.href)}, label: ${yamlStr(`${next.num} · ${next.title}`)} }` : 'next: false',
