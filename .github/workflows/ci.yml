@@ -1,11 +1,13 @@
-# Tests and builds the site on every push and pull request; the build output is kept as an artifact
-# that any static hosting can publish. Actions are pinned to commit SHAs.
+# Tests and builds the site on every push and pull request, or on demand from the Actions tab; the
+# build output is kept as an artifact that any static hosting can publish. Actions are pinned to
+# commit SHAs.
 name: CI
 
 on:
   push:
     branches: [main, develop, 'feature/**', 'fix/**']
   pull_request:
+  workflow_dispatch:
 
 permissions:
   contents: read
