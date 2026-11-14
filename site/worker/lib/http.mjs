@@ -19,6 +19,13 @@ export function json(status, body, extra = []) {
 /** Empty 204 response. */
 export const noContent = (extra = []) => new Response(null, { status: 204, headers: baseHeaders(extra) });
 
+/** 302 to another page (sign-in steps); `location` is absolute or a path on this site. */
+export function redirect(location, extra = []) {
+  const headers = baseHeaders(extra);
+  headers.set('Location', location);
+  return new Response(null, { status: 302, headers });
+}
+
 /**
  * A state-changing request must come from a page of this site: the browser's Origin header has to match
  * the request's own origin. A missing Origin is refused too (browsers always send it with POST/PUT/DELETE).

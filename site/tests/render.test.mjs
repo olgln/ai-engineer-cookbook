@@ -395,6 +395,11 @@ describe('index progress blocks', () => {
     assert.ok(block.includes(`>${ui.importProgress}</button>`));
   });
 
+  test('the account box is pre-rendered hidden, for the browser to fill where accounts exist', () => {
+    const block = blockOf(index(), 'course-progress');
+    assert.ok(block.includes('<div class="account-box" hidden></div>'));
+  });
+
   test('a week with chapter pages gets a 0/N progress row, a week without pages gets none', () => {
     const [w1, w2] = index().split('<section class="week-card"').slice(1);
     assert.match(w1, /<div class="week-progress"><span class="progress-bar"[^>]*><span class="progress-fill"><\/span><\/span><span class="week-progress-label">0\/2<\/span><\/div>/);

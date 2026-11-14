@@ -25,3 +25,6 @@ site/progress.json.tmp
 .env
 .env.*
 !.env.example
+
+# Worker secrets for `wrangler dev` (sign-in credentials); only the example is committed
+site/.dev.vars

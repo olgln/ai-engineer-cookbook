@@ -66,6 +66,7 @@
 .quiz-btn.bad { border-color: var(--sl-color-red); color: var(--sl-color-red-high); }
 .sl-markdown-content a.quiz-btn { color: var(--sl-color-black); }
 :root[data-theme='light'] .sl-markdown-content a.quiz-btn { color: #fff; }
+.sl-markdown-content a.quiz-btn:not(.primary), :root[data-theme='light'] .sl-markdown-content a.quiz-btn:not(.primary) { color: var(--sl-color-white); }
 
 /* ---------- quiz ---------- */
 .quiz { margin-top: 1rem; }
@@ -234,6 +235,13 @@ nav a[data-chapter] { display: flex; }
 .course-progress-head { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 0.25rem 1rem; align-items: baseline; }
 .storage-note { font-size: 0.8rem; color: var(--site-color-muted); }
 .course-progress-actions { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 0.9rem !important; }
+.account-box:not([hidden]) {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem 0.75rem;
+  margin-top: 0.9rem !important; padding-top: 0.9rem; border-top: 1px solid var(--sl-color-gray-5);
+}
+.account-status { font-size: 0.875rem; color: var(--site-color-muted); }
+.account-status.error { color: var(--sl-color-red-high); }
+.account-box > * { margin-top: 0 !important; }
 .progress-bar {
   display: block;
   height: 0.45rem;

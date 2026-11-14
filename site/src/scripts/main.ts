@@ -4,7 +4,7 @@ import strings from '../locales/ru.json';
 import { format, plural as pluralForm } from '../locales/format.mjs';
 import { checkboxLabel, clickTogglesItem } from './checklist.mjs';
 import { reviewItems } from './review.mjs';
-import { QUESTION_ANCHOR_PREFIX } from '../config/app.mjs';
+import { AUTH_API_PREFIX, LOGIN_ERROR_PARAM, ME_API_PATH, QUESTION_ANCHOR_PREFIX, RETURN_TO_PARAM } from '../config/app.mjs';
 import type { MermaidConfig } from 'mermaid';
 
 const ui = strings.ui;
@@ -302,7 +302,11 @@ function initIndex() {
     const n = chapters.filter((c) => done(c.id)).length;
     const next = chapters.find((c) => !done(c.id));
     if (count) count.textContent = format(ui.courseProgress, { done: n, total, chapters: plural(total, ui.chaptersOf) });
-    if (note) note.textContent = P.storage === 'file' ? format(ui.savedTo, { path: P.storagePath || ui.progressFileFallback }) : ui.savedInBrowser;
+    if (note) {
+      note.textContent = P.storage === 'file'
+        ? format(ui.savedTo, { path: P.storagePath || ui.progressFileFallback })
+        : P.storage === 'account' ? ui.savedInAccount : ui.savedInBrowser;
+    }
     setBar(overall.querySelector<HTMLElement>(':scope > .progress-bar'), n, total);
     if (nextLink && next) {
       nextLink.href = next.href;
@@ -322,6 +326,56 @@ function initIndex() {
   };
   render();
   P.onChange(render);
+  void initAccount(overall);
+}
+
+// ---------------- account ----------------
+interface Me { providers?: string[]; available?: string[] }
+
+const providerName = (p: string) => (ui.providerNames as Record<string, string>)[p] ?? p;
+
+/** Removes the "sign-in failed" mark from the address, so a reload does not show the message again. */
+function takeLoginError(): boolean {
+  const params = new URLSearchParams(location.search);
+  if (!params.has(LOGIN_ERROR_PARAM)) return false;
+  params.delete(LOGIN_ERROR_PARAM);
+  const query = params.toString();
+  history.replaceState(null, '', location.pathname + (query ? `?${query}` : '') + location.hash);
+  return true;
+}
+
+// Sign-in / sign-out under the course progress. Shown only where the account API answers (the hosting
+// with a sign-in provider set up); the local server has no /api/me, so the box stays hidden there.
+async function initAccount(overall: HTMLElement) {
+  const box = overall.querySelector<HTMLElement>('.account-box');
+  if (!box) return;
+  const failed = takeLoginError();
+  let me: Me;
+  try {
+    const res = await fetch(ME_API_PATH, { cache: 'no-store' });
+    if (![200, 401].includes(res.status) || !(res.headers.get('content-type') ?? '').includes('json')) return;
+    me = await res.json();
+  } catch {
+    return;
+  }
+  if (me.providers?.length) {
+    const signOut = el('button', { class: 'quiz-btn ghost', type: 'button', textContent: ui.signOut });
+    signOut.addEventListener('click', async () => {
+      signOut.disabled = true;
+      await P.signOut();
+      location.reload();
+    });
+    const who = format(ui.signedInWith, { provider: me.providers.map(providerName).join(', ') });
+    box.replaceChildren(el('span', { class: 'account-status' }, who), signOut);
+  } else if (me.available?.length) {
+    const back = `${RETURN_TO_PARAM}=${encodeURIComponent(location.pathname)}`;
+    const links = me.available.map((p) =>
+      el('a', { class: 'quiz-btn', href: `${AUTH_API_PREFIX}${p}?${back}`, textContent: format(ui.signInWith, { provider: providerName(p) }) }));
+    const text = el('span', { class: failed ? 'account-status error' : 'account-status' }, failed ? ui.signInFailed : ui.signInPrompt);
+    if (failed) text.setAttribute('role', 'alert');
+    box.replaceChildren(text, ...links);
+  } else return;
+  box.hidden = false;
 }
 
 function exportProgress() {

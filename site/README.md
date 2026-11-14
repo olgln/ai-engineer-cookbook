@@ -43,7 +43,7 @@ npm ci
 SITE_URL=https://your-domain.example npm run build   # → dist/
 ```
 
-- **Progress on the hosting** lives only in the reader's browser (localStorage) plus export / import on the index page. The progress API (`/api/progress`) exists only in the local server; on a static hosting the request gets a 404 and the site falls back to the browser copy by design.
+- **Progress on the hosting** lives in the reader's browser (localStorage) plus export / import on the index page, and, for a signed-in reader, in their account (see "Accounts" below). On a static hosting without the Worker, `/api/progress` gets a 404 and the site falls back to the browser copy by design.
 - **Security headers.** Every page carries a Content Security Policy `<meta>` tag (Astro `security.csp`: scripts only from the site itself plus hashes of the inline scripts, no plugins, no foreign forms or `<base>`). The build also writes `dist/_headers` with the headers a `<meta>` cannot set: `frame-ancestors 'none'` (plus `X-Frame-Options: DENY` for old browsers), `nosniff`, `Referrer-Policy`, `Permissions-Policy`, `Cross-Origin-Opener-Policy`, `Cross-Origin-Resource-Policy: same-origin`, HSTS, and long caching for the hashed files in `/_astro/`. Netlify and Cloudflare Pages read `_headers` as is; on other hostings (Vercel, nginx, S3 + CloudFront) set the same headers in their config. GitHub Pages cannot set headers at all — prefer a hosting that can.
 - **`robots.txt`** is written next to the pages; with `SITE_URL` set it points to `sitemap-index.xml`.
 - **Sitemap contents.** Every page except the personal review page `/review/` (it is `noindex`; `SITEMAP_EXCLUDED_PATHS` in `src/config/app.mjs`).
@@ -70,14 +70,21 @@ To check the production headers and CSP locally: `npm run build && npm run serve
 
 ### Accounts (Worker + D1)
 
-Readers will be able to sign in with Google or GitHub and keep their progress on the server. This is being built in stages; so far there are sessions only, no sign-in yet.
+Readers can sign in with Google (GitHub comes next) and keep their progress in their account, so it follows them across devices. Signing in is optional: without it everything works as before, in the browser.
 
-- **What runs where.** `wrangler.jsonc` sends only `/api/*` to the Worker (`run_worker_first`); pages and assets never reach it. The Worker (`worker/index.mjs`, logic in `worker/lib/`) answers `GET /api/me` (who is signed in, 401 otherwise) and `POST /api/logout`; any other `/api/*` path is a JSON 404, so `/api/progress` on the hosting still falls back to the browser copy.
-- **Data.** Cloudflare D1, binding `DB`, schema in `migrations/`. A user is a random id plus the provider's user id (no e-mail, name or provider token). A session is a random token in the `__Host-session` cookie (`HttpOnly; Secure; SameSite=Lax`); the database keeps only its SHA-256. Sessions last 30 days and are extended at most once a day while used; a daily cron (`triggers` in `wrangler.jsonc`) deletes expired ones. Lifetimes and names are in `src/config/app.mjs`.
-- **Security.** State-changing requests need an `Origin` equal to the site's own; API responses carry the same security headers as the pages and `Cache-Control: no-store`.
+- **What runs where.** `wrangler.jsonc` sends only `/api/*` to the Worker (`run_worker_first`); pages and assets never reach it. The Worker (`worker/index.mjs`, logic in `worker/lib/`) answers:
+  - `GET /api/auth/<provider>?return_to=/page/` → redirect to the provider; `GET /api/auth/<provider>/callback` → back from it, starts a session and returns to the page (or to the page with `?login_error=1` if sign-in failed);
+  - `GET /api/me` → `{ providers }` when signed in, otherwise 401 with `{ available }`: the providers that have credentials (the index page shows a sign-in button for each);
+  - `POST /api/logout`;
+  - `GET /api/progress` / `PUT /api/progress` for the signed-in reader (401 otherwise, so the page keeps the browser copy).
+- **Sign-in.** OAuth 2.0 authorization code flow with PKCE, `state` and (Google) `nonce`, kept for 10 minutes in the `__Host-oauth` cookie between the redirect and the callback. Only the `openid` scope is asked: we get the provider's user id and nothing else. The provider's tokens are used once and not stored. A provider is on only when both of its secrets are set (`<PROVIDER>_CLIENT_ID`, `<PROVIDER>_CLIENT_SECRET`); endpoints are in `OAUTH_PROVIDERS` in `src/config/app.mjs`.
+- **Progress sync.** The account copy is the same JSON as the browser copy and the export, with a revision number: every `PUT` names the revision it was based on (`X-Progress-Rev`) and gets 409 if another device wrote in between; the page then merges and retries. The browser keeps its copy too, plus a marker (`ai-cookbook-progress-sync`) saying which revision it matches and whether it has unsent changes. On the first sign-in in a browser the two copies are merged (finished chapters and ticks from both, newer answers win); after that the account copy wins on load. Signing out keeps the browser copy. Logic: `src/scripts/sync.mjs`, wiring: `src/scripts/progress.ts`.
+- **Data.** Cloudflare D1, binding `DB`, schema in `migrations/`. A user is a random id plus the provider's user id (no e-mail, name or provider token); progress is one row per user. A session is a random token in the `__Host-session` cookie (`HttpOnly; Secure; SameSite=Lax`); the database keeps only its SHA-256. Sessions last 30 days and are extended at most once a day while used; a daily cron (`triggers` in `wrangler.jsonc`) deletes expired ones. Lifetimes, names and limits are in `src/config/app.mjs`.
+- **Security.** State-changing requests need an `Origin` equal to the site's own; the page to return to after sign-in must be a path on the site; API responses carry the same security headers as the pages and `Cache-Control: no-store`. The page CSP does not change: sign-in is a plain link (navigation), and the API is same-origin.
 - **One-time setup** (needs `npx wrangler login`): `npx wrangler d1 create ai-engineer-cookbook`. The config finds the database by name, so no id goes into the repository. Then set the deploy command to `npm run deploy` (table above). If the build token cannot reach D1, give it the D1 Edit permission.
-- **Locally:** `npm run dev:worker` applies the migrations to a local database in `.wrangler/` and serves the last build from `dist/` together with the Worker on http://localhost:8787 (keep `npm start` running, or run `npm run build` first). The secure cookie works on `localhost` in Chrome and Firefox; Safari does not keep it over plain HTTP. `npm start` itself has no accounts.
-- **Tests** run the Worker against an in-memory stand-in for D1 on `node:sqlite` with the real migrations (`tests/helpers/d1.mjs`).
+- **Google client.** Google Cloud Console → Google Auth Platform: *Branding* (app name, home page, privacy policy link, the site's domain under *Authorized domains*), *Audience* → External → *Publish app* (in "Testing" only listed test users can sign in), *Data access* → only `openid`. Then *Clients* → *Create client* → Web application, *Authorized redirect URIs*: `https://<site>/api/auth/google/callback` (and `http://localhost:8787/api/auth/google/callback` for local runs, or a separate client for them). Put the values on the hosting with `npx wrangler secret put GOOGLE_CLIENT_ID` and `... GOOGLE_CLIENT_SECRET` (this deploys the current Worker version with the new secrets).
+- **Locally:** copy `.dev.vars.example` to `.dev.vars` (ignored by git) and fill in the credentials. `npm run dev:worker` applies the migrations to a local database in `.wrangler/` and serves the last build from `dist/` together with the Worker on http://localhost:8787 (keep `npm start` running, or run `npm run build` first). The secure cookies work on `localhost` in Chrome and Firefox; Safari does not keep them over plain HTTP. `npm start` itself has no accounts.
+- **Tests** run the Worker against an in-memory stand-in for D1 on `node:sqlite` with the real migrations (`tests/helpers/d1.mjs`) and a fake token endpoint; the browser side of the sync runs `src/scripts/progress.ts` under Node with fake `fetch` and `localStorage` (`tests/progress-sync.test.mjs`).
 
 ### Icons
 
@@ -148,10 +155,12 @@ Code, comments, logs and docs are in English. Russian is used only for what the 
 | `../.github/workflows/ci.yml` | CI: audit, tests, build |
 | `wrangler.jsonc` | Cloudflare Workers deployment: serves `dist/` with the 404 page, runs the Worker for `/api/*`, the D1 binding and the session clean-up cron, no preview URLs, no telemetry |
 | `worker/index.mjs` | the Worker entry: `fetch` for `/api/*`, `scheduled` for the cron |
-| `worker/lib/api.mjs`, `session.mjs`, `users.mjs`, `http.mjs` | account API routes, sessions and cookies, users and sign-in identities, response helpers |
+| `worker/lib/api.mjs`, `oauth.mjs`, `session.mjs`, `users.mjs`, `progress.mjs`, `http.mjs` | account API routes, sign-in with OAuth providers, sessions and cookies, users and sign-in identities, stored progress, response helpers |
+| `src/scripts/sync.mjs` | merging the browser and account copies of the progress, what to do after loading |
+| `.dev.vars.example` | the Worker secrets for local runs (`.dev.vars`) |
 | `migrations/*.sql` | D1 schema, applied in order by `wrangler d1 migrations apply` |
-| `tests/helpers/d1.mjs` | in-memory D1 for the tests, on `node:sqlite` |
-| `src/scripts/main.ts`, `progress.ts` | quizzes, checklists, chapter marks, the review page, progress storage |
+| `tests/helpers/d1.mjs`, `tests/helpers/oauth.mjs` | in-memory D1 for the tests, on `node:sqlite`; fake Google token responses |
+| `src/scripts/main.ts`, `progress.ts` | quizzes, checklists, chapter marks, the review page, the sign-in box, progress storage (file, account or browser) |
 | `src/scripts/review.mjs` | which answered questions go to the review page (`/review/`); the page loads the question list (`src/quiz-index.json`, generated) only there |
 | `src/integrations/progress-handler.mjs` | `GET/PUT /api/progress` → the progress file |
 | `src/styles/custom.css`, `ec.config.mjs` | styling and code highlighting |

@@ -25,6 +25,44 @@ export const SESSION_TTL_SECONDS = 30 * 24 * 60 * 60;
 /** A used session is renewed at most this often, so most requests do not write to the database (1 day). */
 export const SESSION_RENEW_AFTER_SECONDS = 24 * 60 * 60;
 
+/**
+ * Sign-in routes: `${AUTH_API_PREFIX}<provider>?return_to=/page/` starts it,
+ * `${AUTH_API_PREFIX}<provider>/callback` is the redirect URI registered at the provider.
+ */
+export const AUTH_API_PREFIX = '/api/auth/';
+export const AUTH_CALLBACK_SUFFIX = '/callback';
+export const RETURN_TO_PARAM = 'return_to';
+/** Added to the page the reader returns to when sign-in did not succeed (cancelled, expired, refused). */
+export const LOGIN_ERROR_PARAM = 'login_error';
+
+/**
+ * State of a sign-in in progress (state, PKCE verifier, nonce, page to return to), kept in the browser
+ * between the redirect to the provider and the callback. Ten minutes to finish signing in.
+ */
+export const OAUTH_COOKIE = '__Host-oauth';
+export const OAUTH_COOKIE_TTL_SECONDS = 10 * 60;
+
+/**
+ * OAuth 2.0 / OpenID Connect endpoints of the providers. Credentials come from Worker secrets
+ * `<PROVIDER>_CLIENT_ID` / `<PROVIDER>_CLIENT_SECRET` (.dev.vars locally); a provider without them is off.
+ */
+export const OAUTH_PROVIDERS = {
+  google: {
+    authorizeUrl: 'https://accounts.google.com/o/oauth2/v2/auth',
+    tokenUrl: 'https://oauth2.googleapis.com/token',
+    /** Only the stable user id (`sub` of the ID token): no e-mail, no profile. */
+    scope: 'openid',
+    issuers: ['https://accounts.google.com', 'accounts.google.com'],
+  },
+};
+
+/** Revision of the reader's progress on the server: sent with GET, required with PUT (optimistic locking). */
+export const PROGRESS_REV_HEADER = 'X-Progress-Rev';
+/** Largest progress document the Worker stores, in bytes. A full course of answers is well under 100 KB. */
+export const ACCOUNT_PROGRESS_MAX_BYTES = 512 * 1024;
+/** localStorage key that ties the browser copy to the account copy: { rev, dirty } (src/scripts/sync.mjs). */
+export const SYNC_STORAGE_KEY = 'ai-cookbook-progress-sync';
+
 /** Response header that tells the browser where the progress file is stored. */
 export const PROGRESS_FILE_HEADER = 'X-Progress-File';
 
