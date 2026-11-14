@@ -1,12 +1,15 @@
 // @ts-check
 import { defineConfig } from 'astro/config';
 import starlight from '@astrojs/starlight';
+import sitemap from '@astrojs/sitemap';
 import sidebar from './src/sidebar.json' with { type: 'json' };
+import lastmod from './src/lastmod.json' with { type: 'json' };
 import strings from './src/locales/ru.json' with { type: 'json' };
 import progressApi from './src/integrations/progress-api.mjs';
 import deployFiles from './src/integrations/deploy-files.mjs';
 import cspInlineHashes from './src/integrations/csp-inline-hashes.mjs';
-import { seoHead } from './src/components/seo-head.mjs';
+import { iconHead, seoHead } from './src/components/seo-head.mjs';
+import { withLastmod } from './scripts/lib/lastmod.mjs';
 import { webAnalyticsHead, withWebAnalytics } from './src/components/web-analytics.mjs';
 import { CSP } from './src/config/app.mjs';
 import { config } from './src/config/server.mjs';
@@ -34,6 +37,7 @@ export default defineConfig({
       locales: { root: { label: strings.languageLabel, lang: strings.lang } },
       sidebar,
       head: [
+        ...iconHead(),
         ...seoHead({
           site: config.siteUrl,
           imageAlt: strings.site.ogImageAlt,
@@ -53,6 +57,8 @@ export default defineConfig({
         PageFrame: './src/components/PageFrame.astro',
       },
     }),
+    // Starlight adds this integration itself unless it is listed; listed here to give pages a <lastmod>.
+    sitemap({ serialize: (item) => withLastmod(item, lastmod) }),
     progressApi(),
     cspInlineHashes(),
     deployFiles(),

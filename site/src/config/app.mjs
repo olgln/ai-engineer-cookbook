@@ -99,6 +99,13 @@ export const OLD_DIST_DIR = 'dist-old';
 export const OG_IMAGE = { path: '/og-image.png', type: 'image/png', width: 1200, height: 630 };
 
 /**
+ * Icons in public/ besides favicon.svg (Starlight's favicon). The home-screen icon for iOS is rendered from
+ * assets/apple-touch-icon.svg; favicon.ico is for clients that ask for /favicon.ico without reading the page.
+ */
+export const APPLE_TOUCH_ICON = { path: '/apple-touch-icon.png', size: 180 };
+export const FAVICON_ICO = { path: '/favicon.ico', size: 32 };
+
+/**
  * Search snippet of a chapter (<meta name="description">): one hidden line
  * `<!-- description: … -->` under the meta line of book/AIL-*.md. Search engines cut longer text.
  */
@@ -116,6 +123,10 @@ export const CHAPTER_PREFIX = 'AIL-';
 export const DOCS_DIR = 'src/content/docs';
 export const SIDEBAR_FILE = 'src/sidebar.json';
 export const CHAPTERS_FILE = 'src/chapters.json';
+/** Last change of each page's source, from git ({ "/week-01/1-1/": "2026-11-14T…" }); feeds <lastmod> in the sitemap. */
+export const LASTMOD_FILE = 'src/lastmod.json';
+/** Everything scripts/convert.mjs writes under site/: ignored by git and by the `npm start` watcher (no rebuild loop). */
+export const GENERATED_PATHS = [DOCS_DIR, SIDEBAR_FILE, CHAPTERS_FILE, LASTMOD_FILE];
 
 /** Blocks of the root README.md between these markers are not shown on the site. */
 export const REPO_ONLY_START = '<!-- repo-only:start -->';

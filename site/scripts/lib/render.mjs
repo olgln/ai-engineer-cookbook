@@ -421,6 +421,9 @@ export function createRenderer(weeks) {
       `description: ${yamlStr(site.indexDescription)}`,
       'editUrl: false',
       'tableOfContents: false',
+      // the index is the course itself, not an article (Starlight sets og:type article on every page)
+      'head:',
+      '  - { tag: meta, attrs: { property: "og:type", content: website } }',
       'prev: false',
       `next: { link: ${yamlStr(first.href)}, label: ${yamlStr(`${first.num} · ${first.title}`)} }`,
       '---',
@@ -464,8 +467,15 @@ export function createRenderer(weeks) {
   /** Flat chapter list for the browser code. */
   const chapters = () => pagedChapters(weeks).map((i) => ({ id: i.id, week: i.week, num: i.num, title: i.title, href: i.href }));
 
+  /** Every generated page with the source file it is rendered from, relative to the repo root. */
+  const pageSources = () => [
+    { href: '/', source: `${BOOK_DIR}/README.md` },
+    { href: PLAN_PATH, source: 'README.md' },
+    ...pagedChapters(weeks).map((it) => ({ href: it.href, source: `${BOOK_DIR}/${chapterFile(it.ail)}` })),
+  ];
+
   /** Chapter files in the book directory that the table of contents does not list. */
   const unlisted = (fileNames) => fileNames.filter((f) => RE.chapterFile.test(f) && !byAil.has(+f.match(RE.chapterFile)[1]));
 
-  return { warnings, stats, rewriteLinks, transformBody, buildQuiz, buildChecklist, renderChapter, renderPlan, renderIndex, sidebar, chapters, unlisted };
+  return { warnings, stats, rewriteLinks, transformBody, buildQuiz, buildChecklist, renderChapter, renderPlan, renderIndex, sidebar, chapters, pageSources, unlisted };
 }

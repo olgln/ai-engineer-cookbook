@@ -1,7 +1,7 @@
 // Extra <head> tags for search engines and link previews, added to Starlight's own (title,
 // description, canonical, og:title, og:description). Pure, so it is tested without a build
 // (tests/seo-head.test.mjs).
-import { OG_IMAGE } from '../config/app.mjs';
+import { APPLE_TOUCH_ICON, OG_IMAGE } from '../config/app.mjs';
 
 const meta = (attrs) => ({ tag: 'meta', attrs });
 
@@ -28,3 +28,8 @@ export function seoHead({ site, imageAlt, googleSiteVerification, yandexVerifica
   if (yandexVerification) head.push(meta({ name: 'yandex-verification', content: yandexVerification }));
   return head;
 }
+
+/** Starlight `head` entries for the icons Starlight does not link itself (it links only favicon.svg). */
+export const iconHead = () => [
+  { tag: 'link', attrs: { rel: 'apple-touch-icon', href: APPLE_TOUCH_ICON.path } },
+];
