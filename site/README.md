@@ -44,6 +44,20 @@ SITE_URL=https://your-domain.example npm run build   # → dist/
 - **Security headers.** Every page carries a Content Security Policy `<meta>` tag (Astro `security.csp`: scripts only from the site itself plus hashes of the inline scripts, no plugins, no foreign forms or `<base>`). The build also writes `dist/_headers` with the headers a `<meta>` cannot set: `frame-ancestors 'none'`, `nosniff`, `Referrer-Policy`, `Permissions-Policy`, `Cross-Origin-Opener-Policy`, HSTS, and long caching for the hashed files in `/_astro/`. Netlify and Cloudflare Pages read `_headers` as is; on other hostings (Vercel, nginx, S3 + CloudFront) set the same headers in their config. GitHub Pages cannot set headers at all — prefer a hosting that can.
 - **`robots.txt`** is written next to the pages; with `SITE_URL` set it points to `sitemap-index.xml`.
 - **CI** (`.github/workflows/ci.yml`) runs `npm ci`, `npm audit`, `npm test` and `npm run build` on every push and pull request and keeps `dist/` as a build artifact. Set the repository variable `SITE_URL` for production builds. Publishing is left to the hosting (connect the repository there, build command `npm run build`, base directory `site`, output `dist`) or to a deploy step added to the workflow.
+
+### Cloudflare Workers
+
+The public site runs on Cloudflare Workers as static assets, configured in `wrangler.jsonc` (no Worker script). `*.pages.dev` is blocked by some providers, `*.workers.dev` is not, so Pages is not used. In the Cloudflare dashboard: **Workers & Pages → Create → Import a repository**, then
+
+| Setting | Value |
+|---|---|
+| Root directory | `site` |
+| Build command | `npm run build` |
+| Deploy command | `npx wrangler deploy` (runs the pinned `wrangler` from `devDependencies`) |
+| Preview builds | off |
+| Build variables | `NODE_VERSION` = the version in `.nvmrc`; `SITE_URL` = `https://<name>.<account>.workers.dev` or the custom domain |
+
+Every push to `main` deploys. Check a deploy locally without uploading anything: `npm run build && npx wrangler deploy --dry-run`. `wrangler` is a deploy tool only, so `npm audit --omit=dev` skips it; update it deliberately, keeping `compatibility_date` in `wrangler.jsonc` no newer than its bundled runtime.
 - **Node** version is in `.nvmrc` (CI uses it); `package.json` `engines` + `engine-strict` stop installs on an older Node.
 
 To check the production headers and CSP locally: `npm run build && npm run serve` serves `dist/` with the same headers (except HSTS).
@@ -81,6 +95,7 @@ Code, comments, logs and docs are in English. Russian is used only for what the 
 | `src/integrations/deploy-files.mjs` | after the build, writes `dist/_headers` and `dist/robots.txt` |
 | `public/favicon.svg` | site icon |
 | `../.github/workflows/ci.yml` | CI: audit, tests, build |
+| `wrangler.jsonc` | Cloudflare Workers deployment: serves `dist/` with the 404 page, no preview URLs, no telemetry |
 | `src/scripts/main.ts`, `progress.ts` | quizzes, checklists, chapter marks, progress storage |
 | `src/integrations/progress-handler.mjs` | `GET/PUT /api/progress` → the progress file |
 | `src/styles/custom.css`, `ec.config.mjs` | styling and code highlighting |
@@ -88,4 +103,4 @@ Code, comments, logs and docs are in English. Russian is used only for what the 
 
 ## Dependencies
 
-Astro 7.4.7, Starlight 0.42.7, mermaid 12.2.0 and the expressive-code plugins 0.44.3 were reviewed before installation: versions are exact (`save-exact`), the whole tree is frozen at 2026-11-07 (`before=` in `.npmrc`), install scripts are disabled (`ignore-scripts=true`), Astro telemetry is off. Update only deliberately, with the same review.
+Astro 7.4.7, Starlight 0.42.7, mermaid 12.2.0, the expressive-code plugins 0.44.3 and the deploy tool wrangler 4.158.0 (dev only) were reviewed before installation: versions are exact (`save-exact`), the whole tree is frozen at 2026-11-07 (`before=` in `.npmrc`), install scripts are disabled (`ignore-scripts=true`), Astro telemetry is off. Update only deliberately, with the same review.

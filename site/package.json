@@ -19,5 +19,8 @@
     "@expressive-code/plugin-line-numbers": "0.44.3",
     "astro": "7.4.7",
     "mermaid": "12.2.0"
+  },
+  "devDependencies": {
+    "wrangler": "4.158.0"
   }
 }
