@@ -2,6 +2,7 @@ import * as P from './progress';
 import chapters from '../chapters.json';
 import strings from '../locales/ru.json';
 import { format, plural as pluralForm } from '../locales/format.mjs';
+import type { MermaidConfig } from 'mermaid';
 
 const ui = strings.ui;
 
@@ -334,10 +335,10 @@ function importProgress() {
 }
 
 // ---------------- mermaid ----------------
-const mermaidConfig = (dark: boolean) => ({
+const mermaidConfig = (dark: boolean): MermaidConfig => ({
   startOnLoad: false,
   theme: dark ? 'dark' : 'neutral',
-  securityLevel: 'strict' as const,
+  securityLevel: 'strict',
   themeVariables: { fontSize: '15px' },
   flowchart: { useMaxWidth: false, padding: 12 },
 });
