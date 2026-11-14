@@ -35,7 +35,7 @@ The progress API answers only to local host names (`localhost`, `127.0.0.1`, `[:
 
 ## Deploying to a hosting
 
-The site is fully static: `npm run build` produces `dist/`, which any static hosting can serve. Nothing on the server side is needed.
+The pages are fully static: `npm run build` produces `dist/`, which any static hosting can serve. The only server code is the account API in `worker/` (see "Accounts" below); it runs on Cloudflare Workers, and without it the site works as before, with progress in the browser.
 
 ```bash
 cd site
@@ -53,13 +53,13 @@ SITE_URL=https://your-domain.example npm run build   # → dist/
 
 ### Cloudflare Workers
 
-The public site runs on Cloudflare Workers as static assets, configured in `wrangler.jsonc` (no Worker script). `*.pages.dev` is blocked by some providers, `*.workers.dev` is not, so Pages is not used. In the Cloudflare dashboard: **Workers & Pages → Create → Import a repository**, then
+The public site runs on Cloudflare Workers as static assets plus a Worker script for `/api/*` only, configured in `wrangler.jsonc`. `*.pages.dev` is blocked by some providers, `*.workers.dev` is not, so Pages is not used. In the Cloudflare dashboard: **Workers & Pages → Create → Import a repository**, then
 
 | Setting | Value |
 |---|---|
 | Root directory | `site` |
 | Build command | `(git fetch --unshallow --quiet \|\| true) && npm run build` — the full history gives the sitemap its dates; without it the build still works, just without `<lastmod>` |
-| Deploy command | `npx wrangler deploy` (runs the pinned `wrangler` from `devDependencies`) |
+| Deploy command | `npm run deploy`: applies new D1 migrations, then `wrangler deploy` (the pinned `wrangler` from `devDependencies`) |
 | Preview builds | off |
 | Build variables | `NODE_VERSION` = the version in `.nvmrc`; `SITE_URL` = `https://<name>.<account>.workers.dev` or the custom domain; optionally `GOOGLE_SITE_VERIFICATION`, `YANDEX_VERIFICATION`, `CLOUDFLARE_WEB_ANALYTICS_TOKEN` |
 
@@ -67,6 +67,17 @@ Every push to `main` deploys. Check a deploy locally without uploading anything:
 - **Node** version is in `.nvmrc` (CI uses it); `package.json` `engines` + `engine-strict` stop installs on an older Node.
 
 To check the production headers and CSP locally: `npm run build && npm run serve` serves `dist/` with the same headers (except HSTS).
+
+### Accounts (Worker + D1)
+
+Readers will be able to sign in with Google or GitHub and keep their progress on the server. This is being built in stages; so far there are sessions only, no sign-in yet.
+
+- **What runs where.** `wrangler.jsonc` sends only `/api/*` to the Worker (`run_worker_first`); pages and assets never reach it. The Worker (`worker/index.mjs`, logic in `worker/lib/`) answers `GET /api/me` (who is signed in, 401 otherwise) and `POST /api/logout`; any other `/api/*` path is a JSON 404, so `/api/progress` on the hosting still falls back to the browser copy.
+- **Data.** Cloudflare D1, binding `DB`, schema in `migrations/`. A user is a random id plus the provider's user id (no e-mail, name or provider token). A session is a random token in the `__Host-session` cookie (`HttpOnly; Secure; SameSite=Lax`); the database keeps only its SHA-256. Sessions last 30 days and are extended at most once a day while used; a daily cron (`triggers` in `wrangler.jsonc`) deletes expired ones. Lifetimes and names are in `src/config/app.mjs`.
+- **Security.** State-changing requests need an `Origin` equal to the site's own; API responses carry the same security headers as the pages and `Cache-Control: no-store`.
+- **One-time setup** (needs `npx wrangler login`): `npx wrangler d1 create ai-engineer-cookbook`. The config finds the database by name, so no id goes into the repository. Then set the deploy command to `npm run deploy` (table above). If the build token cannot reach D1, give it the D1 Edit permission.
+- **Locally:** `npm run dev:worker` applies the migrations to a local database in `.wrangler/` and serves the last build from `dist/` together with the Worker on http://localhost:8787 (keep `npm start` running, or run `npm run build` first). The secure cookie works on `localhost` in Chrome and Firefox; Safari does not keep it over plain HTTP. `npm start` itself has no accounts.
+- **Tests** run the Worker against an in-memory stand-in for D1 on `node:sqlite` with the real migrations (`tests/helpers/d1.mjs`).
 
 ### Icons
 
@@ -101,7 +112,7 @@ cd site
 
 ```bash
 cd site
-npm test         # unit tests of the converter and the progress API + checks of the book itself
+npm test         # unit tests of the converter, the progress API and the account Worker + checks of the book itself
 ```
 
 Tests use the built-in `node:test`, no extra dependencies; the Python syntax check of the book's examples needs `python3` and is skipped without it. `npm run build` also fails when the converter reports a warning.
@@ -135,7 +146,11 @@ Code, comments, logs and docs are in English. Russian is used only for what the 
 | `src/components/seo-head.mjs` | extra `<head>` tags: preview image, search-console tokens, iOS icon |
 | `src/components/web-analytics.mjs` | Cloudflare Web Analytics beacon and the CSP origins it needs (only with a token) |
 | `../.github/workflows/ci.yml` | CI: audit, tests, build |
-| `wrangler.jsonc` | Cloudflare Workers deployment: serves `dist/` with the 404 page, no preview URLs, no telemetry |
+| `wrangler.jsonc` | Cloudflare Workers deployment: serves `dist/` with the 404 page, runs the Worker for `/api/*`, the D1 binding and the session clean-up cron, no preview URLs, no telemetry |
+| `worker/index.mjs` | the Worker entry: `fetch` for `/api/*`, `scheduled` for the cron |
+| `worker/lib/api.mjs`, `session.mjs`, `users.mjs`, `http.mjs` | account API routes, sessions and cookies, users and sign-in identities, response helpers |
+| `migrations/*.sql` | D1 schema, applied in order by `wrangler d1 migrations apply` |
+| `tests/helpers/d1.mjs` | in-memory D1 for the tests, on `node:sqlite` |
 | `src/scripts/main.ts`, `progress.ts` | quizzes, checklists, chapter marks, the review page, progress storage |
 | `src/scripts/review.mjs` | which answered questions go to the review page (`/review/`); the page loads the question list (`src/quiz-index.json`, generated) only there |
 | `src/integrations/progress-handler.mjs` | `GET/PUT /api/progress` → the progress file |

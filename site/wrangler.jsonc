@@ -1,16 +1,32 @@
-// Cloudflare Workers deployment of the built site (static assets only, no Worker script).
-// Workers Builds runs `npm run build` and then `npx wrangler deploy` from this directory.
+// Cloudflare Workers deployment: the built site as static assets, plus a Worker script for /api/* only.
+// Workers Builds runs `npm run build` and then `npm run deploy` (D1 migrations, then `wrangler deploy`).
 {
   "$schema": "./node_modules/wrangler/config-schema.json",
   "name": "ai-engineer-cookbook",
   // Must not be newer than the workerd release that ships with the pinned wrangler.
   "compatibility_date": "2026-11-04",
+  // The account API (sessions; sign-in comes next). Pages never reach it.
+  "main": "./worker/index.mjs",
   "assets": {
     // Astro's build output; dist/_headers carries the security headers.
     "directory": "./dist",
     // Unknown paths get dist/404.html with a 404 status.
     "not_found_handling": "404-page",
-    "html_handling": "auto-trailing-slash"
+    "html_handling": "auto-trailing-slash",
+    // Only these paths go to the Worker; everything else is served from dist/ without running it.
+    "run_worker_first": ["/api/*"]
+  },
+  // Accounts and sessions. Looked up by name: create it once with `npx wrangler d1 create ai-engineer-cookbook`.
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "ai-engineer-cookbook",
+      "migrations_dir": "./migrations"
+    }
+  ],
+  // Daily clean-up of expired sessions (worker/index.mjs `scheduled`), 03:17 UTC.
+  "triggers": {
+    "crons": ["17 3 * * *"]
   },
   // Served on <name>.<account>.workers.dev; per-version preview URLs stay off so drafts are not public.
   "workers_dev": true,

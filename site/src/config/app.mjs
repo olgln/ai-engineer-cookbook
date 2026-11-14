@@ -4,6 +4,27 @@
 /** Route of the progress API (served by `astro dev` and by scripts/serve.mjs). */
 export const PROGRESS_API_PATH = '/api/progress';
 
+/** Paths the Cloudflare Worker (worker/index.mjs) answers before the static assets (wrangler.jsonc `run_worker_first`). */
+export const API_PREFIX = '/api/';
+
+/** Account API, served by the Worker only (the local server has no accounts). */
+export const ME_API_PATH = '/api/me';
+export const LOGOUT_API_PATH = '/api/logout';
+
+/** Sign-in providers, in the order of the sign-in buttons. */
+export const AUTH_PROVIDERS = ['google', 'github'];
+
+/**
+ * Session cookie. The __Host- prefix makes the browser require Secure, Path=/ and no Domain, so a
+ * subdomain cannot set or read it. The value is a random token; the database keeps only its SHA-256.
+ */
+export const SESSION_COOKIE = '__Host-session';
+export const SESSION_TOKEN_BYTES = 32;
+/** A session lives this long after its last renewal, in seconds (30 days). */
+export const SESSION_TTL_SECONDS = 30 * 24 * 60 * 60;
+/** A used session is renewed at most this often, so most requests do not write to the database (1 day). */
+export const SESSION_RENEW_AFTER_SECONDS = 24 * 60 * 60;
+
 /** Response header that tells the browser where the progress file is stored. */
 export const PROGRESS_FILE_HEADER = 'X-Progress-File';
 
