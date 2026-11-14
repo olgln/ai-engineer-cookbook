@@ -213,7 +213,6 @@ nav a[data-chapter] { display: flex; }
   border-radius: var(--radius);
   background: var(--sl-color-bg-nav);
 }
-.course-progress:empty { display: none; }
 .course-progress-head { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 0.25rem 1rem; align-items: baseline; }
 .storage-note { font-size: 0.8rem; color: var(--sl-color-gray-3); }
 .course-progress-actions { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 0.9rem !important; }
@@ -225,7 +224,7 @@ nav a[data-chapter] { display: flex; }
   background: var(--sl-color-gray-5);
   overflow: hidden;
 }
-.progress-fill { display: block; height: 100%; background: var(--sl-color-green); border-radius: inherit; transition: width 0.3s; }
+.progress-fill { display: block; width: 0; height: 100%; background: var(--sl-color-green); border-radius: inherit; transition: width 0.3s; }
 
 .week-card {
   margin-top: 1rem !important;
@@ -239,7 +238,6 @@ nav a[data-chapter] { display: flex; }
    margin (on the link) must resolve against the same font size, or the icon overlaps the text. */
 .week-card :is(h3, .sl-heading-wrapper) { font-size: 1.1rem; }
 .week-progress { display: flex; align-items: center; gap: 0.6rem; margin-top: 0.3rem !important; }
-.week-progress:empty { display: none; }
 .week-progress .progress-bar { flex: 1; margin: 0; height: 0.35rem; }
 .week-progress-label { font-size: 0.8rem; color: var(--sl-color-gray-3); font-variant-numeric: tabular-nums; }
 .week-card ul { padding-inline-start: 1.1rem; }
