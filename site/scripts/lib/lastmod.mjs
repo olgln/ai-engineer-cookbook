@@ -25,6 +25,13 @@ export function pageDates(pages, fileDates) {
 }
 
 /**
+ * `filter` option of @astrojs/sitemap: whether a page belongs in the sitemap.
+ * @param {string} page absolute URL of the page
+ * @param {string[]} excluded page paths to leave out
+ */
+export const inSitemap = (page, excluded) => !excluded.includes(new URL(page).pathname);
+
+/**
  * `serialize` option of @astrojs/sitemap: adds the date of the page, when known, to its sitemap entry.
  * @template {{ url: string }} T
  * @param {T} item

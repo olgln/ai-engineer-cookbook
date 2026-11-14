@@ -1,7 +1,8 @@
 // Tests for the page dates in the sitemap (scripts/lib/lastmod.mjs).
 import assert from 'node:assert/strict';
 import { describe, test } from 'node:test';
-import { GIT_LOG_ARGS, pageDates, parseGitLog, withLastmod } from '../scripts/lib/lastmod.mjs';
+import { SITEMAP_EXCLUDED_PATHS, REVIEW_PATH } from '../src/config/app.mjs';
+import { GIT_LOG_ARGS, inSitemap, pageDates, parseGitLog, withLastmod } from '../scripts/lib/lastmod.mjs';
 
 // What `git log --format=%x00%cI --name-only` prints: newest commit first, a blank line before the files.
 const LOG = [
@@ -58,5 +59,16 @@ describe('withLastmod', () => {
   test('an unknown page is kept as is', () => {
     const item = { url: 'https://cookbook.example.com/plan/' };
     assert.equal(withLastmod(item, dates), item);
+  });
+});
+
+describe('inSitemap', () => {
+  test('the personal review page (noindex) stays out of the sitemap', () => {
+    assert.ok(SITEMAP_EXCLUDED_PATHS.includes(REVIEW_PATH));
+    assert.equal(inSitemap(`https://cookbook.example.com${REVIEW_PATH}`, SITEMAP_EXCLUDED_PATHS), false);
+  });
+
+  test('chapters, the plan and the index stay in', () => {
+    for (const p of ['/', '/plan/', '/week-01/1-1/']) assert.equal(inSitemap(`https://cookbook.example.com${p}`, SITEMAP_EXCLUDED_PATHS), true);
   });
 });
