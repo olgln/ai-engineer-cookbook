@@ -10,6 +10,8 @@ export const API_PREFIX = '/api/';
 /** Account API, served by the Worker only (the local server has no accounts). */
 export const ME_API_PATH = '/api/me';
 export const LOGOUT_API_PATH = '/api/logout';
+/** `DELETE` removes the signed-in reader's account with its sign-in identities, sessions and progress. */
+export const ACCOUNT_API_PATH = '/api/account';
 
 /** Sign-in providers, in the order of the sign-in buttons. */
 export const AUTH_PROVIDERS = ['google', 'github'];
@@ -79,6 +81,12 @@ export const PROGRESS_REV_HEADER = 'X-Progress-Rev';
 export const ACCOUNT_PROGRESS_MAX_BYTES = 512 * 1024;
 /** localStorage key that ties the browser copy to the account copy: { rev, dirty } (src/scripts/sync.mjs). */
 export const SYNC_STORAGE_KEY = 'ai-cookbook-progress-sync';
+
+/**
+ * localStorage key where Starlight keeps the chosen colour theme. Set by Starlight, not by our code; named
+ * here for the privacy page, and checked against Starlight's source (tests/privacy.test.mjs).
+ */
+export const THEME_STORAGE_KEY = 'starlight-theme';
 
 /** Response header that tells the browser where the progress file is stored. */
 export const PROGRESS_FILE_HEADER = 'X-Progress-File';
@@ -193,6 +201,19 @@ export const PLAN_PATH = '/plan/';
 
 /** Route of the review page: quiz questions answered wrong or marked "didn't know", across all chapters. */
 export const REVIEW_PATH = '/review/';
+
+/** Route of the privacy policy page: what the site stores, where, and how to delete it. Public, in the sitemap. */
+export const PRIVACY_PATH = '/privacy/';
+
+/**
+ * Where readers write about their data, shown on the privacy page: an e-mail address or an https:// link.
+ * MUST be filled in before sign-in goes live (site/README.md, "Accounts"); while empty the page shows
+ * `privacy.contactPlaceholder` from ru.json.
+ */
+export const PRIVACY_CONTACT = '';
+
+/** Date of the current privacy policy text (YYYY-MM-DD), shown on the page. Change it with the text. */
+export const PRIVACY_POLICY_DATE = '2026-11-14';
 
 /** Pages left out of the sitemap: personal pages marked noindex (a noindex page in the sitemap is a Search Console error). */
 export const SITEMAP_EXCLUDED_PATHS = [REVIEW_PATH];

@@ -3,7 +3,7 @@
 // - 'account': the hosting's Worker keeps it in the signed-in reader's account (sync: ./sync.mjs);
 // - 'browser': no API (static hosting, or signed out), localStorage alone.
 import {
-  LOGOUT_API_PATH, PROGRESS_API_PATH, PROGRESS_FILE_HEADER, PROGRESS_REV_HEADER, SAVE_DEBOUNCE_MS, STORAGE_KEY,
+  ACCOUNT_API_PATH, LOGOUT_API_PATH, PROGRESS_API_PATH, PROGRESS_FILE_HEADER, PROGRESS_REV_HEADER, SAVE_DEBOUNCE_MS, STORAGE_KEY,
   SYNC_STORAGE_KEY,
 } from '../config/app.mjs';
 import { mergeProgress, parseMarker, planLoad } from './sync.mjs';
@@ -202,6 +202,25 @@ export async function signOut() {
   await fetch(LOGOUT_API_PATH, { method: 'POST' });
   dropMarker();
   storage = 'browser';
+}
+
+/**
+ * Deletes the account with its server copy of the progress. Unsent changes are not uploaded: the browser
+ * keeps its copy and goes on with it alone. Returns false when the account could not be deleted (signed
+ * out, offline, server error); nothing changes in the browser then.
+ */
+export async function deleteAccount(): Promise<boolean> {
+  try {
+    const res = await fetch(ACCOUNT_API_PATH, { method: 'DELETE' });
+    if (!res.ok) return false;
+  } catch {
+    return false;
+  }
+  clearTimeout(timer);
+  dropMarker();
+  storage = 'browser';
+  writeLocal();
+  return true;
 }
 
 export function get(): Progress {

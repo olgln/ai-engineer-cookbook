@@ -242,6 +242,10 @@ nav a[data-chapter] { display: flex; }
 .account-status { font-size: 0.875rem; color: var(--site-color-muted); }
 .account-status.error { color: var(--sl-color-red-high); }
 .account-box > * { margin-top: 0 !important; }
+.sl-markdown-content .account-box a.account-privacy { font-size: 0.875rem; color: var(--site-color-muted); text-underline-offset: 0.2em; }
+.sl-markdown-content .account-box a.account-privacy:hover { color: var(--sl-color-white); }
+.quiz-btn.account-delete { color: var(--sl-color-red-high); }
+.quiz-btn.account-delete:hover { border-color: var(--sl-color-red); }
 .progress-bar {
   display: block;
   height: 0.45rem;
@@ -294,9 +298,11 @@ pre.mermaid svg { height: auto; max-width: none !important; }
   z-index: calc(var(--sl-z-index-menu) + 1); /* above the fixed sidebar when scrolled to the end */
   min-height: var(--site-footer-height);
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   justify-content: center;
-  padding: 0 var(--sl-nav-pad-x);
+  gap: 0.25rem 1.25rem;
+  padding: 0.5rem var(--sl-nav-pad-x);
   border-top: 1px solid var(--sl-color-hairline-shade);
   background-color: var(--sl-color-bg-nav);
   color: var(--site-color-muted);
@@ -305,6 +311,8 @@ pre.mermaid svg { height: auto; max-width: none !important; }
   box-shadow: 0 100vh 0 100vh var(--sl-color-bg-nav);
 }
 .site-footer p { margin: 0; }
+.site-footer a { color: inherit; text-decoration: underline; text-underline-offset: 0.2em; }
+.site-footer a:hover, .site-footer a[aria-current='page'] { color: var(--sl-color-white); }
 /* short pages: the frame plus the footer fill exactly one screen */
 .page { min-height: calc(100vh - var(--site-footer-height)); }
 @media (min-width: 50rem) {

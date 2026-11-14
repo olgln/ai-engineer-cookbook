@@ -1,17 +1,17 @@
 // Tests for the Worker API through its entry point (worker/index.mjs): routing, /api/me, /api/logout,
-// /api/progress, sign-in with Google and GitHub (fake provider endpoints), same-origin checks, security
+// /api/account, /api/progress, sign-in with Google and GitHub (fake provider endpoints), same-origin checks, security
 // headers and the cron clean-up. D1 is the node:sqlite stand-in.
 import assert from 'node:assert/strict';
 import { beforeEach, describe, test } from 'node:test';
 import {
-  ACCOUNT_PROGRESS_MAX_BYTES, AUTH_API_PREFIX, AUTH_PROVIDERS, LOGIN_ERROR_PARAM, LOGOUT_API_PATH, ME_API_PATH,
+  ACCOUNT_API_PATH, ACCOUNT_PROGRESS_MAX_BYTES, AUTH_API_PREFIX, AUTH_PROVIDERS, LOGIN_ERROR_PARAM, LOGOUT_API_PATH, ME_API_PATH,
   OAUTH_COOKIE, OAUTH_PROVIDERS, PROGRESS_API_PATH, PROGRESS_REV_HEADER, RETURN_TO_PARAM, SECURITY_HEADERS,
   SESSION_COOKIE, SESSION_RENEW_AFTER_SECONDS, SESSION_TTL_SECONDS,
 } from '../src/config/app.mjs';
 import worker from '../worker/index.mjs';
 import { handleApi } from '../worker/lib/api.mjs';
 import { createSession, getSession, newToken } from '../worker/lib/session.mjs';
-import { findOrCreateUser } from '../worker/lib/users.mjs';
+import { deleteUser, findOrCreateUser } from '../worker/lib/users.mjs';
 import { createD1 } from './helpers/d1.mjs';
 import { githubTokenResponse, googleTokenResponse, jsonResponse, ORIGIN } from './helpers/oauth.mjs';
 
@@ -166,6 +166,80 @@ describe(`POST ${LOGOUT_API_PATH}`, () => {
       assert.equal(res.status, 403, String(origin));
     }
     assert.ok(await getSession(db, token, NOW));
+  });
+});
+
+describe(`DELETE ${ACCOUNT_API_PATH}`, () => {
+  const count = (table, id) => db.sqlite.prepare(`SELECT COUNT(*) AS n FROM ${table} WHERE ${table === 'users' ? 'id' : 'user_id'} = ?`).get(id).n;
+  const rowsOf = (id) => Object.fromEntries(['users', 'identities', 'sessions', 'progress'].map((t) => [t, count(t, id)]));
+  const remove = (opts = {}) => call(request(ACCOUNT_API_PATH, { method: 'DELETE', cookie: withSession(), origin: ORIGIN, ...opts }));
+
+  /** A user with two identities, two sessions (two devices) and stored progress. */
+  async function fullUser(subject) {
+    const id = await findOrCreateUser(db, FIRST, subject, NOW);
+    db.sqlite.prepare('INSERT INTO identities (provider, subject, user_id, created_at) VALUES (?, ?, ?, ?)').run(SECOND, subject, id, NOW);
+    const sessions = [await createSession(db, id, NOW), await createSession(db, id, NOW)];
+    db.sqlite.prepare('INSERT INTO progress (user_id, data, rev, updated_at) VALUES (?, ?, 1, ?)').run(id, '{"chapters":{}}', NOW);
+    return { id, sessions };
+  }
+
+  test('deletes the user with every identity, session and the progress, and nothing of another user', async () => {
+    const me = await fullUser('me');
+    const other = await fullUser('other');
+    const res = await remove({ cookie: withSession(me.sessions[0]) });
+    assert.equal(res.status, 204);
+    assert.equal(await res.text(), '');
+    assert.match(res.headers.get('Set-Cookie'), new RegExp(`^${SESSION_COOKIE}=;.*Max-Age=0`));
+    assert.deepEqual(rowsOf(me.id), { users: 0, identities: 0, sessions: 0, progress: 0 });
+    assert.deepEqual(rowsOf(other.id), { users: 1, identities: 2, sessions: 2, progress: 1 });
+    assert.deepEqual(rowsOf(userId), { users: 1, identities: 1, sessions: 1, progress: 0 });
+  });
+
+  test('the other sessions of the deleted user stop working at once', async () => {
+    const me = await fullUser('me');
+    await remove({ cookie: withSession(me.sessions[0]) });
+    const res = await call(request(ME_API_PATH, { cookie: withSession(me.sessions[1]) }));
+    assert.equal(res.status, 401);
+    const progress = await call(request(PROGRESS_API_PATH, { cookie: withSession(me.sessions[1]) }));
+    assert.equal(progress.status, 401);
+  });
+
+  test('signing in again after the deletion starts a new, empty account', async () => {
+    const me = await fullUser('me');
+    await remove({ cookie: withSession(me.sessions[0]) });
+    const again = await findOrCreateUser(db, FIRST, 'me', NOW + 1);
+    assert.notEqual(again, me.id);
+    assert.deepEqual(rowsOf(again), { users: 1, identities: 1, sessions: 0, progress: 0 });
+  });
+
+  test('signed out or with a stale session: 401 and nothing is deleted', async () => {
+    for (const cookie of [undefined, 'other=1', withSession(newToken())]) {
+      const res = await remove({ cookie });
+      assert.equal(res.status, 401, String(cookie));
+    }
+    assert.equal(count('users', userId), 1);
+  });
+
+  test('refuses other origins and requests without Origin, and keeps the account', async () => {
+    for (const origin of ['https://evil.test', 'null', undefined]) {
+      const res = await remove({ origin });
+      assert.equal(res.status, 403, String(origin));
+    }
+    assert.deepEqual(rowsOf(userId), { users: 1, identities: 1, sessions: 1, progress: 0 });
+  });
+
+  test('other methods get 405 with Allow: DELETE', async () => {
+    for (const method of ['GET', 'POST', 'PUT']) {
+      const res = await call(request(ACCOUNT_API_PATH, { method, cookie: withSession(), origin: ORIGIN }));
+      assert.equal(res.status, 405, method);
+      assert.equal(res.headers.get('Allow'), 'DELETE');
+    }
+    assert.equal(count('users', userId), 1);
+  });
+
+  test('deleteUser says whether there was a user to delete', async () => {
+    assert.equal(await deleteUser(db, userId), true);
+    assert.equal(await deleteUser(db, userId), false);
   });
 });
 

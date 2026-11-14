@@ -2,9 +2,11 @@
 // Starlight's page frame (header, sidebar, content) followed by a full-width site footer.
 import Default from '@astrojs/starlight/components/PageFrame.astro';
 import strings from '../locales/ru.json';
-import { copyrightLine } from './footer.mjs';
+import { copyrightLine, footerLinks } from './footer.mjs';
 
 const copyright = copyrightLine(strings, new Date().getFullYear());
+const links = footerLinks(strings);
+const current = Astro.url.pathname;
 ---
 
 <Default>
@@ -15,4 +17,7 @@ const copyright = copyrightLine(strings, new Date().getFullYear());
 
 <footer class="site-footer print:hidden">
   <p>{copyright}</p>
+  {links.map(({ href, label }) => (
+    <a href={href} aria-current={current === href ? 'page' : undefined}>{label}</a>
+  ))}
 </footer>

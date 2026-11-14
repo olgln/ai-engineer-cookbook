@@ -1,11 +1,11 @@
 // Tests for the account mode of the browser progress store (src/scripts/progress.ts, run by Node's type
 // stripping): first sync, server-wins when in step, uploads after a change, conflicts with another
-// device, an expired session and signing out. fetch and localStorage are fakes; each test loads a fresh
+// device, an expired session, signing out and deleting the account. fetch and localStorage are fakes; each test loads a fresh
 // copy of the module.
 import assert from 'node:assert/strict';
 import { beforeEach, describe, test } from 'node:test';
 import {
-  LOGOUT_API_PATH, PROGRESS_API_PATH, PROGRESS_REV_HEADER, SAVE_DEBOUNCE_MS, STORAGE_KEY, SYNC_STORAGE_KEY,
+  ACCOUNT_API_PATH, LOGOUT_API_PATH, PROGRESS_API_PATH, PROGRESS_REV_HEADER, SAVE_DEBOUNCE_MS, STORAGE_KEY, SYNC_STORAGE_KEY,
 } from '../src/config/app.mjs';
 
 /** In-memory account API: one progress document with a revision, like worker/lib/progress.mjs. */
@@ -16,6 +16,9 @@ class FakeAccount {
     this.signedIn = true;
     this.puts = 0;
     this.pending = 0;
+    this.deleted = false;
+    /** Status the account deletion answers with while signed in (a server error when not 204). */
+    this.deleteStatus = 204;
   }
 
   async fetch(url, init = {}) {
@@ -27,6 +30,15 @@ class FakeAccount {
         new Response(JSON.stringify(body), { status, headers: { 'Content-Type': 'application/json', ...headers } });
       if (url === LOGOUT_API_PATH && method === 'POST') {
         this.signedIn = false;
+        return new Response(null, { status: 204 });
+      }
+      if (url === ACCOUNT_API_PATH) {
+        assert.equal(method, 'DELETE');
+        if (!this.signedIn) return json(401, { error: 'unauthorized' });
+        if (this.deleteStatus !== 204) return json(this.deleteStatus, { error: 'internal error' });
+        this.deleted = true;
+        this.signedIn = false;
+        this.data = null;
         return new Response(null, { status: 204 });
       }
       assert.equal(url, PROGRESS_API_PATH);
@@ -156,5 +168,35 @@ describe('progress store with an account', () => {
     assert.equal(P.storage, 'browser');
     assert.equal(marker(), null);
     assert.deepEqual(local().chapters, { c1: { done: '2026-11-14' } });
+  });
+
+  test('deleting the account switches to the browser copy, which stays, and uploads nothing more', async () => {
+    account = new FakeAccount(doc({ c1: { done: '2026-11-01' } }), 3);
+    store.set(SYNC_STORAGE_KEY, JSON.stringify({ rev: 3, dirty: false }));
+    const P = await fresh();
+    await P.load();
+    P.chapter('c2').done = '2026-11-14';
+    P.save();
+    assert.equal(await P.deleteAccount(), true);
+    assert.equal(account.deleted, true);
+    assert.equal(P.storage, 'browser');
+    assert.equal(marker(), null, 'no marker: a new account later starts with a first sync');
+    assert.deepEqual(Object.keys(local().chapters).sort(), ['c1', 'c2']);
+    await settle();
+    assert.equal(account.puts, 0, 'the pending change is not uploaded to the deleted account');
+  });
+
+  test('a failed deletion changes nothing in the browser', async () => {
+    const P = await fresh();
+    await P.load();
+    account.deleteStatus = 500;
+    assert.equal(await P.deleteAccount(), false);
+    assert.equal(P.storage, 'account');
+    assert.deepEqual(marker(), { rev: 0, dirty: false });
+    account.signedIn = false;
+    assert.equal(await P.deleteAccount(), false, 'signed out elsewhere: 401');
+    globalThis.fetch = async () => { throw new TypeError('offline'); };
+    assert.equal(await P.deleteAccount(), false, 'offline');
+    assert.equal(P.storage, 'account');
   });
 });

@@ -2,7 +2,7 @@
 // assets are served by Cloudflare straight from dist/. The context holds the D1 binding `db`, `now`
 // (Unix seconds), the Worker `env` (provider credentials) and `fetch` (calls to the providers).
 import {
-  ACCOUNT_PROGRESS_MAX_BYTES, AUTH_API_PREFIX, AUTH_CALLBACK_SUFFIX, LOGIN_ERROR_PARAM, LOGOUT_API_PATH, ME_API_PATH,
+  ACCOUNT_API_PATH, ACCOUNT_PROGRESS_MAX_BYTES, AUTH_API_PREFIX, AUTH_CALLBACK_SUFFIX, LOGIN_ERROR_PARAM, LOGOUT_API_PATH, ME_API_PATH,
   PROGRESS_API_PATH, PROGRESS_REV_HEADER, RETURN_TO_PARAM, SESSION_COOKIE,
 } from '../../src/config/app.mjs';
 import { isSameOrigin, json, noContent, redirect } from './http.mjs';
@@ -14,7 +14,7 @@ import { isProgress, readProgress, writeProgress } from './progress.mjs';
 import {
   clearSessionCookie, createSession, deleteSession, getSession, readCookie, sessionCookie, sessionToken,
 } from './session.mjs';
-import { findOrCreateUser, listProviders } from './users.mjs';
+import { deleteUser, findOrCreateUser, listProviders } from './users.mjs';
 
 const SET_COOKIE = 'Set-Cookie';
 
@@ -42,6 +42,17 @@ async function me(request, context) {
 async function logout(request, { db }) {
   const token = sessionToken(request);
   if (token) await deleteSession(db, token);
+  return noContent([[SET_COOKIE, clearSessionCookie()]]);
+}
+
+/**
+ * DELETE /api/account: removes the signed-in reader with every sign-in identity, session (on all devices)
+ * and the stored progress, and removes the cookie. The browser copy of the progress is not touched.
+ */
+async function deleteAccount(request, context) {
+  const { session, denied } = await authenticate(request, context);
+  if (denied) return denied;
+  await deleteUser(context.db, session.userId);
   return noContent([[SET_COOKIE, clearSessionCookie()]]);
 }
 
@@ -122,6 +133,7 @@ async function signInCallback(request, { db, now, env, fetch }, provider) {
 const ROUTES = {
   [ME_API_PATH]: { GET: { handler: me } },
   [LOGOUT_API_PATH]: { POST: { handler: logout, unsafe: true } },
+  [ACCOUNT_API_PATH]: { DELETE: { handler: deleteAccount, unsafe: true } },
   [PROGRESS_API_PATH]: { GET: { handler: getProgress }, PUT: { handler: putProgress, unsafe: true } },
 };
 

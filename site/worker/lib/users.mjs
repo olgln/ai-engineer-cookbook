@@ -46,3 +46,12 @@ export async function listProviders(db, userId) {
     .all();
   return results.map((row) => row.provider);
 }
+
+/**
+ * Deletes a user. Identities, sessions and progress go with it (`ON DELETE CASCADE`; D1 enforces foreign
+ * keys). Returns whether the user existed.
+ */
+export async function deleteUser(db, userId) {
+  const result = await db.prepare('DELETE FROM users WHERE id = ?').bind(userId).run();
+  return result.meta.changes === 1;
+}

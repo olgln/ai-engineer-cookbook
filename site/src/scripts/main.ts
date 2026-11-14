@@ -4,7 +4,9 @@ import strings from '../locales/ru.json';
 import { format, plural as pluralForm } from '../locales/format.mjs';
 import { checkboxLabel, clickTogglesItem } from './checklist.mjs';
 import { reviewItems } from './review.mjs';
-import { AUTH_API_PREFIX, LOGIN_ERROR_PARAM, ME_API_PATH, QUESTION_ANCHOR_PREFIX, RETURN_TO_PARAM } from '../config/app.mjs';
+import {
+  AUTH_API_PREFIX, LOGIN_ERROR_PARAM, ME_API_PATH, PRIVACY_PATH, QUESTION_ANCHOR_PREFIX, RETURN_TO_PARAM,
+} from '../config/app.mjs';
 import type { MermaidConfig } from 'mermaid';
 
 const ui = strings.ui;
@@ -366,14 +368,29 @@ async function initAccount(overall: HTMLElement) {
       location.reload();
     });
     const who = format(ui.signedInWith, { provider: me.providers.map(providerName).join(', ') });
-    box.replaceChildren(el('span', { class: 'account-status' }, who), signOut);
+    const status = el('span', { class: 'account-status' }, who);
+    const remove = el('button', { class: 'quiz-btn ghost account-delete', type: 'button', textContent: ui.deleteAccount });
+    remove.addEventListener('click', async () => {
+      if (!confirm(ui.confirmDeleteAccount)) return;
+      signOut.disabled = remove.disabled = true;
+      if (await P.deleteAccount()) {
+        location.reload();
+        return;
+      }
+      signOut.disabled = remove.disabled = false;
+      status.className = 'account-status error';
+      status.setAttribute('role', 'alert');
+      status.textContent = ui.deleteAccountFailed;
+    });
+    box.replaceChildren(status, signOut, remove);
   } else if (me.available?.length) {
     const back = `${RETURN_TO_PARAM}=${encodeURIComponent(location.pathname)}`;
     const links = me.available.map((p) =>
       el('a', { class: 'quiz-btn', href: `${AUTH_API_PREFIX}${p}?${back}`, textContent: format(ui.signInWith, { provider: providerName(p) }) }));
     const text = el('span', { class: failed ? 'account-status error' : 'account-status' }, failed ? ui.signInFailed : ui.signInPrompt);
     if (failed) text.setAttribute('role', 'alert');
-    box.replaceChildren(text, ...links);
+    const privacy = el('a', { class: 'account-privacy', href: PRIVACY_PATH, textContent: ui.privacyLink });
+    box.replaceChildren(text, ...links, privacy);
   } else return;
   box.hidden = false;
 }
