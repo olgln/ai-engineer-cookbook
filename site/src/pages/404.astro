@@ -1,0 +1,10 @@
+---
+// Custom 404 page in place of Starlight's built-in one (`disable404Route` in astro.config.mjs).
+import StarlightPage from '@astrojs/starlight/components/StarlightPage.astro';
+import strings from '../locales/ru.json';
+import { notFoundPage } from '../components/not-found.mjs';
+
+const { lang, frontmatter } = notFoundPage(strings);
+---
+
+<StarlightPage frontmatter={frontmatter} lang={lang} />
