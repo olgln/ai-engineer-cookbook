@@ -15,7 +15,7 @@
 [![Текст: CC BY-NC-SA 4.0](https://img.shields.io/badge/%D1%82%D0%B5%D0%BA%D1%81%D1%82-CC_BY--NC--SA_4.0-ef9421?style=flat-square&logo=creativecommons&logoColor=white)](LICENSE-CONTENT)
 [![Код: MIT](https://img.shields.io/badge/%D0%BA%D0%BE%D0%B4-MIT-16a34a?style=flat-square)](LICENSE)
 
-**Курс на русском для разработчиков, которые хотят стать AI-инженерами.**<br>
+**Курс для разработчиков, которые хотят стать AI-инженерами.**<br>
 Теория, практика и проекты для портфолио — на дешёвых облачных и бесплатных локальных моделях.
 
 [📖 Оглавление](book/README.md) · [🗺 План курса](#план-как-стать-ai-инженером) · [🖥 Сайт учебника](site/README.md) · [⚖️ Лицензия](#лицензия)

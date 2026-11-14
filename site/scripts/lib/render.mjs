@@ -340,7 +340,14 @@ export function createRenderer(weeks) {
       // repo-only blocks (e.g. the pointer to site/README.md) are not part of the plan page
       .replace(RE.repoOnly, '')
       .replace(RE.planBookLink, `](${CHAPTER_PREFIX}$1.md`);
-    const fm = ['---', `title: ${yamlStr(h1[1].trim())}`, 'editUrl: false', '---', ''].join('\n');
+    const fm = [
+      '---',
+      `title: ${yamlStr(h1[1].trim())}`,
+      `description: ${yamlStr(site.planDescription)}`,
+      'editUrl: false',
+      '---',
+      '',
+    ].join('\n');
     return fm + transformBody(body);
   }
 

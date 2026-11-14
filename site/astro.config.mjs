@@ -6,6 +6,7 @@ import strings from './src/locales/ru.json' with { type: 'json' };
 import progressApi from './src/integrations/progress-api.mjs';
 import deployFiles from './src/integrations/deploy-files.mjs';
 import cspInlineHashes from './src/integrations/csp-inline-hashes.mjs';
+import { seoHead } from './src/components/seo-head.mjs';
 import { CSP } from './src/config/app.mjs';
 import { config } from './src/config/server.mjs';
 
@@ -28,6 +29,12 @@ export default defineConfig({
       defaultLocale: 'root',
       locales: { root: { label: strings.languageLabel, lang: strings.lang } },
       sidebar,
+      head: seoHead({
+        site: config.siteUrl,
+        imageAlt: strings.site.ogImageAlt,
+        googleSiteVerification: config.googleSiteVerification,
+        yandexVerification: config.yandexVerification,
+      }),
       tableOfContents: { minHeadingLevel: 2, maxHeadingLevel: 3 },
       lastUpdated: false,
       // src/pages/404.astro replaces Starlight's built-in 404 page
