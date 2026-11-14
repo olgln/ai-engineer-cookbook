@@ -25,6 +25,16 @@ describe('_headers', () => {
   test('the page CSP forbids framing the site', () => {
     assert.match(SECURITY_HEADERS['Content-Security-Policy'], /frame-ancestors 'none'/);
   });
+
+  test('old browsers are kept from framing the site too', () => {
+    assert.equal(SECURITY_HEADERS['X-Frame-Options'], 'DENY');
+    assert.ok(all.includes('\n  X-Frame-Options: DENY'));
+  });
+
+  test('other sites cannot embed our files', () => {
+    assert.equal(SECURITY_HEADERS['Cross-Origin-Resource-Policy'], 'same-origin');
+    assert.ok(all.includes('\n  Cross-Origin-Resource-Policy: same-origin'));
+  });
 });
 
 describe('robots.txt', () => {
