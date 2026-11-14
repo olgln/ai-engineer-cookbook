@@ -7,8 +7,8 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import {
-  BOOK_DIR, CHAPTERS_FILE, DIST_DIR, DOCS_DIR, NEXT_DIST_DIR, OLD_DIST_DIR, PROGRESS_API_PATH,
-  REBUILD_DEBOUNCE_MS, RELOAD_EVENTS_PATH, RELOAD_SCRIPT_PATH, SECURITY_HEADERS, SIDEBAR_FILE,
+  BOOK_DIR, DIST_DIR, GENERATED_PATHS, NEXT_DIST_DIR, OLD_DIST_DIR, PROGRESS_API_PATH,
+  REBUILD_DEBOUNCE_MS, RELOAD_EVENTS_PATH, RELOAD_SCRIPT_PATH, SECURITY_HEADERS,
 } from '../src/config/app.mjs';
 import { config } from '../src/config/server.mjs';
 import { progressHandler } from '../src/integrations/progress-handler.mjs';
@@ -53,7 +53,7 @@ http
   });
 
 // ---------- rebuild on change ----------
-const GENERATED = [DOCS_DIR, SIDEBAR_FILE, CHAPTERS_FILE].map((p) => path.join(SITE, p));
+const GENERATED = GENERATED_PATHS.map((p) => path.join(SITE, p));
 const isGenerated = (file) => GENERATED.some((g) => file === g || file.startsWith(g + path.sep));
 
 /** Watched places: a directory, whether to descend into it, and which changed files count. */

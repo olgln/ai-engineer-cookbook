@@ -3,11 +3,15 @@
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import { describe, test } from 'node:test';
-import { DESCRIPTION_MAX_LENGTH, DESCRIPTION_MARKER, PLAN_PATH, REPO_ONLY_END, REPO_ONLY_START } from '../src/config/app.mjs';
+import {
+  DESCRIPTION_MAX_LENGTH, DESCRIPTION_MARKER, PLAN_PATH, QUESTION_ANCHOR_PREFIX, QUESTION_PREVIEW_MAX_LENGTH, REPO_ONLY_END,
+  REPO_ONLY_START, REVIEW_PATH,
+} from '../src/config/app.mjs';
 import { format, plural } from '../src/locales/format.mjs';
 import strings from '../src/locales/ru.json' with { type: 'json' };
 import {
-  answerKey, courseProgressHtml, createRenderer, extractOptions, parseToc, splitNumbered, splitSections, tagLines,
+  answerKey, courseProgressHtml, createRenderer, extractOptions, parseToc, questionPreview, splitNumbered, splitSections,
+  tagLines,
 } from '../scripts/lib/render.mjs';
 
 const { book, site, ui } = strings;
@@ -198,8 +202,8 @@ describe('buildQuiz', () => {
   test('marks the correct options and counts questions', () => {
     const r = renderer();
     const html = r.buildQuiz('1-1', ['1. Pick: a) x b) y', '2. Explain.'], ['1. **b.** y it is', '2. Because.']);
-    assert.match(html, /<section class="quiz-q" data-n="1" data-correct="b">/);
-    assert.match(html, /<section class="quiz-q" data-n="2">/);
+    assert.match(html, new RegExp(`<section class="quiz-q" id="${QUESTION_ANCHOR_PREFIX}1" data-n="1" data-correct="b">`));
+    assert.match(html, new RegExp(`<section class="quiz-q" id="${QUESTION_ANCHOR_PREFIX}2" data-n="2">`));
     assert.match(html, /- \*\*a\)\*\* x/);
     assert.deepEqual(r.stats, { chapters: 0, questions: 2, choice: 1, choiceWithKey: 1, checks: 0, mermaid: 0 });
     assert.deepEqual(r.warnings, []);
@@ -210,6 +214,45 @@ describe('buildQuiz', () => {
     const html = r.buildQuiz('1-1', ['1. Pick: a) x b) y', '2. Explain.'], ['1. y, obviously']);
     assert.ok(html.includes(site.noAnswer));
     assert.deepEqual(r.warnings, ['1-1: 2 questions vs 1 answers', '1-1 q1: options but no answer letter: "y, obviously"', '1-1: no answer for question 2']);
+  });
+});
+
+describe('quiz index for the review page', () => {
+  test('lists each question with its text and, for multiple choice, the answer key', () => {
+    const r = renderer();
+    r.buildQuiz('1-1', ['1. Pick `one`: a) x b) y', '2. Explain [this](https://example.com).', '   ```py', '   x = 1', '   ```'],
+      ['1. **b.** y', '2. Because.']);
+    r.buildQuiz('1-2', ['1. Why?'], ['1. So.']);
+    assert.deepEqual(r.quizIndex(), {
+      '1-1': [{ n: 1, text: 'Pick one:', correct: ['b'] }, { n: 2, text: 'Explain this.' }],
+      '1-2': [{ n: 1, text: 'Why?' }],
+    });
+  });
+});
+
+describe('questionPreview', () => {
+  test('drops Markdown: code, emphasis, links', () => {
+    assert.equal(questionPreview('Что делает **`temperature`** и _зачем_ [ссылка](AIL-1.md)?'), 'Что делает temperature и зачем ссылка?');
+  });
+
+  test('inline code stays as written', () => {
+    assert.equal(questionPreview('Почему в `.gitignore` стоят `*.db-wal` и `*.db-shm`, а не `__pycache__`?'),
+      'Почему в .gitignore стоят *.db-wal и *.db-shm, а не __pycache__?');
+  });
+
+  test('keeps underscores inside words', () => {
+    assert.equal(questionPreview('Что вернёт max_tokens?'), 'Что вернёт max_tokens?');
+  });
+
+  test('cuts long questions after a whole word, with an ellipsis', () => {
+    const text = questionPreview('слово '.repeat(100));
+    assert.ok(text.length <= QUESTION_PREVIEW_MAX_LENGTH);
+    assert.match(text, /^(слово )+слово…$/);
+  });
+
+  test('a single word longer than the limit is cut inside the word', () => {
+    const text = questionPreview('x'.repeat(QUESTION_PREVIEW_MAX_LENGTH + 10));
+    assert.equal(text, `${'x'.repeat(QUESTION_PREVIEW_MAX_LENGTH - 1)}…`);
   });
 });
 
@@ -293,15 +336,26 @@ describe('renderPlan, renderIndex, sidebar, chapters', () => {
     assert.match(index, /- \[1\.1 · Python\]\(\/week-01\/1-1\/\)/);
     assert.match(index, /- 2\.1 · Buffer\n/);
     const sb = r.sidebar();
-    assert.equal(sb.length, 3);
+    assert.equal(sb.length, 4);
+    assert.deepEqual(sb[2], { label: site.reviewLabel, link: REVIEW_PATH });
     assert.deepEqual(
-      sb[2].items.map((i) => i.attrs['data-chapter']),
+      sb[3].items.map((i) => i.attrs['data-chapter']),
       ['1-1', '1-2'],
     );
     assert.deepEqual(
       r.chapters().map((c) => c.id),
       ['1-1', '1-2'],
     );
+  });
+
+  test('the review page is a shell for the browser, hidden from search', () => {
+    const page = renderer().renderReview();
+    assert.ok(page.includes(`title: ${JSON.stringify(site.reviewTitle)}`));
+    assert.ok(page.includes(`description: ${JSON.stringify(site.reviewDescription)}`));
+    assert.match(page, /\npagefind: false\n/);
+    assert.match(page, /\n {2}- \{ tag: meta, attrs: \{ name: robots, content: noindex \} \}\n/);
+    assert.ok(page.includes(site.reviewIntro));
+    assert.match(page, /<div class="quiz-review" aria-live="polite"><\/div>/);
   });
 
   test('unlisted finds chapter files missing from the table of contents', () => {

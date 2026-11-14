@@ -2,7 +2,8 @@
 // Kept separate from convert.mjs so it can be unit-tested (tests/render.test.mjs).
 // All Russian text (site wording and the headings used to parse the book) lives in src/locales/ru.json.
 import {
-  BOOK_DIR, CHAPTER_PREFIX, DESCRIPTION_MARKER, DESCRIPTION_MAX_LENGTH, PLAN_PATH, REPO_ONLY_END, REPO_ONLY_START,
+  BOOK_DIR, CHAPTER_PREFIX, DESCRIPTION_MARKER, DESCRIPTION_MAX_LENGTH, PLAN_PATH, QUESTION_ANCHOR_PREFIX,
+  QUESTION_PREVIEW_MAX_LENGTH, REPO_ONLY_END, REPO_ONLY_START, REVIEW_PATH,
 } from '../../src/config/app.mjs';
 import { escapeRegExp, format, plural } from '../../src/locales/format.mjs';
 import strings from '../../src/locales/ru.json' with { type: 'json' };
@@ -173,6 +174,24 @@ export function splitNumbered(lines) {
 }
 
 // ---------- quizzes ----------
+/** Plain text of a question's first line for the review page: no Markdown, at most QUESTION_PREVIEW_MAX_LENGTH. */
+export function questionPreview(line) {
+  // odd parts are inline code: kept as is, only the backticks go
+  const text = line
+    .split('`')
+    .map((part, i) => (i % 2 ? part : part
+      .replace(/!?\[([^\]]*)\]\([^)]*\)/g, '$1')
+      .replace(/\*\*|__/g, '')
+      .replace(/(^|\W)[*_](\S(?:.*?\S)?)[*_](?=\W|$)/g, '$1$2')))
+    .join('')
+    .replace(/\s+/g, ' ')
+    .trim();
+  if (text.length <= QUESTION_PREVIEW_MAX_LENGTH) return text;
+  // cut at the last whole word that fits, leaving room for the ellipsis
+  const cut = text.slice(0, QUESTION_PREVIEW_MAX_LENGTH);
+  return `${cut.slice(0, cut.lastIndexOf(' ')).trimEnd() || cut.slice(0, -1)}…`;
+}
+
 const OPT_INLINE = /(?:^|[;,]?\s+)([a-d])\)\s+/g;
 
 /** Extract a) b) c) d) options from question lines; null when the question has none. */
@@ -241,6 +260,8 @@ const yamlStr = (s) => JSON.stringify(s);
  */
 export function createRenderer(weeks) {
   const byAil = new Map(pagedChapters(weeks).map((it) => [it.ail, it]));
+  /** @type {Record<string, { n: number, text: string, correct?: string[] }[]>} */
+  const quizzes = {};
   const warnings = [];
   const stats = { chapters: 0, questions: 0, choice: 0, choiceWithKey: 0, checks: 0, mermaid: 0 };
 
@@ -306,6 +327,7 @@ export function createRenderer(weeks) {
     const out = [];
     if (tests.pre.join('').trim()) out.push(tests.pre.join('\n').trim(), '');
     out.push(`<div class="quiz" data-chapter="${chapterId}">`, '');
+    const index = (quizzes[chapterId] = []);
     for (const q of tests.items) {
       stats.questions++;
       const ans = answerMap.get(q.n);
@@ -315,7 +337,9 @@ export function createRenderer(weeks) {
       if (opts) stats.choice++;
       if (key) stats.choiceWithKey++;
       if (opts && !key) warnings.push(`${chapterId} q${q.n}: options but no answer letter: "${(ans?.[0] ?? '').slice(0, 40)}"`);
-      const attrs = [`data-n="${q.n}"`, key ? `data-correct="${key.join(',')}"` : ''].filter(Boolean).join(' ');
+      index.push({ n: q.n, text: questionPreview((opts ? opts.question : q.lines)[0]), ...(key ? { correct: key } : {}) });
+      const attrs = [`id="${QUESTION_ANCHOR_PREFIX}${q.n}"`, `data-n="${q.n}"`, key ? `data-correct="${key.join(',')}"` : '']
+        .filter(Boolean).join(' ');
       out.push(`<section class="quiz-q" ${attrs}>`, '', `<p class="quiz-q-num">${format(site.questionLabel, { n: q.n })}</p>`, '');
       out.push(...(opts ? opts.question : q.lines), '');
       if (opts) {
@@ -443,11 +467,35 @@ export function createRenderer(weeks) {
     return lines.join('\n');
   }
 
+  /** Render the review page: a shell that the browser fills from the reader's progress (src/scripts/main.ts). */
+  function renderReview() {
+    return [
+      '---',
+      `title: ${yamlStr(site.reviewTitle)}`,
+      `description: ${yamlStr(site.reviewDescription)}`,
+      'editUrl: false',
+      'tableOfContents: false',
+      // personal and empty without the reader's progress: nothing for search engines or the site search
+      'pagefind: false',
+      'head:',
+      '  - { tag: meta, attrs: { name: robots, content: noindex } }',
+      'prev: false',
+      'next: false',
+      '---',
+      '',
+      site.reviewIntro,
+      '',
+      '<div class="quiz-review" aria-live="polite"></div>',
+      '',
+    ].join('\n');
+  }
+
   /** Starlight sidebar: index, plan, then the weeks that have chapter pages. */
   function sidebar() {
     return [
       { label: site.tocLabel, link: '/' },
       { label: site.planLabel, link: PLAN_PATH },
+      { label: site.reviewLabel, link: REVIEW_PATH },
       // weeks without chapter pages (e.g. the spare week) appear only on the index page
       ...weeks
         .filter((w) => w.items.some((it) => !it.noPage))
@@ -464,8 +512,11 @@ export function createRenderer(weeks) {
   /** Flat chapter list for the browser code. */
   const chapters = () => pagedChapters(weeks).map((i) => ({ id: i.id, week: i.week, num: i.num, title: i.title, href: i.href }));
 
+  /** Questions of every quiz rendered so far, by chapter id (call after renderChapter). */
+  const quizIndex = () => quizzes;
+
   /** Chapter files in the book directory that the table of contents does not list. */
   const unlisted = (fileNames) => fileNames.filter((f) => RE.chapterFile.test(f) && !byAil.has(+f.match(RE.chapterFile)[1]));
 
-  return { warnings, stats, rewriteLinks, transformBody, buildQuiz, buildChecklist, renderChapter, renderPlan, renderIndex, sidebar, chapters, unlisted };
+  return { warnings, stats, rewriteLinks, transformBody, buildQuiz, buildChecklist, renderChapter, renderPlan, renderIndex, renderReview, sidebar, chapters, quizIndex, unlisted };
 }

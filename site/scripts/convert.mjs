@@ -5,7 +5,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { BOOK_DIR, CHAPTERS_FILE, DOCS_DIR, PLAN_PATH, SIDEBAR_FILE } from '../src/config/app.mjs';
+import { BOOK_DIR, CHAPTERS_FILE, DOCS_DIR, PLAN_PATH, QUIZ_INDEX_FILE, REVIEW_PATH, SIDEBAR_FILE } from '../src/config/app.mjs';
 import { chapterFile, createRenderer, pagedChapters, parseToc } from './lib/render.mjs';
 
 const SITE = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
@@ -29,9 +29,11 @@ flat.forEach((it, i) => write(path.join(OUT, `${it.slug}.md`), r.renderChapter(r
 const missing = r.unlisted(fs.readdirSync(BOOK));
 if (missing.length) r.warnings.push(`files not in ${BOOK_DIR}/README.md: ${missing.join(', ')}`);
 write(path.join(OUT, `${PLAN_PATH.replaceAll('/', '')}.md`), r.renderPlan(read(path.join(ROOT, 'README.md'))));
+write(path.join(OUT, `${REVIEW_PATH.replaceAll('/', '')}.md`), r.renderReview());
 write(path.join(OUT, 'index.md'), r.renderIndex());
 write(path.join(SITE, SIDEBAR_FILE), JSON.stringify(r.sidebar(), null, 2));
 write(path.join(SITE, CHAPTERS_FILE), JSON.stringify(r.chapters(), null, 2));
+write(path.join(SITE, QUIZ_INDEX_FILE), JSON.stringify(r.quizIndex()));
 
 const { stats } = r;
 console.log(`convert: ${stats.chapters} chapters, ${stats.questions} questions (${stats.choice} multiple-choice, ${stats.choiceWithKey} with answer key), ${stats.checks} checklist items, ${stats.mermaid} diagrams`);

@@ -108,6 +108,15 @@ export const DESCRIPTION_MAX_LENGTH = 160;
 /** Route of the course plan page (generated from the root README.md). */
 export const PLAN_PATH = '/plan/';
 
+/** Route of the review page: quiz questions answered wrong or marked "didn't know", across all chapters. */
+export const REVIEW_PATH = '/review/';
+
+/** Each quiz question is a link target: <chapter>#<QUESTION_ANCHOR_PREFIX><n>. */
+export const QUESTION_ANCHOR_PREFIX = 'q-';
+
+/** Longest question text shown on the review page; longer questions are cut with "…". */
+export const QUESTION_PREVIEW_MAX_LENGTH = 160;
+
 /** Source chapters: <BOOK_DIR>/<CHAPTER_PREFIX><number>.md, relative to the repo root. */
 export const BOOK_DIR = 'book';
 export const CHAPTER_PREFIX = 'AIL-';
@@ -116,6 +125,10 @@ export const CHAPTER_PREFIX = 'AIL-';
 export const DOCS_DIR = 'src/content/docs';
 export const SIDEBAR_FILE = 'src/sidebar.json';
 export const CHAPTERS_FILE = 'src/chapters.json';
+/** Every quiz question by chapter (number, short text, answer key); loaded by the review page only. */
+export const QUIZ_INDEX_FILE = 'src/quiz-index.json';
+/** Everything scripts/convert.mjs writes under site/: ignored by git and by the `npm start` watcher (no rebuild loop). */
+export const GENERATED_PATHS = [DOCS_DIR, SIDEBAR_FILE, CHAPTERS_FILE, QUIZ_INDEX_FILE];
 
 /** Blocks of the root README.md between these markers are not shown on the site. */
 export const REPO_ONLY_START = '<!-- repo-only:start -->';
