@@ -304,6 +304,20 @@ describe('renderPlan, renderIndex, sidebar, chapters', () => {
     );
   });
 
+  test('the index is marked as a website, not an article, for link previews', () => {
+    assert.match(renderer().renderIndex(), /\nhead:\n {2}- \{ tag: meta, attrs: \{ property: "og:type", content: website \} \}\n/);
+    assert.ok(!renderer().renderPlan('# Plan\n').includes('og:type'));
+  });
+
+  test('pageSources maps every page to the file it is rendered from', () => {
+    assert.deepEqual(renderer().pageSources(), [
+      { href: '/', source: 'book/README.md' },
+      { href: PLAN_PATH, source: 'README.md' },
+      { href: '/week-01/1-1/', source: 'book/AIL-1.md' },
+      { href: '/week-01/1-2/', source: 'book/AIL-56.md' },
+    ]);
+  });
+
   test('unlisted finds chapter files missing from the table of contents', () => {
     assert.deepEqual(renderer().unlisted(['AIL-1.md', 'AIL-7.md', 'README.md']), ['AIL-7.md']);
   });

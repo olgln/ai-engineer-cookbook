@@ -15,7 +15,7 @@ A Russian-language course for developers who want to become AI engineers, plus a
 ## Site and code
 
 - Generated files are never edited: `site/src/content/docs/`, `site/src/sidebar.json`,
-  `site/src/chapters.json` come from `site/scripts/convert.mjs`.
+  `site/src/chapters.json`, `site/src/lastmod.json` come from `site/scripts/convert.mjs`.
 - No hardcoded settings: machine-level values go through `.env` (`site/.env.example`,
   `site/src/config/server.mjs`), shared constants into `site/src/config/app.mjs`.
 - Verify a change with `cd site && npm test` and `cd site && npm run build`. The build fails on any

@@ -46,6 +46,7 @@ SITE_URL=https://your-domain.example npm run build   # → dist/
 - **Progress on the hosting** lives only in the reader's browser (localStorage) plus export / import on the index page. The progress API (`/api/progress`) exists only in the local server; on a static hosting the request gets a 404 and the site falls back to the browser copy by design.
 - **Security headers.** Every page carries a Content Security Policy `<meta>` tag (Astro `security.csp`: scripts only from the site itself plus hashes of the inline scripts, no plugins, no foreign forms or `<base>`). The build also writes `dist/_headers` with the headers a `<meta>` cannot set: `frame-ancestors 'none'` (plus `X-Frame-Options: DENY` for old browsers), `nosniff`, `Referrer-Policy`, `Permissions-Policy`, `Cross-Origin-Opener-Policy`, `Cross-Origin-Resource-Policy: same-origin`, HSTS, and long caching for the hashed files in `/_astro/`. Netlify and Cloudflare Pages read `_headers` as is; on other hostings (Vercel, nginx, S3 + CloudFront) set the same headers in their config. GitHub Pages cannot set headers at all — prefer a hosting that can.
 - **`robots.txt`** is written next to the pages; with `SITE_URL` set it points to `sitemap-index.xml`.
+- **Sitemap dates.** Every page in the sitemap gets a `<lastmod>`: the date of the last commit that changed its source (`book/AIL-*.md`, `book/README.md` for the index, the root `README.md` for the plan), so search engines re-crawl edited chapters sooner. The converter reads them from `git log` into `src/lastmod.json`. A shallow clone has no history to read: the build then logs `shallow git clone` and the sitemap goes without dates; run `git fetch --unshallow` before the build (see the Cloudflare build command below).
 - **Search engines.** Every page has a title, a description (chapters: the `<!-- description: … -->` line under the meta line of `book/AIL-*.md`, at most 160 characters, required — the build fails without it; the index and the plan: `indexDescription` / `planDescription` in `ru.json`), a canonical link and Open Graph tags; with `SITE_URL` set, also the preview image `public/og-image.png`. To get the site indexed, add it to Google Search Console (URL-prefix property) and Yandex Webmaster, choose the meta tag method, put the tokens into the `GOOGLE_SITE_VERIFICATION` / `YANDEX_VERIFICATION` build variables, redeploy, confirm, then submit `sitemap-index.xml` in both.
 - **CI** (`.github/workflows/ci.yml`) runs `npm ci`, `npm audit`, `npm test` and `npm run build` on every push and pull request and keeps `dist/` as a build artifact. Set the repository variable `SITE_URL` for production builds. Publishing is left to the hosting (connect the repository there, build command `npm run build`, base directory `site`, output `dist`) or to a deploy step added to the workflow.
 
@@ -56,7 +57,7 @@ The public site runs on Cloudflare Workers as static assets, configured in `wran
 | Setting | Value |
 |---|---|
 | Root directory | `site` |
-| Build command | `npm run build` |
+| Build command | `(git fetch --unshallow --quiet \|\| true) && npm run build` — the full history gives the sitemap its dates; without it the build still works, just without `<lastmod>` |
 | Deploy command | `npx wrangler deploy` (runs the pinned `wrangler` from `devDependencies`) |
 | Preview builds | off |
 | Build variables | `NODE_VERSION` = the version in `.nvmrc`; `SITE_URL` = `https://<name>.<account>.workers.dev` or the custom domain; optionally `GOOGLE_SITE_VERIFICATION`, `YANDEX_VERIFICATION`, `CLOUDFLARE_WEB_ANALYTICS_TOKEN` |
@@ -65,6 +66,25 @@ Every push to `main` deploys. Check a deploy locally without uploading anything:
 - **Node** version is in `.nvmrc` (CI uses it); `package.json` `engines` + `engine-strict` stop installs on an older Node.
 
 To check the production headers and CSP locally: `npm run build && npm run serve` serves `dist/` with the same headers (except HSTS).
+
+### Icons
+
+Besides `public/favicon.svg` (the tab icon, linked by Starlight) there are two rendered icons, both committed:
+
+- `public/apple-touch-icon.png` (180×180, iOS home screen), from `assets/apple-touch-icon.svg`: the same picture without rounded corners and without transparency, since iOS rounds the icon itself and paints transparent pixels black;
+- `public/favicon.ico` (32×32), for clients that request `/favicon.ico` without reading the page.
+
+After changing the icon, re-render both:
+
+```bash
+cd site
+CHROME="/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"
+"$CHROME" --headless --hide-scrollbars --window-size=180,180 \
+  --screenshot="$PWD/public/apple-touch-icon.png" "file://$PWD/assets/apple-touch-icon.svg"
+"$CHROME" --headless --hide-scrollbars --default-background-color=00000000 --window-size=32,32 \
+  --screenshot=/tmp/favicon-32.png "file://$PWD/public/favicon.svg"
+sips -s format ico /tmp/favicon-32.png --out public/favicon.ico
+```
 
 ### Preview image
 
@@ -108,8 +128,10 @@ Code, comments, logs and docs are in English. Russian is used only for what the 
 | `src/integrations/csp-inline-hashes.mjs` | after the build, adds the hashes of inline scripts (Starlight's theme and sidebar) to each page's CSP |
 | `src/integrations/deploy-files.mjs` | after the build, writes `dist/_headers` and `dist/robots.txt` |
 | `public/favicon.svg` | site icon |
+| `public/apple-touch-icon.png`, `public/favicon.ico`, `assets/apple-touch-icon.svg` | iOS home-screen icon, the `.ico` fallback, and the source of the first (see "Icons") |
+| `scripts/lib/lastmod.mjs` | page dates for the sitemap from `git log` |
 | `public/og-image.png`, `assets/og-image.svg` | link preview image (1200×630) and its source |
-| `src/components/seo-head.mjs` | extra `<head>` tags: preview image, search-console tokens |
+| `src/components/seo-head.mjs` | extra `<head>` tags: preview image, search-console tokens, iOS icon |
 | `src/components/web-analytics.mjs` | Cloudflare Web Analytics beacon and the CSP origins it needs (only with a token) |
 | `../.github/workflows/ci.yml` | CI: audit, tests, build |
 | `wrangler.jsonc` | Cloudflare Workers deployment: serves `dist/` with the 404 page, no preview URLs, no telemetry |
@@ -120,4 +142,4 @@ Code, comments, logs and docs are in English. Russian is used only for what the 
 
 ## Dependencies
 
-Astro 7.4.7, Starlight 0.42.7, mermaid 12.2.0, the expressive-code plugins 0.44.3 and the deploy tool wrangler 4.158.0 (dev only) were reviewed before installation: versions are exact (`save-exact`), the whole tree is frozen at 2026-11-07 (`before=` in `.npmrc`), install scripts are disabled (`ignore-scripts=true`), Astro telemetry is off. Update only deliberately, with the same review.
+Astro 7.4.7, Starlight 0.42.7, @astrojs/sitemap 3.7.4 (Starlight's own sitemap, listed directly to add page dates), mermaid 12.2.0, the expressive-code plugins 0.44.3 and the deploy tool wrangler 4.158.0 (dev only) were reviewed before installation: versions are exact (`save-exact`), the whole tree is frozen at 2026-11-07 (`before=` in `.npmrc`), install scripts are disabled (`ignore-scripts=true`), Astro telemetry is off. Update only deliberately, with the same review.

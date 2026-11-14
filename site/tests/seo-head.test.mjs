@@ -2,10 +2,10 @@
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import { describe, test } from 'node:test';
-import { OG_IMAGE } from '../src/config/app.mjs';
+import { APPLE_TOUCH_ICON, FAVICON_ICO, OG_IMAGE } from '../src/config/app.mjs';
 import { publicToken } from '../src/config/server.mjs';
 import strings from '../src/locales/ru.json' with { type: 'json' };
-import { seoHead } from '../src/components/seo-head.mjs';
+import { iconHead, seoHead } from '../src/components/seo-head.mjs';
 
 const SITE = 'https://cookbook.example.com/';
 const imageAlt = strings.site.ogImageAlt;
@@ -39,6 +39,33 @@ describe('seoHead', () => {
     // IHDR: width and height are the first two 32-bit fields after the 16-byte header
     assert.equal(png.readUInt32BE(16), OG_IMAGE.width);
     assert.equal(png.readUInt32BE(20), OG_IMAGE.height);
+  });
+});
+
+describe('icons', () => {
+  const file = (p) => fs.readFileSync(new URL(`../public${p}`, import.meta.url));
+
+  test('the iOS home-screen icon is linked from every page', () => {
+    assert.deepEqual(iconHead(), [{ tag: 'link', attrs: { rel: 'apple-touch-icon', href: APPLE_TOUCH_ICON.path } }]);
+  });
+
+  test('the iOS icon is an opaque square PNG of the declared size', () => {
+    const png = file(APPLE_TOUCH_ICON.path);
+    assert.equal(png.toString('ascii', 1, 4), 'PNG');
+    assert.equal(png.readUInt32BE(16), APPLE_TOUCH_ICON.size);
+    assert.equal(png.readUInt32BE(20), APPLE_TOUCH_ICON.size);
+    // IHDR colour type 2 = RGB without alpha: iOS paints transparent corners black
+    assert.equal(png[25], 2);
+  });
+
+  test('favicon.ico is an icon file of the declared size', () => {
+    const ico = file(FAVICON_ICO.path);
+    // ICONDIR: reserved 0, type 1 (icon), at least one image; the first entry holds width and height
+    assert.equal(ico.readUInt16LE(0), 0);
+    assert.equal(ico.readUInt16LE(2), 1);
+    assert.ok(ico.readUInt16LE(4) >= 1);
+    assert.equal(ico[6], FAVICON_ICO.size);
+    assert.equal(ico[7], FAVICON_ICO.size);
   });
 });
 
