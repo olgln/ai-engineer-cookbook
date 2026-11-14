@@ -2,7 +2,7 @@
 // Book headings come from ru.json, so the fixtures follow the same wording as the real book.
 import assert from 'node:assert/strict';
 import { describe, test } from 'node:test';
-import { PLAN_PATH, REPO_ONLY_END, REPO_ONLY_START } from '../src/config/app.mjs';
+import { DESCRIPTION_MAX_LENGTH, DESCRIPTION_MARKER, PLAN_PATH, REPO_ONLY_END, REPO_ONLY_START } from '../src/config/app.mjs';
 import { format } from '../src/locales/format.mjs';
 import strings from '../src/locales/ru.json' with { type: 'json' };
 import { answerKey, createRenderer, extractOptions, parseToc, splitNumbered, splitSections, tagLines } from '../scripts/lib/render.mjs';
@@ -223,14 +223,17 @@ describe('buildChecklist', () => {
 });
 
 describe('renderChapter', () => {
-  const src = (sections) => ['# 1.2 · Repo  (AIL-56)', '', 'Intro, see AIL-1.', '', ...sections].join('\n');
+  const descLine = (text) => `<!-- ${DESCRIPTION_MARKER} ${text} -->`;
+  const src = (sections, desc = [descLine('How we set up the repo.')]) =>
+    ['# 1.2 · Repo  (AIL-56)', '', `> **${book.weekHeading} 1** · Basics`, '', ...desc, '', 'Intro, see AIL-1.', '', ...sections].join('\n');
   const full = [`## ${book.doneHeading}`, '', '- works', '', `## ${book.testHeading}`, '', '1. Q? a) x b) y', '', `## ${book.answersHeading}`, '', '1. **a.** x'];
 
   test('front matter, quiz in place of the answers, checklist, prev/next', () => {
     const r = renderer();
     const [w1] = weeks();
     const page = r.renderChapter(src(full), w1.items[1], w1.items[0], undefined);
-    assert.match(page, /^---\ntitle: "1\.2 · Repo"\n/);
+    assert.match(page, /^---\ntitle: "1\.2 · Repo"\ndescription: "How we set up the repo\."\n/);
+    assert.ok(!page.includes(`<!-- ${DESCRIPTION_MARKER}`), 'the description comment is not left in the page');
     assert.match(page, /prev: \{ link: "\/week-01\/1-1\/", label: "1\.1 · Python" \}/);
     assert.match(page, /next: false/);
     assert.ok(!page.includes(`## ${book.answersHeading}`));
@@ -245,6 +248,29 @@ describe('renderChapter', () => {
     const r = renderer();
     r.renderChapter(src([]), weeks()[0].items[1]);
     assert.deepEqual(r.warnings, ['1-2: missing test or answers section']);
+  });
+
+  test('without a description comment the week label is used and a warning is reported', () => {
+    const r = renderer();
+    const page = r.renderChapter(src(full, []), weeks()[0].items[1]);
+    assert.ok(page.includes(`description: ${JSON.stringify(format(site.week, { n: 1, title: 'Repo (git)' }))}`));
+    assert.deepEqual(r.warnings, ['1-2: missing description comment']);
+  });
+
+  test('a second, empty or too long description is reported', () => {
+    const it = weeks()[0].items[1];
+    const warn = (desc) => {
+      const r = renderer();
+      r.renderChapter(src(full, desc), it);
+      return r.warnings;
+    };
+    assert.deepEqual(warn([descLine('One.'), descLine('Two.')]), ['1-2: more than one description comment']);
+    assert.deepEqual(warn([descLine('')]), ['1-2: empty description']);
+    assert.deepEqual(warn([descLine('x'.repeat(DESCRIPTION_MAX_LENGTH))]), []);
+    assert.deepEqual(
+      warn([descLine('x'.repeat(DESCRIPTION_MAX_LENGTH + 1))]),
+      [`1-2: description is ${DESCRIPTION_MAX_LENGTH + 1} characters, max ${DESCRIPTION_MAX_LENGTH}`],
+    );
   });
 });
 

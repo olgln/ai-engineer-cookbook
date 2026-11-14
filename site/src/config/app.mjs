@@ -87,6 +87,13 @@ export const OLD_DIST_DIR = 'dist-old';
  */
 export const OG_IMAGE = { path: '/og-image.png', type: 'image/png', width: 1200, height: 630 };
 
+/**
+ * Search snippet of a chapter (<meta name="description">): one hidden line
+ * `<!-- description: … -->` under the meta line of book/AIL-*.md. Search engines cut longer text.
+ */
+export const DESCRIPTION_MARKER = 'description:';
+export const DESCRIPTION_MAX_LENGTH = 160;
+
 /** Route of the course plan page (generated from the root README.md). */
 export const PLAN_PATH = '/plan/';
 
