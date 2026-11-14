@@ -1,4 +1,4 @@
-# 8.4 · Ручной разбор ошибок  (AIL-34)
+# 8.4 · Error analysis: ручной разбор ошибок LLM-системы  (AIL-34)
 
 > **Неделя 8** · Evals · ⏱ ~4 ч · Практика
 
@@ -172,7 +172,7 @@
 3. В [Hamel: Your AI Product Needs Evals](https://hamel.dev/blog/posts/evals/) перечитываем раздел про просмотр данных и инструменты для этого (≈10 мин).
 4. (По желанию) [Who Validates the Validators?](https://arxiv.org/abs/2404.12272) (Shankar и др.) → введение и выводы (≈20 мин): про дрейф критериев, который мы увидим на себе во время разметки.
 5. Открываем свои результаты: последний прогон выбранной конфигурации из [AIL-33](AIL-33.md) (`eval/runs/<...>/results.jsonl`) или трейсы в Langfuse.
-6. В главе [6.4 · Скрипт оценки: retrieval + faithfulness](AIL-29.md) перечитываем раздел «DeepSeek и Ollama» (≈10 мин): пустой JSON, thinking и temperature, обрезка контекста Ollama — это кандидаты в категорию I.
+6. В главе [6.4 · Скрипт оценки RAG: retrieval и faithfulness](AIL-29.md) перечитываем раздел «DeepSeek и Ollama» (≈10 мин): пустой JSON, thinking и temperature, обрезка контекста Ollama — это кандидаты в категорию I.
 7. [Ollama API: /api/chat](https://docs.ollama.com/api/chat) (≈10 мин): находим поля `prompt_eval_count` и `eval_count` в ответе — ими проверяется, дошёл ли весь контекст до локальной модели.
 
 ## На что обратить внимание

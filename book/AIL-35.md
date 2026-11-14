@@ -264,4 +264,4 @@ OLLAMA_BASE_URL=
 
 ## Что дальше
 
-Проект 3 завершён. Следующий этап — агенты: начинаем с [AIL-37 · Building effective agents + OWASP LLM Top 10](AIL-37.md); навык evals вернётся в [AIL-42 · Проект 4: evals агента на 20 случаях](AIL-42.md).
+Проект 3 завершён. Следующий этап — агенты: начинаем с [AIL-37 · AI-агенты: Building effective agents и OWASP LLM Top 10](AIL-37.md); навык evals вернётся в [AIL-42 · Проект 4: evals агента на 20 случаях](AIL-42.md).

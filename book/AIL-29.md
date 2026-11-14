@@ -1,4 +1,4 @@
-# 6.4 · Скрипт оценки: retrieval + faithfulness  (AIL-29)
+# 6.4 · Скрипт оценки RAG: retrieval и faithfulness  (AIL-29)
 
 > **Неделя 6** · Evals · ⏱ ~4–5 ч · Проект
 
@@ -522,4 +522,4 @@ def deepseek_cost(usage: dict, price: dict, ts: datetime) -> float:
 
 ## Что дальше
 
-В [AIL-30 · Подключить Langfuse или promptfoo](AIL-30.md) делаем трейсы и прогоны видимыми в UI, а в [AIL-62](AIL-62.md) учимся понимать, какая разница в цифрах этого скрипта настоящая.
+В [AIL-30 · Observability для LLM: Langfuse и promptfoo](AIL-30.md) делаем трейсы и прогоны видимыми в UI, а в [AIL-62](AIL-62.md) учимся понимать, какая разница в цифрах этого скрипта настоящая.
