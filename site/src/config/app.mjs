@@ -46,14 +46,17 @@ export const CSP = {
 
 /**
  * Response headers for every page, sent by the local server and written to dist/_headers for the hosting.
- * frame-ancestors only works as a header, not in the <meta> CSP.
+ * frame-ancestors only works as a header, not in the <meta> CSP; X-Frame-Options repeats it for old browsers.
+ * Cross-Origin-Resource-Policy stops other sites from embedding our files (everything is same-origin).
  */
 export const SECURITY_HEADERS = {
   'Content-Security-Policy': "frame-ancestors 'none'",
+  'X-Frame-Options': 'DENY',
   'X-Content-Type-Options': 'nosniff',
   'Referrer-Policy': 'strict-origin-when-cross-origin',
   'Permissions-Policy': 'camera=(), microphone=(), geolocation=(), payment=(), usb=()',
   'Cross-Origin-Opener-Policy': 'same-origin',
+  'Cross-Origin-Resource-Policy': 'same-origin',
 };
 
 /** Added only on the hosting (HTTPS); browsers ignore it over plain HTTP. */
