@@ -44,14 +44,23 @@ export function progressHandler(file = config.progressFile, maxBytes = config.pr
       return send(200, fs.existsSync(file) ? fs.readFileSync(file, 'utf8') : '{}');
     }
     if (req.method !== 'PUT') return send(405, '{"error":"method not allowed"}');
+    if (!(req.headers['content-type'] ?? '').startsWith('application/json')) {
+      return send(415, '{"error":"expected application/json"}');
+    }
     let size = 0;
+    let tooLarge = false;
     const chunks = [];
     req.on('data', (c) => {
+      if (tooLarge) return;
       size += c.length;
-      if (size > maxBytes) req.destroy();
-      else chunks.push(c);
+      if (size <= maxBytes) return chunks.push(c);
+      tooLarge = true;
+      chunks.length = 0;
+      res.setHeader('Connection', 'close');
+      send(413, '{"error":"payload too large"}');
     });
     req.on('end', () => {
+      if (tooLarge) return;
       try {
         const data = JSON.parse(Buffer.concat(chunks).toString('utf8'));
         const isObject = (v) => v !== null && typeof v === 'object' && !Array.isArray(v);

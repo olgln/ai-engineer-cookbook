@@ -16,6 +16,54 @@ export const SAVE_DEBOUNCE_MS = 250;
 /** Server-sent events route that tells open pages to reload after a rebuild (`npm start` only). */
 export const RELOAD_EVENTS_PATH = '/__reload';
 
+/** Script that subscribes a page to RELOAD_EVENTS_PATH; external, so the page CSP needs no inline exception. */
+export const RELOAD_SCRIPT_PATH = '/__reload.js';
+
+/**
+ * Content Security Policy emitted by Astro as a <meta> tag on every page (astro.config.mjs `security.csp`).
+ * Astro adds hashes of its own inline scripts to script-src. Styles stay 'unsafe-inline': mermaid and
+ * expressive-code inject inline styles at runtime. 'wasm-unsafe-eval' is for the Pagefind search index.
+ */
+export const CSP = {
+  scriptSources: ["'self'", "'wasm-unsafe-eval'"],
+  styleSources: ["'self'", "'unsafe-inline'"],
+  directives: [
+    "default-src 'self'",
+    "img-src 'self' data:",
+    "font-src 'self' data:",
+    "connect-src 'self'",
+    "object-src 'none'",
+    "base-uri 'self'",
+    "form-action 'self'",
+  ],
+};
+
+/**
+ * Response headers for every page, sent by the local server and written to dist/_headers for the hosting.
+ * frame-ancestors only works as a header, not in the <meta> CSP.
+ */
+export const SECURITY_HEADERS = {
+  'Content-Security-Policy': "frame-ancestors 'none'",
+  'X-Content-Type-Options': 'nosniff',
+  'Referrer-Policy': 'strict-origin-when-cross-origin',
+  'Permissions-Policy': 'camera=(), microphone=(), geolocation=(), payment=(), usb=()',
+  'Cross-Origin-Opener-Policy': 'same-origin',
+};
+
+/** Added only on the hosting (HTTPS); browsers ignore it over plain HTTP. */
+export const HTTPS_ONLY_HEADERS = {
+  'Strict-Transport-Security': 'max-age=31536000; includeSubDomains',
+};
+
+/** Build assets with a content hash in the name: cached forever. */
+export const IMMUTABLE_ASSETS_GLOB = '/_astro/*';
+export const IMMUTABLE_CACHE_CONTROL = 'public, max-age=31536000, immutable';
+
+/** Files written next to the built site for the hosting (Netlify / Cloudflare Pages format). */
+export const HEADERS_FILE = '_headers';
+export const ROBOTS_FILE = 'robots.txt';
+export const SITEMAP_FILE = 'sitemap-index.xml';
+
 /** Quiet period after the last source change before `npm start` rebuilds the site, in ms. */
 export const REBUILD_DEBOUNCE_MS = 400;
 

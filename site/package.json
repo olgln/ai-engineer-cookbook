@@ -2,6 +2,9 @@
   "name": "ai-engineer-cookbook-site",
   "private": true,
   "type": "module",
+  "engines": {
+    "node": ">=22.23.4"
+  },
   "scripts": {
     "start": "npm run build && node scripts/serve.mjs --watch",
     "serve": "node scripts/serve.mjs",
