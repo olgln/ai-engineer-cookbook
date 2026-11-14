@@ -3,6 +3,9 @@
   --sl-content-width: 66rem;
   --toc-width: 16rem;
   --radius: 0.6rem;
+  /* Muted text: hints, counters, footer. Starlight's dark gray-3 gives 4.47:1 on the sidebar and card
+     background (gray-6), just under WCAG AA 4.5:1; this gives 5.1:1 (tests/styles.test.mjs). */
+  --site-color-muted: hsl(224, 6%, 60%);
 }
 :root[data-theme='dark'] {
   --sl-color-accent-low: #10263a;
@@ -10,6 +13,7 @@
   --sl-color-accent-high: #b8dcf7;
 }
 :root[data-theme='light'] {
+  --site-color-muted: var(--sl-color-gray-3);
   --sl-color-accent-low: #d4e9f9;
   --sl-color-accent: #1767a8;
   --sl-color-accent-high: #0e3a5e;
@@ -80,6 +84,10 @@
   background: color-mix(in srgb, var(--sl-color-bg) 88%, transparent);
   backdrop-filter: blur(8px);
 }
+/* On a phone the toolbar wraps into three rows; stuck to the top it would cover a sixth of the screen. */
+@media (max-width: 50rem) {
+  .quiz-toolbar { position: static; }
+}
 .quiz-toolbar-actions { display: flex; gap: 0.4rem; flex-wrap: wrap; margin: 0 !important; }
 .quiz-summary { font-size: 0.9rem; color: var(--sl-color-gray-2); margin: 0 !important; }
 .quiz-summary.complete { color: var(--sl-color-green-high); font-weight: 600; }
@@ -96,6 +104,10 @@
 .quiz-q.is-wrong { border-inline-start-color: var(--sl-color-red); }
 /* a question opened from the review page (chapter#q-N): highlighted and not hidden under the sticky toolbar */
 .quiz-q { scroll-margin-top: calc(var(--quiz-toolbar-height, 3.5rem) + 0.5rem); }
+/* the toolbar does not stick on phones (see above), so nothing covers the question there */
+@media (max-width: 50rem) {
+  .quiz-q { scroll-margin-top: 0; }
+}
 .quiz-q:target { box-shadow: 0 0 0 2px var(--sl-color-accent); }
 .quiz-q > :first-child { margin-top: 0; }
 .quiz-q-num {
@@ -127,7 +139,7 @@ html:not(.progress-ready) .quiz-options li { cursor: default; }
 .quiz-options li.wrong::after { content: ' ✗'; color: var(--sl-color-red-high); font-weight: 700; }
 
 .quiz-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem 0.75rem; margin-top: 0.9rem !important; }
-.quiz-hint { font-size: 0.85rem; color: var(--sl-color-gray-3); }
+.quiz-hint { font-size: 0.85rem; color: var(--site-color-muted); }
 .quiz-verdict { font-weight: 700; font-size: 0.9rem; }
 .quiz-verdict.good { color: var(--sl-color-green-high); }
 .quiz-verdict.bad { color: var(--sl-color-red-high); }
@@ -146,10 +158,13 @@ html:not(.progress-ready) .quiz-options li { cursor: default; }
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.06em;
-  color: var(--sl-color-gray-3);
+  color: var(--site-color-muted);
   margin-bottom: 0.25rem !important;
 }
 @keyframes reveal { from { opacity: 0; transform: translateY(-4px); } }
+@media (prefers-reduced-motion: reduce) {
+  .quiz-q.revealed .quiz-answer { animation: none; }
+}
 
 /* ---------- checklist ---------- */
 .done-list ul { list-style: none; padding-inline-start: 0; }
@@ -161,7 +176,7 @@ html:not(.progress-ready) .quiz-options li { cursor: default; }
   cursor: pointer;
 }
 .done-list li:hover { background: var(--sl-color-gray-6); }
-.done-list li.checked { color: var(--sl-color-gray-3); }
+.done-list li.checked { color: var(--site-color-muted); }
 .done-list input[type='checkbox'] {
   position: absolute;
   inset-inline-start: 0.7rem;
@@ -174,7 +189,7 @@ html:not(.progress-ready) .quiz-options li { cursor: default; }
   accent-color: var(--sl-color-green);
   cursor: pointer;
 }
-.done-counter { font-size: 0.85rem; color: var(--sl-color-gray-3); }
+.done-counter { font-size: 0.85rem; color: var(--site-color-muted); }
 .done-counter.complete { color: var(--sl-color-green-high); font-weight: 600; }
 
 /* ---------- chapter done card ---------- */
@@ -204,7 +219,7 @@ nav a[data-chapter] { display: flex; }
   white-space: nowrap;
   font-size: 0.7rem;
   font-weight: 600;
-  color: var(--sl-color-gray-3);
+  color: var(--site-color-muted);
   font-variant-numeric: tabular-nums;
 }
 .group-progress.complete { color: var(--sl-color-green); }
@@ -217,7 +232,7 @@ nav a[data-chapter] { display: flex; }
   background: var(--sl-color-bg-nav);
 }
 .course-progress-head { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 0.25rem 1rem; align-items: baseline; }
-.storage-note { font-size: 0.8rem; color: var(--sl-color-gray-3); }
+.storage-note { font-size: 0.8rem; color: var(--site-color-muted); }
 .course-progress-actions { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 0.9rem !important; }
 .progress-bar {
   display: block;
@@ -242,7 +257,7 @@ nav a[data-chapter] { display: flex; }
 .week-card :is(h3, .sl-heading-wrapper) { font-size: 1.1rem; }
 .week-progress { display: flex; align-items: center; gap: 0.6rem; margin-top: 0.3rem !important; }
 .week-progress .progress-bar { flex: 1; margin: 0; height: 0.35rem; }
-.week-progress-label { font-size: 0.8rem; color: var(--sl-color-gray-3); font-variant-numeric: tabular-nums; }
+.week-progress-label { font-size: 0.8rem; color: var(--site-color-muted); font-variant-numeric: tabular-nums; }
 .week-card ul { padding-inline-start: 1.1rem; }
 .week-card li.chapter-is-done { list-style: '✓  '; }
 .week-card li.chapter-is-done::marker { color: var(--sl-color-green); }
@@ -256,7 +271,7 @@ pre.mermaid {
   text-align: center;
   overflow-x: auto;
 }
-pre.mermaid:not([data-processed]) { color: var(--sl-color-gray-3); font-size: 0.8rem; white-space: pre; text-align: start; }
+pre.mermaid:not([data-processed]) { color: var(--site-color-muted); font-size: 0.8rem; white-space: pre; text-align: start; }
 
 /* flex rows: cancel Starlight's sibling margin-top */
 .quiz-actions > *, .quiz-toolbar > *, .quiz-toolbar-actions > *, .course-progress-actions > *, .course-progress-head > *, .week-progress > * {
@@ -276,7 +291,7 @@ pre.mermaid svg { height: auto; max-width: none !important; }
   padding: 0 var(--sl-nav-pad-x);
   border-top: 1px solid var(--sl-color-hairline-shade);
   background-color: var(--sl-color-bg-nav);
-  color: var(--sl-color-gray-3);
+  color: var(--site-color-muted);
   font-size: var(--sl-text-sm);
   /* paint the footer colour below it, so an elastic overscroll never shows a gap under the footer */
   box-shadow: 0 100vh 0 100vh var(--sl-color-bg-nav);

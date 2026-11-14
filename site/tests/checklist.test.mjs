@@ -1,7 +1,7 @@
 // Tests for the checklist click logic: which clicks inside an item toggle its checkbox.
 import assert from 'node:assert/strict';
 import { describe, test } from 'node:test';
-import { clickTogglesItem } from '../src/scripts/checklist.mjs';
+import { checkboxLabel, clickTogglesItem } from '../src/scripts/checklist.mjs';
 
 /** A stand-in for a clicked element: `ancestors` are the tag names from the element up to the item. */
 const target = (...ancestors) => ({
@@ -31,5 +31,11 @@ describe('clickTogglesItem', () => {
   test('finishing a text selection does not toggle', () => {
     assert.equal(clickTogglesItem(target('code', 'li'), 'search.py'), false);
     assert.equal(clickTogglesItem(target('li'), '  '), true);
+  });
+});
+
+describe('checkboxLabel', () => {
+  test('is the item text on one line', () => {
+    assert.equal(checkboxLabel('\n  Можем прочитать\n  незнакомый `Python`-скрипт \n'), 'Можем прочитать незнакомый `Python`-скрипт');
   });
 });
