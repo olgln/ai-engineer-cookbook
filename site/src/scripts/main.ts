@@ -2,6 +2,7 @@ import * as P from './progress';
 import chapters from '../chapters.json';
 import strings from '../locales/ru.json';
 import { format, plural as pluralForm } from '../locales/format.mjs';
+import { clickTogglesItem } from './checklist.mjs';
 import type { MermaidConfig } from 'mermaid';
 
 const ui = strings.ui;
@@ -202,9 +203,7 @@ function initChecklist(box: HTMLElement) {
     });
     // whole line toggles the box
     inp.closest('li')?.addEventListener('click', (e) => {
-      const t = e.target as HTMLElement;
-      if (t === inp || t.closest('a, code, button')) return;
-      inp.click();
+      if (clickTogglesItem(e.target as HTMLElement, window.getSelection()?.toString() ?? '')) inp.click();
     });
   });
   render();

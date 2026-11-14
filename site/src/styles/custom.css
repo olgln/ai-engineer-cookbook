@@ -162,7 +162,9 @@ html:not(.progress-ready) .quiz-options li { cursor: default; }
 .done-list input[type='checkbox'] {
   position: absolute;
   inset-inline-start: 0.7rem;
-  top: 0.55rem;
+  /* Center the box on the first text line: inherit the item's font so 1lh is its line height. */
+  font: inherit;
+  top: calc(0.5rem + (1lh - 1.15rem) / 2);
   margin: 0 !important;
   width: 1.15rem;
   height: 1.15rem;
