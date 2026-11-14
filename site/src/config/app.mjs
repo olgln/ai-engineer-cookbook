@@ -81,6 +81,12 @@ export const DIST_DIR = 'dist';
 export const NEXT_DIST_DIR = 'dist-next';
 export const OLD_DIST_DIR = 'dist-old';
 
+/**
+ * Preview image for links shared in messengers and social networks (og:image), in public/.
+ * Rendered from assets/og-image.svg; 1200×630 is the size Telegram, VK, X and Facebook expect.
+ */
+export const OG_IMAGE = { path: '/og-image.png', type: 'image/png', width: 1200, height: 630 };
+
 /** Route of the course plan page (generated from the root README.md). */
 export const PLAN_PATH = '/plan/';
 

@@ -8,12 +8,15 @@ import { fileURLToPath } from 'node:url';
 const envFile = fileURLToPath(new URL('../../.env', import.meta.url));
 if (fs.existsSync(envFile)) process.loadEnvFile(envFile);
 
-const DEFAULTS = {
+/** Every setting with its default; site/.env.example lists the same names (tests/settings.test.mjs). */
+export const DEFAULTS = {
   HOST: '127.0.0.1',
   PORT: '4321',
   PROGRESS_FILE: '~/.ai-engineer-cookbook/progress.json',
   PROGRESS_MAX_BYTES: String(2 * 1024 * 1024),
   SITE_URL: '',
+  GOOGLE_SITE_VERIFICATION: '',
+  YANDEX_VERIFICATION: '',
 };
 
 const read = (name) => process.env[name]?.trim() || DEFAULTS[name];
@@ -37,6 +40,16 @@ export function siteUrl(value) {
   return url.href;
 }
 
+/**
+ * Ownership token from a search console (Google Search Console, Yandex Webmaster), put into a
+ * <meta> tag on every page; empty when not set. Tokens are letters, digits, `-` and `_`.
+ */
+export function verificationToken(name, value) {
+  if (!value) return undefined;
+  if (!/^[\w-]+$/.test(value)) throw new Error(`${name} must hold only letters, digits, - and _, got "${value}"`);
+  return value;
+}
+
 /** Expand a leading ~ to the home directory and make the path absolute. */
 const expandHome = (p) => path.resolve(p.replace(/^~(?=$|\/)/, os.homedir()));
 
@@ -52,5 +65,7 @@ export const config = {
   progressFile: expandHome(read('PROGRESS_FILE')),
   progressMaxBytes: positiveInt('PROGRESS_MAX_BYTES'),
   siteUrl: siteUrl(read('SITE_URL')),
+  googleSiteVerification: verificationToken('GOOGLE_SITE_VERIFICATION', read('GOOGLE_SITE_VERIFICATION')),
+  yandexVerification: verificationToken('YANDEX_VERIFICATION', read('YANDEX_VERIFICATION')),
   allowedHosts: new Set(WILDCARD_HOSTS.includes(host) ? LOOPBACK_HOSTS : [...LOOPBACK_HOSTS, host]),
 };

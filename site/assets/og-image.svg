@@ -1,0 +1,71 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630" role="img" aria-labelledby="t">
+  <!-- Source of public/og-image.png (link preview); same style as .github/assets/banner.svg.
+       Re-render after a change, see site/README.md "Preview image". -->
+  <title id="t">AI Engineer Cookbook — учебник AI-инженера</title>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#0f172a"/>
+      <stop offset="0.55" stop-color="#1e1b4b"/>
+      <stop offset="1" stop-color="#312e81"/>
+    </linearGradient>
+    <linearGradient id="accent" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#818cf8"/>
+      <stop offset="1" stop-color="#22d3ee"/>
+    </linearGradient>
+    <pattern id="dots" width="24" height="24" patternUnits="userSpaceOnUse">
+      <circle cx="2" cy="2" r="1.2" fill="#ffffff" fill-opacity="0.07"/>
+    </pattern>
+    <radialGradient id="glow" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0" stop-color="#6366f1" stop-opacity="0.45"/>
+      <stop offset="1" stop-color="#6366f1" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+
+  <rect width="1200" height="630" fill="url(#bg)"/>
+  <rect width="1200" height="630" fill="url(#dots)"/>
+  <circle cx="1000" cy="440" r="260" fill="url(#glow)"/>
+
+  <g font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif">
+    <text x="80" y="140" fill="#a5b4fc" font-size="26" font-weight="600" letter-spacing="5">AI ENGINEER COOKBOOK</text>
+    <text x="80" y="240" fill="#ffffff" font-size="80" font-weight="800">Учебник AI-инженера</text>
+    <rect x="80" y="272" width="160" height="7" rx="3.5" fill="url(#accent)"/>
+    <text x="80" y="346" fill="#cbd5e1" font-size="32">От первого запроса к API до RAG, evals</text>
+    <text x="80" y="390" fill="#cbd5e1" font-size="32">и агентов в продакшене — на практике</text>
+
+    <g font-size="22" font-weight="600" fill="#e0e7ff">
+      <rect x="80" y="440" width="120" height="44" rx="22" fill="#ffffff" fill-opacity="0.08" stroke="#818cf8" stroke-opacity="0.5"/>
+      <text x="140" y="469" text-anchor="middle">LLM API</text>
+      <rect x="214" y="440" width="84" height="44" rx="22" fill="#ffffff" fill-opacity="0.08" stroke="#818cf8" stroke-opacity="0.5"/>
+      <text x="256" y="469" text-anchor="middle">RAG</text>
+      <rect x="312" y="440" width="98" height="44" rx="22" fill="#ffffff" fill-opacity="0.08" stroke="#818cf8" stroke-opacity="0.5"/>
+      <text x="361" y="469" text-anchor="middle">Evals</text>
+      <rect x="424" y="440" width="120" height="44" rx="22" fill="#ffffff" fill-opacity="0.08" stroke="#818cf8" stroke-opacity="0.5"/>
+      <text x="484" y="469" text-anchor="middle">Агенты</text>
+      <rect x="558" y="440" width="156" height="44" rx="22" fill="#ffffff" fill-opacity="0.08" stroke="#818cf8" stroke-opacity="0.5"/>
+      <text x="636" y="469" text-anchor="middle">Продакшен</text>
+    </g>
+  </g>
+
+  <!-- a small agent graph: model in the centre, tools around it -->
+  <g stroke="#a5b4fc" stroke-opacity="0.55" stroke-width="2.5" fill="none">
+    <path d="M1000 440 L870 340"/>
+    <path d="M1000 440 L1135 345"/>
+    <path d="M1000 440 L1140 525"/>
+    <path d="M1000 440 L860 540"/>
+    <path d="M870 340 L1135 345" stroke-dasharray="5 10"/>
+    <path d="M860 540 L1140 525" stroke-dasharray="5 10"/>
+  </g>
+  <g>
+    <circle cx="1000" cy="440" r="56" fill="#4f46e5" stroke="url(#accent)" stroke-width="5"/>
+    <text x="1000" y="451" text-anchor="middle" fill="#ffffff" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="32" font-weight="800">LLM</text>
+    <circle cx="870" cy="340" r="24" fill="#1e293b" stroke="#22d3ee" stroke-width="3.5"/>
+    <circle cx="1135" cy="345" r="24" fill="#1e293b" stroke="#818cf8" stroke-width="3.5"/>
+    <circle cx="1140" cy="525" r="24" fill="#1e293b" stroke="#22d3ee" stroke-width="3.5"/>
+    <circle cx="860" cy="540" r="24" fill="#1e293b" stroke="#818cf8" stroke-width="3.5"/>
+    <path d="M860 340h20M870 330v20" stroke="#22d3ee" stroke-width="3.5" stroke-linecap="round"/>
+    <path d="M1125 337h20M1125 345h20M1125 353h12" stroke="#818cf8" stroke-width="3.5" stroke-linecap="round"/>
+    <path d="M1131 525l7 7 12-14" stroke="#22d3ee" stroke-width="3.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+    <circle cx="857" cy="537" r="7" stroke="#818cf8" stroke-width="3.5" fill="none"/>
+    <path d="M863 543l7 7" stroke="#818cf8" stroke-width="3.5" stroke-linecap="round"/>
+  </g>
+</svg>

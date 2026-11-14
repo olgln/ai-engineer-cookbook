@@ -253,6 +253,7 @@ describe('renderPlan, renderIndex, sidebar, chapters', () => {
     const r = renderer();
     const page = r.renderPlan(['# Plan', 'keep', REPO_ONLY_START, 'hidden', REPO_ONLY_END, '', '[ch](book/AIL-1.md)'].join('\n'));
     assert.match(page, /title: "Plan"/);
+    assert.ok(page.includes(`description: ${JSON.stringify(site.planDescription)}`), 'search snippet');
     assert.ok(!page.includes('hidden'));
     assert.match(page, /\[ch\]\(\/week-01\/1-1\/\)/);
   });
