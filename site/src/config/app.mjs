@@ -20,6 +20,11 @@ export const RELOAD_EVENTS_PATH = '/__reload';
 export const RELOAD_SCRIPT_PATH = '/__reload.js';
 
 /**
+ * Astro's type of `security.csp.directives`: each entry must start with a known directive name.
+ * @typedef {NonNullable<Exclude<NonNullable<import('astro').AstroUserConfig['security']>['csp'], boolean | undefined>['directives']>} CspDirectives
+ */
+
+/**
  * Content Security Policy emitted by Astro as a <meta> tag on every page (astro.config.mjs `security.csp`).
  * Astro adds hashes of its own inline scripts to script-src. Styles stay 'unsafe-inline': mermaid and
  * expressive-code inject inline styles at runtime. 'wasm-unsafe-eval' is for the Pagefind search index.
@@ -27,6 +32,7 @@ export const RELOAD_SCRIPT_PATH = '/__reload.js';
 export const CSP = {
   scriptSources: ["'self'", "'wasm-unsafe-eval'"],
   styleSources: ["'self'", "'unsafe-inline'"],
+  /** @type {CspDirectives} typed for `security.csp.directives`, which accepts only known directive names */
   directives: [
     "default-src 'self'",
     "img-src 'self' data:",
