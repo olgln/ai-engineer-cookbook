@@ -6,3 +6,10 @@
 # Authorized redirect URI for local runs: http://localhost:8787/api/auth/google/callback
 GOOGLE_CLIENT_ID=
 GOOGLE_CLIENT_SECRET=
+
+# GitHub → Settings → Developer settings → OAuth Apps → New OAuth App (an OAuth App, not a GitHub App).
+# Authorization callback URL for local runs: http://localhost:8787/api/auth/github/callback
+# Use a separate OAuth App for local runs, so the site's secret never sits on a dev machine; the site's app
+# has https://ai-engineer-cookbook.olgln.workers.dev/api/auth/github/callback.
+GITHUB_CLIENT_ID=
+GITHUB_CLIENT_SECRET=

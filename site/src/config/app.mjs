@@ -36,7 +36,7 @@ export const RETURN_TO_PARAM = 'return_to';
 export const LOGIN_ERROR_PARAM = 'login_error';
 
 /**
- * State of a sign-in in progress (state, PKCE verifier, nonce, page to return to), kept in the browser
+ * State of a sign-in in progress (state, PKCE verifier, OpenID nonce, page to return to), kept in the browser
  * between the redirect to the provider and the callback. Ten minutes to finish signing in.
  */
 export const OAUTH_COOKIE = '__Host-oauth';
@@ -45,6 +45,8 @@ export const OAUTH_COOKIE_TTL_SECONDS = 10 * 60;
 /**
  * OAuth 2.0 / OpenID Connect endpoints of the providers. Credentials come from Worker secrets
  * `<PROVIDER>_CLIENT_ID` / `<PROVIDER>_CLIENT_SECRET` (.dev.vars locally); a provider without them is off.
+ * Every provider gets `state` and PKCE (S256). `scope` is left out of the request when empty; `nonce: true`
+ * sends an OpenID Connect nonce (checked in the ID token); `authorizeParams` are added to the provider URL.
  */
 export const OAUTH_PROVIDERS = {
   google: {
@@ -52,7 +54,22 @@ export const OAUTH_PROVIDERS = {
     tokenUrl: 'https://oauth2.googleapis.com/token',
     /** Only the stable user id (`sub` of the ID token): no e-mail, no profile. */
     scope: 'openid',
+    nonce: true,
+    authorizeParams: { prompt: 'select_account' },
     issuers: ['https://accounts.google.com', 'accounts.google.com'],
+  },
+  /** A GitHub OAuth App (not a GitHub App). Plain OAuth 2.0: no ID token, so no nonce. */
+  github: {
+    authorizeUrl: 'https://github.com/login/oauth/authorize',
+    tokenUrl: 'https://github.com/login/oauth/access_token',
+    /** No scope: the token reads only the public profile, of which we keep the numeric `id`. */
+    scope: '',
+    nonce: false,
+    authorizeParams: { prompt: 'select_account' },
+    /** The signed-in user (REST API); GitHub refuses requests without a User-Agent. */
+    userUrl: 'https://api.github.com/user',
+    apiVersion: '2022-11-28',
+    userAgent: 'ai-engineer-cookbook',
   },
 };
 

@@ -1,6 +1,6 @@
 // Tests for the Worker API through its entry point (worker/index.mjs): routing, /api/me, /api/logout,
-// /api/progress, sign-in with Google (fake token endpoint), same-origin checks, security headers and the
-// cron clean-up. D1 is the node:sqlite stand-in.
+// /api/progress, sign-in with Google and GitHub (fake provider endpoints), same-origin checks, security
+// headers and the cron clean-up. D1 is the node:sqlite stand-in.
 import assert from 'node:assert/strict';
 import { beforeEach, describe, test } from 'node:test';
 import {
@@ -13,11 +13,13 @@ import { handleApi } from '../worker/lib/api.mjs';
 import { createSession, getSession, newToken } from '../worker/lib/session.mjs';
 import { findOrCreateUser } from '../worker/lib/users.mjs';
 import { createD1 } from './helpers/d1.mjs';
-import { googleTokenResponse, ORIGIN } from './helpers/oauth.mjs';
+import { githubTokenResponse, googleTokenResponse, jsonResponse, ORIGIN } from './helpers/oauth.mjs';
 
 const NOW = 1_800_000_000;
 const [FIRST, SECOND] = AUTH_PROVIDERS;
 const ENV = { GOOGLE_CLIENT_ID: 'cid', GOOGLE_CLIENT_SECRET: 'csecret' };
+const GITHUB_ENV = { GITHUB_CLIENT_ID: 'gh-cid', GITHUB_CLIENT_SECRET: 'gh-csecret' };
+const BOTH_ENV = { ...ENV, ...GITHUB_ENV };
 
 let db, userId, token;
 beforeEach(async () => {
@@ -33,16 +35,25 @@ function request(path, { method = 'GET', cookie, origin, headers = {}, body } = 
   return new Request(ORIGIN + path, { method, headers: all, body });
 }
 
-/** The token endpoint of a test: answers with `tokenResponse` and records the calls. */
-let tokenResponse, tokenCalls;
+/**
+ * The provider endpoints of a test: the token endpoints answer with `tokenResponse`, GitHub's user endpoint
+ * with `githubUser` (401 when null); `tokenCalls` and `userCalls` count the calls.
+ */
+let tokenResponse, tokenCalls, githubUser, userCalls;
 beforeEach(() => {
   tokenResponse = null;
   tokenCalls = 0;
+  githubUser = null;
+  userCalls = 0;
 });
 const fakeFetch = async (url) => {
-  tokenCalls++;
-  assert.equal(url, OAUTH_PROVIDERS.google.tokenUrl);
-  return new Response(JSON.stringify(tokenResponse), { status: tokenResponse ? 200 : 400, headers: { 'Content-Type': 'application/json' } });
+  if (url === OAUTH_PROVIDERS.google.tokenUrl || url === OAUTH_PROVIDERS.github.tokenUrl) {
+    tokenCalls++;
+    return jsonResponse(tokenResponse, tokenResponse ? 200 : 400);
+  }
+  assert.equal(url, OAUTH_PROVIDERS.github.userUrl);
+  userCalls++;
+  return jsonResponse(githubUser, githubUser ? 200 : 401);
 };
 
 const call = (req, now = NOW, env = ENV) => handleApi(req, { db, now, env, fetch: fakeFetch });
@@ -98,6 +109,13 @@ describe(`GET ${ME_API_PATH}`, () => {
     assert.equal(res.headers.get('Set-Cookie'), null);
     const none = await call(request(ME_API_PATH), NOW, {});
     assert.deepEqual((await none.json()).available, []);
+  });
+
+  test('401 lists GitHub when it has credentials, after Google', async () => {
+    const both = await call(request(ME_API_PATH), NOW, BOTH_ENV);
+    assert.deepEqual((await both.json()).available, ['google', 'github']);
+    const github = await call(request(ME_API_PATH), NOW, GITHUB_ENV);
+    assert.deepEqual((await github.json()).available, ['github']);
   });
 
   test('a stale or forged cookie gets 401 and is removed', async () => {
@@ -269,6 +287,93 @@ describe('sign-in with Google', () => {
     tokenResponse = googleTokenResponse(claims(flow));
     const res = await callback({ state: flow.state, code: 'abc' }, flow.cookie);
     assert.equal(res.headers.get('Location'), '/');
+  });
+});
+
+describe('sign-in with GitHub', () => {
+  const callGithub = (req) => call(req, NOW, BOTH_ENV);
+  const flowCookie = (res) => res.headers.getSetCookie().find((c) => c.startsWith(`${OAUTH_COOKIE}=`)).split(';')[0];
+  const sessionOf = (res) => res.headers.getSetCookie().find((c) => c.startsWith(`${SESSION_COOKIE}=`))?.split(';')[0];
+  const identities = (subject) =>
+    db.sqlite.prepare('SELECT provider, user_id FROM identities WHERE subject = ? ORDER BY provider').all(subject);
+
+  async function begin(provider = 'github', returnTo = '/week-01/1-1/') {
+    const res = await callGithub(request(`${AUTH_API_PREFIX}${provider}?${RETURN_TO_PARAM}=${encodeURIComponent(returnTo)}`));
+    assert.equal(res.status, 302);
+    const q = new URL(res.headers.get('Location')).searchParams;
+    return { cookie: flowCookie(res), state: q.get('state'), nonce: q.get('nonce'), location: res.headers.get('Location') };
+  }
+  const callback = (provider, params, cookie) =>
+    callGithub(request(`${AUTH_API_PREFIX}${provider}/callback?${new URLSearchParams(params)}`, { cookie }));
+
+  test('the sign-in route sends the browser to GitHub', async () => {
+    const flow = await begin();
+    assert.ok(flow.location.startsWith(`${OAUTH_PROVIDERS.github.authorizeUrl}?`));
+    assert.equal(flow.nonce, null);
+  });
+
+  test('a full sign-in creates a GitHub user, starts a session and returns to the page', async () => {
+    const flow = await begin();
+    tokenResponse = githubTokenResponse('gho_token');
+    githubUser = { id: 9001, login: 'reader' };
+    const res = await callback('github', { state: flow.state, code: 'abc' }, flow.cookie);
+    assert.equal(res.status, 302);
+    assert.equal(res.headers.get('Location'), '/week-01/1-1/');
+    const me = await callGithub(request(ME_API_PATH, { cookie: sessionOf(res) }));
+    assert.deepEqual(await me.json(), { providers: ['github'] });
+    assert.deepEqual(identities('9001').map((r) => r.provider), ['github']);
+    assert.equal(db.sqlite.prepare("SELECT COUNT(*) AS n FROM identities WHERE subject = 'reader'").get().n, 0, 'the login is not kept');
+    // renaming the account on GitHub keeps the same user
+    const again = await begin();
+    githubUser = { id: 9001, login: 'renamed' };
+    await callback('github', { state: again.state, code: 'def' }, again.cookie);
+    assert.equal(identities('9001').length, 1);
+  });
+
+  test('a GitHub user and a Google user with the same id are different users', async () => {
+    const github = await begin();
+    tokenResponse = githubTokenResponse('gho_token');
+    githubUser = { id: 12345 };
+    await callback('github', { state: github.state, code: 'a' }, github.cookie);
+    const google = await begin('google');
+    tokenResponse = googleTokenResponse({ iss: 'https://accounts.google.com', aud: 'cid', sub: '12345', nonce: google.nonce, exp: NOW + 600 });
+    await callback('google', { state: google.state, code: 'b' }, google.cookie);
+    const rows = identities('12345');
+    assert.deepEqual(rows.map((r) => r.provider), ['github', 'google']);
+    assert.notEqual(rows[0].user_id, rows[1].user_id);
+  });
+
+  test('a refused exchange (200 with error), no token or a failed user lookup land back with the error mark', async (t) => {
+    const warnings = t.mock.method(console, 'warn', () => {});
+    const cases = [
+      [{ error: 'bad_verification_code', error_description: 'The code passed is incorrect or expired.' }, { id: 1 }],
+      [{ token_type: 'bearer', scope: '' }, { id: 1 }],
+      [githubTokenResponse('gho_token'), null],
+      [githubTokenResponse('gho_token'), { login: 'no-id' }],
+    ];
+    for (const [token, user] of cases) {
+      const flow = await begin();
+      tokenResponse = token;
+      githubUser = user;
+      const res = await callback('github', { state: flow.state, code: 'abc' }, flow.cookie);
+      assert.equal(res.status, 302);
+      const landing = new URL(res.headers.get('Location'), ORIGIN);
+      assert.equal(landing.pathname, '/week-01/1-1/');
+      assert.equal(landing.searchParams.get(LOGIN_ERROR_PARAM), '1');
+      assert.equal(sessionOf(res), undefined, 'no session');
+    }
+    assert.equal(userCalls, 2, 'GitHub is asked for the user only with an access token');
+    assert.equal(db.sqlite.prepare("SELECT COUNT(*) AS n FROM identities WHERE provider = 'github'").get().n, 0);
+    assert.equal(warnings.mock.callCount(), cases.length);
+    for (const [message] of warnings.mock.calls.map((c) => c.arguments)) assert.ok(!message.includes('gho_token'), message);
+  });
+
+  test('a Google flow cookie cannot finish a GitHub sign-in', async (t) => {
+    t.mock.method(console, 'warn', () => {});
+    const google = await begin('google');
+    const res = await callback('github', { state: google.state, code: 'abc' }, google.cookie);
+    assert.match(res.headers.get('Location'), new RegExp(`${LOGIN_ERROR_PARAM}=1`));
+    assert.equal(tokenCalls, 0);
   });
 });
 

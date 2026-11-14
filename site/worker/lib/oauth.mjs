@@ -1,6 +1,7 @@
 // Sign-in with an OAuth 2.0 / OpenID Connect provider: authorization code flow with PKCE (S256), `state`
-// against login CSRF and `nonce` against ID-token replay. The flow state waits in a short-lived __Host-
-// cookie between the redirect and the callback. Provider tokens are used once and never stored.
+// against login CSRF and, for OpenID Connect providers, `nonce` against ID-token replay. The flow state
+// waits in a short-lived __Host- cookie between the redirect and the callback. Provider tokens are used
+// once to learn the user id and are never stored or logged.
 import {
   AUTH_API_PREFIX, AUTH_CALLBACK_SUFFIX, AUTH_PROVIDERS, OAUTH_COOKIE, OAUTH_COOKIE_TTL_SECONDS, OAUTH_PROVIDERS,
 } from '../../src/config/app.mjs';
@@ -63,8 +64,9 @@ export function readOauthCookie(request, now) {
   if (!raw) return null;
   try {
     const flow = decodeJson(raw);
-    const fields = ['provider', 'state', 'verifier', 'nonce', 'returnTo'];
+    const fields = ['provider', 'state', 'verifier', 'returnTo'];
     if (!fields.every((f) => typeof flow[f] === 'string') || typeof flow.expires !== 'number') return null;
+    if (OAUTH_PROVIDERS[flow.provider]?.nonce && typeof flow.nonce !== 'string') return null;
     return flow.expires > now ? flow : null;
   } catch {
     return null;
@@ -78,22 +80,23 @@ export async function startSignIn({ provider, clientId, origin, returnTo, now })
     provider,
     state: randomString(),
     verifier: randomString(),
-    nonce: randomString(),
+    ...(config.nonce && { nonce: randomString() }),
     returnTo: safeReturnTo(returnTo),
     expires: now + OAUTH_COOKIE_TTL_SECONDS,
   };
   const url = new URL(config.authorizeUrl);
-  url.search = new URLSearchParams({
+  const params = new URLSearchParams({
     client_id: clientId,
     redirect_uri: callbackUrl(origin, provider),
     response_type: 'code',
-    scope: config.scope,
-    state: flow.state,
-    nonce: flow.nonce,
-    code_challenge: await pkceChallenge(flow.verifier),
-    code_challenge_method: 'S256',
-    prompt: 'select_account',
-  }).toString();
+  });
+  if (config.scope) params.set('scope', config.scope);
+  params.set('state', flow.state);
+  if (config.nonce) params.set('nonce', flow.nonce);
+  params.set('code_challenge', await pkceChallenge(flow.verifier));
+  params.set('code_challenge_method', 'S256');
+  for (const [name, value] of Object.entries(config.authorizeParams ?? {})) params.set(name, value);
+  url.search = params.toString();
   return { flow, location: url.href };
 }
 
@@ -119,13 +122,38 @@ export function googleSubject(tokenResponse, { clientId, nonce, now }) {
   const audience = Array.isArray(claims.aud) ? claims.aud : [claims.aud];
   if (!audience.includes(clientId)) throw new Error('id_token for another client');
   if (typeof claims.exp !== 'number' || claims.exp + CLOCK_SKEW_SECONDS <= now) throw new Error('id_token expired');
-  if (claims.nonce !== nonce) throw new Error('id_token nonce mismatch');
+  if (typeof nonce !== 'string' || !nonce || claims.nonce !== nonce) throw new Error('id_token nonce mismatch');
   if (typeof claims.sub !== 'string' || !claims.sub) throw new Error('id_token without sub');
   return claims.sub;
 }
 
-/** How each provider turns a token response into its user id. */
-const SUBJECT_OF = { google: googleSubject };
+/**
+ * The user id from a GitHub token response: the numeric `id` of `GET /user`, asked with the access token.
+ * The `login` is not used, since users can rename it. The token is not kept.
+ */
+export async function githubSubject(tokenResponse, { fetch }) {
+  const accessToken = tokenResponse?.access_token;
+  if (typeof accessToken !== 'string' || !accessToken) throw new Error('no access_token in the token response');
+  const { userUrl, userAgent, apiVersion } = OAUTH_PROVIDERS.github;
+  const res = await fetch(userUrl, {
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+      Accept: 'application/vnd.github+json',
+      'User-Agent': userAgent,
+      'X-GitHub-Api-Version': apiVersion,
+    },
+  });
+  if (!res.ok) throw new Error(`GitHub user endpoint answered ${res.status}`);
+  const user = await res.json();
+  if (!Number.isSafeInteger(user?.id) || user.id <= 0) throw new Error('GitHub user without a valid id');
+  return String(user.id);
+}
+
+/**
+ * How each provider turns a token response into its user id: `(tokenResponse, { clientId, nonce, now,
+ * fetch })`, sync or async.
+ */
+const SUBJECT_OF = { google: googleSubject, github: githubSubject };
 
 /**
  * Finishes a sign-in: checks `state`, exchanges the code (with the PKCE verifier) and returns the
@@ -150,5 +178,8 @@ export async function finishSignIn({ provider, query, flow, clientId, clientSecr
     }),
   });
   if (!res.ok) throw new Error(`token endpoint answered ${res.status}`);
-  return SUBJECT_OF[provider](await res.json(), { clientId, nonce: flow.nonce, now });
+  const tokenResponse = await res.json();
+  // GitHub reports a failed exchange (bad or expired code, wrong secret) with 200 and an `error` field.
+  if (tokenResponse?.error) throw new Error(`token endpoint refused: ${String(tokenResponse.error).slice(0, 64)}`);
+  return await SUBJECT_OF[provider](tokenResponse, { clientId, nonce: flow.nonce, now, fetch });
 }
