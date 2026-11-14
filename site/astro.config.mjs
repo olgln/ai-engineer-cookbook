@@ -30,6 +30,8 @@ export default defineConfig({
       sidebar,
       tableOfContents: { minHeadingLevel: 2, maxHeadingLevel: 3 },
       lastUpdated: false,
+      // src/pages/404.astro replaces Starlight's built-in 404 page
+      disable404Route: true,
       pagination: true,
       customCss: ['./src/styles/custom.css'],
       components: {

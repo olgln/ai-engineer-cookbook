@@ -70,7 +70,7 @@ Code, comments, logs and docs are in English. Russian is used only for what the 
 | `.env.example` | the environment variables and their defaults |
 | `src/config/server.mjs` | reads the environment (`.env`) into the server settings |
 | `src/config/app.mjs` | constants shared by the browser, the server and the build: API route, storage key, paths, CSP and security headers |
-| `src/locales/ru.json` | every Russian string: site title, interface texts, the book headings the converter looks for |
+| `src/locales/ru.json` | every reader-facing string: site title, interface texts, the book headings the converter looks for; the 404 page (`notFound`) is in English on purpose |
 | `scripts/convert.mjs` | `book/*.md` → pages: reads the book, writes the generated files, fails on warnings |
 | `scripts/lib/render.mjs` | the conversion itself, without file access: table of contents, `AIL-N` references → chapter links, quizzes, checklists, mermaid diagrams |
 | `tests/*.test.mjs` | `npm test`: converter, progress API, checks of the book (`book.test.mjs`) |
@@ -84,6 +84,7 @@ Code, comments, logs and docs are in English. Russian is used only for what the 
 | `src/scripts/main.ts`, `progress.ts` | quizzes, checklists, chapter marks, progress storage |
 | `src/integrations/progress-handler.mjs` | `GET/PUT /api/progress` → the progress file |
 | `src/styles/custom.css`, `ec.config.mjs` | styling and code highlighting |
+| `src/pages/404.astro`, `src/components/not-found.mjs` | the custom 404 page (in English), in place of Starlight's built-in one |
 
 ## Dependencies
 
