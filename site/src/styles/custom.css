@@ -257,3 +257,31 @@ pre.mermaid:not([data-processed]) { color: var(--sl-color-gray-3); font-size: 0.
   margin-top: 0 !important;
 }
 pre.mermaid svg { height: auto; max-width: none !important; }
+
+/* ---------- site footer: full width, under the sidebar and the content ---------- */
+:root { --site-footer-height: 3.5rem; }
+.site-footer {
+  position: relative;
+  z-index: calc(var(--sl-z-index-menu) + 1); /* above the fixed sidebar when scrolled to the end */
+  min-height: var(--site-footer-height);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 var(--sl-nav-pad-x);
+  border-top: 1px solid var(--sl-color-hairline-shade);
+  background-color: var(--sl-color-bg-nav);
+  color: var(--sl-color-gray-3);
+  font-size: var(--sl-text-sm);
+  /* paint the footer colour below it, so an elastic overscroll never shows a gap under the footer */
+  box-shadow: 0 100vh 0 100vh var(--sl-color-bg-nav);
+}
+.site-footer p { margin: 0; }
+/* short pages: the frame plus the footer fill exactly one screen */
+.page { min-height: calc(100vh - var(--site-footer-height)); }
+@media (min-width: 50rem) {
+  /* no elastic bounce at the page ends: with momentum scrolling the footer would jump up
+     against the fixed sidebar and header */
+  html { overscroll-behavior-y: none; }
+  /* the footer covers the bottom of the fixed sidebar: keep its last items reachable */
+  .sidebar-content { padding-bottom: var(--site-footer-height); }
+}

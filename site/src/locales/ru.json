@@ -66,5 +66,8 @@
     "importMissingChapters": "нет поля chapters",
     "confirmImport": "Заменить текущий прогресс данными из файла?",
     "importFailed": "Не получилось прочитать файл: {error}"
+  },
+  "footer": {
+    "copyright": "© {year} {title}"
   }
 }
