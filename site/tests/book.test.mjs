@@ -7,6 +7,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { describe, test } from 'node:test';
 import { BOOK_DIR, CHAPTER_PREFIX } from '../src/config/app.mjs';
+import strings from '../src/locales/ru.json' with { type: 'json' };
 import { escapeRegExp } from '../src/locales/format.mjs';
 import { chapterFile, createRenderer, pagedChapters, parseToc, tagLines } from '../scripts/lib/render.mjs';
 
@@ -31,6 +32,18 @@ describe('book', () => {
     assert.deepEqual(r.warnings, []);
     assert.equal(r.stats.chapters, chapters.length);
     assert.equal(r.stats.choice, r.stats.choiceWithKey);
+  });
+
+  test('the chapter and week badges of the root README.md match the table of contents', () => {
+    const readme = fs.readFileSync(path.join(ROOT, 'README.md'), 'utf8');
+    const badge = (label) => {
+      const m = readme.match(new RegExp(`!\\[${escapeRegExp(label)}: (\\d+)\\]\\(https://img\\.shields\\.io/badge/[^-]+-(\\d+)-`));
+      assert.ok(m, `badge "${label}" is missing`);
+      assert.equal(m[1], m[2], `badge "${label}": alt text and image disagree`);
+      return Number(m[1]);
+    };
+    assert.equal(badge(strings.book.readmeChaptersBadge), chapters.length);
+    assert.equal(badge(strings.book.readmeWeeksBadge), weeks.length);
   });
 
   test('each chapter starts with "# N.N · Title  (AIL-N)" matching the table of contents', () => {
