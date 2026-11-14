@@ -1,0 +1,18 @@
+---
+// Starlight's page frame (header, sidebar, content) followed by a full-width site footer.
+import Default from '@astrojs/starlight/components/PageFrame.astro';
+import strings from '../locales/ru.json';
+import { copyrightLine } from './footer.mjs';
+
+const copyright = copyrightLine(strings, new Date().getFullYear());
+---
+
+<Default>
+  <slot name="header" slot="header" />
+  <slot name="sidebar" slot="sidebar" />
+  <slot />
+</Default>
+
+<footer class="site-footer print:hidden">
+  <p>{copyright}</p>
+</footer>

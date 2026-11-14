@@ -1,4 +1,4 @@
-// Machine-level settings for the local server, read from the environment.
+// Machine-level settings for the build and the local server, read from the environment.
 // Values come from the shell or from site/.env (see .env.example); the shell wins.
 import fs from 'node:fs';
 import os from 'node:os';
@@ -13,6 +13,7 @@ const DEFAULTS = {
   PORT: '4321',
   PROGRESS_FILE: '~/.ai-engineer-cookbook/progress.json',
   PROGRESS_MAX_BYTES: String(2 * 1024 * 1024),
+  SITE_URL: '',
 };
 
 const read = (name) => process.env[name]?.trim() || DEFAULTS[name];
@@ -21,6 +22,19 @@ function positiveInt(name) {
   const value = Number(read(name));
   if (!Number.isInteger(value) || value <= 0) throw new Error(`${name} must be a positive integer, got "${read(name)}"`);
   return value;
+}
+
+/** Public address of the deployed site, e.g. https://cookbook.example.com; empty for a local build. */
+export function siteUrl(value) {
+  if (!value) return undefined;
+  let url;
+  try {
+    url = new URL(value);
+  } catch {
+    throw new Error(`SITE_URL must be an absolute URL, got "${value}"`);
+  }
+  if (url.protocol !== 'https:' && url.protocol !== 'http:') throw new Error(`SITE_URL must be http(s), got "${value}"`);
+  return url.href;
 }
 
 /** Expand a leading ~ to the home directory and make the path absolute. */
@@ -37,5 +51,6 @@ export const config = {
   port: positiveInt('PORT'),
   progressFile: expandHome(read('PROGRESS_FILE')),
   progressMaxBytes: positiveInt('PROGRESS_MAX_BYTES'),
+  siteUrl: siteUrl(read('SITE_URL')),
   allowedHosts: new Set(WILDCARD_HOSTS.includes(host) ? LOOPBACK_HOSTS : [...LOOPBACK_HOSTS, host]),
 };

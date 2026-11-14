@@ -8,26 +8,22 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import {
   BOOK_DIR, CHAPTERS_FILE, DIST_DIR, DOCS_DIR, NEXT_DIST_DIR, OLD_DIST_DIR, PROGRESS_API_PATH,
-  REBUILD_DEBOUNCE_MS, RELOAD_EVENTS_PATH, SIDEBAR_FILE,
+  REBUILD_DEBOUNCE_MS, RELOAD_EVENTS_PATH, RELOAD_SCRIPT_PATH, SECURITY_HEADERS, SIDEBAR_FILE,
 } from '../src/config/app.mjs';
 import { config } from '../src/config/server.mjs';
 import { progressHandler } from '../src/integrations/progress-handler.mjs';
+import { staticHandler } from './lib/static-server.mjs';
 
 const SITE = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const ROOT = path.resolve(SITE, '..');
 const DIST = path.join(SITE, DIST_DIR);
 const WATCH = process.argv.includes('--watch');
 const api = progressHandler();
-const TYPES = {
-  '.html': 'text/html; charset=utf-8', '.js': 'text/javascript', '.mjs': 'text/javascript', '.css': 'text/css',
-  '.json': 'application/json', '.svg': 'image/svg+xml', '.png': 'image/png', '.jpg': 'image/jpeg', '.ico': 'image/x-icon',
-  '.woff2': 'font/woff2', '.wasm': 'application/wasm', '.txt': 'text/plain; charset=utf-8',
-  '.pf_meta': 'application/octet-stream', '.pf_index': 'application/octet-stream', '.pf_fragment': 'application/octet-stream', '.pagefind': 'application/octet-stream',
-};
+const files = staticHandler({ root: DIST, reloadScript: WATCH ? RELOAD_SCRIPT_PATH : undefined });
 
 // ---------- live reload ----------
 const clients = new Set();
-const RELOAD_SCRIPT = `<script>new EventSource(${JSON.stringify(RELOAD_EVENTS_PATH)}).onmessage = () => location.reload();</script>`;
+const RELOAD_SCRIPT = `new EventSource(${JSON.stringify(RELOAD_EVENTS_PATH)}).onmessage = () => location.reload();\n`;
 
 function reloadEvents(req, res) {
   res.writeHead(200, { 'Content-Type': 'text/event-stream', 'Cache-Control': 'no-cache', Connection: 'keep-alive' });
@@ -36,46 +32,20 @@ function reloadEvents(req, res) {
   req.on('close', () => clients.delete(res));
 }
 
+function reloadScript(res) {
+  res.writeHead(200, { ...SECURITY_HEADERS, 'Content-Type': 'text/javascript', 'Cache-Control': 'no-cache' });
+  res.end(RELOAD_SCRIPT);
+}
+
 const notifyReload = () => { for (const res of clients) res.write('data: reload\n\n'); };
-
-// ---------- static files ----------
-function fail(res, status) {
-  if (!res.headersSent) res.statusCode = status;
-  res.end();
-}
-
-function sendFile(res, file) {
-  res.setHeader('Content-Type', TYPES[path.extname(file)] ?? 'application/octet-stream');
-  if (WATCH && path.extname(file) === '.html') {
-    // Small pages: read whole, add the reload hook before </body>.
-    return fs.readFile(file, 'utf8', (err, html) => {
-      if (err) return fail(res, 503);
-      res.end(html.includes('</body>') ? html.replace('</body>', `${RELOAD_SCRIPT}</body>`) : html + RELOAD_SCRIPT);
-    });
-  }
-  // The file can disappear between the check and the read (a rebuild is swapping dist/): answer, never crash.
-  fs.createReadStream(file).on('error', () => fail(res, 503)).pipe(res);
-}
 
 http
   .createServer((req, res) => {
-    const url = new URL(req.url, 'http://localhost');
-    if (url.pathname === PROGRESS_API_PATH) return api(req, res);
-    if (WATCH && url.pathname === RELOAD_EVENTS_PATH) return reloadEvents(req, res);
-    let pathname;
-    try {
-      pathname = decodeURIComponent(url.pathname);
-    } catch {
-      return fail(res, 400);
-    }
-    let file = path.normalize(path.join(DIST, pathname));
-    if (file !== DIST && !file.startsWith(DIST + path.sep)) return fail(res, 403);
-    if (fs.existsSync(file) && fs.statSync(file).isDirectory()) file = path.join(file, 'index.html');
-    if (!fs.existsSync(file)) {
-      res.statusCode = 404;
-      file = path.join(DIST, '404.html');
-    }
-    sendFile(res, file);
+    const { pathname } = new URL(req.url, 'http://localhost');
+    if (pathname === PROGRESS_API_PATH) return api(req, res);
+    if (WATCH && pathname === RELOAD_EVENTS_PATH) return reloadEvents(req, res);
+    if (WATCH && pathname === RELOAD_SCRIPT_PATH) return reloadScript(res);
+    files(req, res);
   })
   .listen(config.port, config.host, () => {
     console.log(`Study site: http://${config.host}:${config.port}/  (Ctrl+C to stop)`);

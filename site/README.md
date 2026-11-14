@@ -24,10 +24,29 @@ Nothing has to be configured. To change a default, copy `.env.example` to `.env`
 | `PORT` | `4321` | port of the local server |
 | `PROGRESS_FILE` | `~/.ai-engineer-cookbook/progress.json` | where the progress is stored, e.g. a folder in iCloud Drive for a backup |
 | `PROGRESS_MAX_BYTES` | `2097152` | upper limit for a progress upload |
+| `SITE_URL` | — | public address of the deployed site (`https://…`); enables canonical links, the sitemap and the `Sitemap:` line in `robots.txt`. Leave empty for local use |
 
 Example: `PROGRESS_FILE=~/path/progress.json npm start`.
 
-The progress API answers only to local host names (`localhost`, `127.0.0.1`, `[::1]` and the `HOST` value) and refuses requests from other pages open in the browser. Keep `HOST` on `127.0.0.1`: the server has no authentication, so `0.0.0.0` would let anyone on the network read the site.
+The progress API answers only to local host names (`localhost`, `127.0.0.1`, `[::1]` and the `HOST` value) and refuses requests from other pages open in the browser. Keep `HOST` on `127.0.0.1`: the server has no authentication, so `0.0.0.0` would let anyone on the network read the site. `scripts/serve.mjs` is a study tool, not a production web server — for the public site use a static hosting (see below). Progress uploads must be `application/json` (415 otherwise) and fit `PROGRESS_MAX_BYTES` (413 otherwise).
+
+## Deploying to a hosting
+
+The site is fully static: `npm run build` produces `dist/`, which any static hosting can serve. Nothing on the server side is needed.
+
+```bash
+cd site
+npm ci
+SITE_URL=https://your-domain.example npm run build   # → dist/
+```
+
+- **Progress on the hosting** lives only in the reader's browser (localStorage) plus export / import on the index page. The progress API (`/api/progress`) exists only in the local server; on a static hosting the request gets a 404 and the site falls back to the browser copy by design.
+- **Security headers.** Every page carries a Content Security Policy `<meta>` tag (Astro `security.csp`: scripts only from the site itself plus hashes of the inline scripts, no plugins, no foreign forms or `<base>`). The build also writes `dist/_headers` with the headers a `<meta>` cannot set: `frame-ancestors 'none'`, `nosniff`, `Referrer-Policy`, `Permissions-Policy`, `Cross-Origin-Opener-Policy`, HSTS, and long caching for the hashed files in `/_astro/`. Netlify and Cloudflare Pages read `_headers` as is; on other hostings (Vercel, nginx, S3 + CloudFront) set the same headers in their config. GitHub Pages cannot set headers at all — prefer a hosting that can.
+- **`robots.txt`** is written next to the pages; with `SITE_URL` set it points to `sitemap-index.xml`.
+- **CI** (`.github/workflows/ci.yml`) runs `npm ci`, `npm audit`, `npm test` and `npm run build` on every push and pull request and keeps `dist/` as a build artifact. Set the repository variable `SITE_URL` for production builds. Publishing is left to the hosting (connect the repository there, build command `npm run build`, base directory `site`, output `dist`) or to a deploy step added to the workflow.
+- **Node** version is in `.nvmrc` (CI uses it); `package.json` `engines` + `engine-strict` stop installs on an older Node.
+
+To check the production headers and CSP locally: `npm run build && npm run serve` serves `dist/` with the same headers (except HSTS).
 
 ## Tests
 
@@ -50,17 +69,22 @@ Code, comments, logs and docs are in English. Russian is used only for what the 
 |---|---|
 | `.env.example` | the environment variables and their defaults |
 | `src/config/server.mjs` | reads the environment (`.env`) into the server settings |
-| `src/config/app.mjs` | constants shared by the browser, the server and the build: API route, storage key, paths |
+| `src/config/app.mjs` | constants shared by the browser, the server and the build: API route, storage key, paths, CSP and security headers |
 | `src/locales/ru.json` | every Russian string: site title, interface texts, the book headings the converter looks for |
 | `scripts/convert.mjs` | `book/*.md` → pages: reads the book, writes the generated files, fails on warnings |
 | `scripts/lib/render.mjs` | the conversion itself, without file access: table of contents, `AIL-N` references → chapter links, quizzes, checklists, mermaid diagrams |
 | `tests/*.test.mjs` | `npm test`: converter, progress API, checks of the book (`book.test.mjs`) |
 | `../.githooks/pre-commit` | runs `npm test` before every commit |
-| `scripts/serve.mjs` | local server for `npm start` |
+| `scripts/serve.mjs` | local server for `npm start`: routes, watching, rebuilds |
+| `scripts/lib/static-server.mjs` | serving `dist/`: path checks, content types, security headers, 404 |
+| `src/integrations/csp-inline-hashes.mjs` | after the build, adds the hashes of inline scripts (Starlight's theme and sidebar) to each page's CSP |
+| `src/integrations/deploy-files.mjs` | after the build, writes `dist/_headers` and `dist/robots.txt` |
+| `public/favicon.svg` | site icon |
+| `../.github/workflows/ci.yml` | CI: audit, tests, build |
 | `src/scripts/main.ts`, `progress.ts` | quizzes, checklists, chapter marks, progress storage |
 | `src/integrations/progress-handler.mjs` | `GET/PUT /api/progress` → the progress file |
 | `src/styles/custom.css`, `ec.config.mjs` | styling and code highlighting |
 
 ## Dependencies
 
-Astro 7.4.2, Starlight 0.42.7, mermaid 12.2.0 and the expressive-code plugins 0.44.3 were reviewed before installation: versions are exact (`save-exact`), the whole tree is frozen at 2026-10-30 (`before=` in `.npmrc`), install scripts are disabled (`ignore-scripts=true`), Astro telemetry is off. Update only deliberately, with the same review.
+Astro 7.4.7, Starlight 0.42.7, mermaid 12.2.0 and the expressive-code plugins 0.44.3 were reviewed before installation: versions are exact (`save-exact`), the whole tree is frozen at 2026-11-07 (`before=` in `.npmrc`), install scripts are disabled (`ignore-scripts=true`), Astro telemetry is off. Update only deliberately, with the same review.

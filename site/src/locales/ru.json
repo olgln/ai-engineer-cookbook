@@ -20,7 +20,9 @@
     "testHeading": "Тест для самопроверки",
     "answersHeading": "Ответы",
     "doneHeading": "Готово, когда",
-    "and": "и"
+    "and": "и",
+    "readmeChaptersBadge": "Главы",
+    "readmeWeeksBadge": "Недели"
   },
   "ui": {
     "showAllAnswers": "Показать все ответы",
@@ -64,5 +66,8 @@
     "importMissingChapters": "нет поля chapters",
     "confirmImport": "Заменить текущий прогресс данными из файла?",
     "importFailed": "Не получилось прочитать файл: {error}"
+  },
+  "footer": {
+    "copyright": "© {year} {title}"
   }
 }

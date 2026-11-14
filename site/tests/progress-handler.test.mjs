@@ -1,4 +1,4 @@
-// Tests for the progress API handler: host/origin checks, GET/PUT, validation, size limit.
+// Tests for the progress API handler: host/origin checks, GET/PUT, validation, content type, size limit.
 // Each test gets its own temporary progress file and a server on a random local port.
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
@@ -30,10 +30,11 @@ after(() => {
 beforeEach(() => fs.rmSync(path.join(dir, 'nested'), { recursive: true, force: true }));
 
 /** Raw request, so the Host and Origin headers can be set freely. */
-function request(method, { host = `127.0.0.1:${port}`, origin, body } = {}) {
+function request(method, { host = `127.0.0.1:${port}`, origin, body, type = 'application/json' } = {}) {
   return new Promise((resolve, reject) => {
     const headers = { host };
     if (origin) headers.origin = origin;
+    if (body !== undefined && type) headers['content-type'] = type;
     const req = http.request({ host: '127.0.0.1', port, method, path: '/api/progress', headers }, (res) => {
       let data = '';
       res.on('data', (c) => (data += c));
@@ -103,9 +104,18 @@ describe('progress handler', () => {
     });
   }
 
-  test('PUT over the size limit is dropped and writes nothing', async () => {
+  test('PUT over the size limit gets 413 and writes nothing', async () => {
     const body = JSON.stringify({ chapters: { big: 'x'.repeat(MAX_BYTES * 2) } });
-    await request('PUT', { body }).catch(() => {});
+    const res = await request('PUT', { body });
+    assert.equal(res.status, 413);
     assert.ok(!fs.existsSync(file));
   });
+
+  for (const type of [null, 'text/plain', 'application/x-www-form-urlencoded']) {
+    test(`PUT with content type ${type} gets 415 and writes nothing`, async () => {
+      const res = await request('PUT', { body: '{"chapters":{}}', type });
+      assert.equal(res.status, 415);
+      assert.ok(!fs.existsSync(file));
+    });
+  }
 });
