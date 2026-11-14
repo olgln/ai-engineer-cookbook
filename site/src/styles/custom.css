@@ -232,7 +232,10 @@ nav a[data-chapter] { display: flex; }
   border-radius: var(--radius);
 }
 .week-card.complete { border-color: var(--sl-color-green); }
-.week-card h3 { margin-top: 0 !important; font-size: 1.1rem; }
+.week-card h3 { margin-top: 0 !important; }
+/* Size the heading wrapper, not the h3: the anchor icon's em-based padding (on the h3) and negative
+   margin (on the link) must resolve against the same font size, or the icon overlaps the text. */
+.week-card :is(h3, .sl-heading-wrapper) { font-size: 1.1rem; }
 .week-progress { display: flex; align-items: center; gap: 0.6rem; margin-top: 0.3rem !important; }
 .week-progress:empty { display: none; }
 .week-progress .progress-bar { flex: 1; margin: 0; height: 0.35rem; }
