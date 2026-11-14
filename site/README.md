@@ -1,6 +1,6 @@
 # Study site
 
-The chapters from `book/` are built into a local site: a table of contents by week, search, code highlighting, quizzes with hidden answers, checklists and learning progress.
+The chapters from `book/` are built into a local site: a table of contents by week, search, code highlighting, quizzes with hidden answers, checklists, learning progress and a review page that collects the quiz questions answered wrong or marked «Не знал» across all chapters.
 
 ```bash
 cd site
@@ -135,7 +135,8 @@ Code, comments, logs and docs are in English. Russian is used only for what the 
 | `src/components/web-analytics.mjs` | Cloudflare Web Analytics beacon and the CSP origins it needs (only with a token) |
 | `../.github/workflows/ci.yml` | CI: audit, tests, build |
 | `wrangler.jsonc` | Cloudflare Workers deployment: serves `dist/` with the 404 page, no preview URLs, no telemetry |
-| `src/scripts/main.ts`, `progress.ts` | quizzes, checklists, chapter marks, progress storage |
+| `src/scripts/main.ts`, `progress.ts` | quizzes, checklists, chapter marks, the review page, progress storage |
+| `src/scripts/review.mjs` | which answered questions go to the review page (`/review/`); the page loads the question list (`src/quiz-index.json`, generated) only there |
 | `src/integrations/progress-handler.mjs` | `GET/PUT /api/progress` → the progress file |
 | `src/styles/custom.css`, `ec.config.mjs` | styling and code highlighting |
 | `src/pages/404.astro`, `src/components/not-found.mjs` | the custom 404 page (in English), in place of Starlight's built-in one |

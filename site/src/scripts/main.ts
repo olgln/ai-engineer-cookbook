@@ -3,6 +3,8 @@ import chapters from '../chapters.json';
 import strings from '../locales/ru.json';
 import { format, plural as pluralForm } from '../locales/format.mjs';
 import { clickTogglesItem } from './checklist.mjs';
+import { reviewItems } from './review.mjs';
+import { QUESTION_ANCHOR_PREFIX } from '../config/app.mjs';
 import type { MermaidConfig } from 'mermaid';
 
 const ui = strings.ui;
@@ -48,6 +50,9 @@ function initQuiz(quiz: HTMLElement) {
   const reset = el('button', { class: 'quiz-btn ghost', type: 'button', textContent: ui.restartQuiz });
   const bar = el('div', { class: 'quiz-toolbar' }, summary, el('div', { class: 'quiz-toolbar-actions' }, showAll, reset));
   quiz.prepend(bar);
+  const keepBelowToolbar = () => quiz.style.setProperty('--quiz-toolbar-height', `${bar.offsetHeight}px`);
+  keepBelowToolbar();
+  window.addEventListener('resize', keepBelowToolbar);
 
   const renders: (() => void)[] = [];
   for (const q of $$<HTMLElement>('.quiz-q', quiz)) renders.push(initQuestion(q, id));
@@ -336,6 +341,47 @@ function importProgress() {
   input.click();
 }
 
+// ---------------- review page ----------------
+const REASON_TEXT = { wrong: ui.reviewReasonWrong, revealed: ui.reviewReasonRevealed, didntKnow: ui.reviewReasonDidntKnow };
+
+// The question index is loaded only here, so chapter pages do not carry every question of the book.
+async function initReview() {
+  const box = document.querySelector<HTMLElement>('.quiz-review');
+  if (!box) return;
+  const { default: quizIndex } = await import('../quiz-index.json');
+  const render = () => {
+    const groups = reviewItems(P.get(), chapters, quizIndex);
+    if (!groups.length) {
+      box.replaceChildren(el('p', { class: 'quiz-review-empty' }, ui.reviewEmpty));
+      return;
+    }
+    const count = groups.reduce((sum, g) => sum + g.questions.length, 0);
+    const summary = el('p', { class: 'quiz-review-count' }, format(ui.reviewCount, {
+      count, questions: plural(count, ui.questions), chapterCount: groups.length, chapters: plural(groups.length, ui.chaptersOf),
+    }));
+    const sections = groups.map(({ chapter, questions }) => el('section', { class: 'quiz-review-chapter' },
+      el('h2', {}, el('a', { href: chapter.href }, `${chapter.num} · ${chapter.title}`)),
+      el('ul', {}, ...questions.map((q) => el('li', {},
+        el('a', { href: `${chapter.href}#${QUESTION_ANCHOR_PREFIX}${q.n}` },
+          el('span', { class: 'quiz-review-num' }, format(strings.site.questionLabel, { n: q.n })), ' ', q.text),
+        ' ',
+        el('span', { class: `quiz-verdict ${q.reason === 'revealed' ? '' : 'bad'}` }, REASON_TEXT[q.reason]),
+      ))),
+    ));
+    box.replaceChildren(summary, ...sections);
+  };
+  render();
+  P.onChange(render);
+}
+
+// A link to a question (chapter#q-N, from the review page) lands on it only after the quiz has its final
+// height (opened answers above it push it down); --quiz-toolbar-height keeps it below the sticky toolbar.
+function scrollToLinkedQuestion() {
+  const q = location.hash ? document.getElementById(decodeURIComponent(location.hash.slice(1))) : null;
+  if (!q?.classList.contains('quiz-q')) return;
+  q.scrollIntoView();
+}
+
 // ---------------- mermaid ----------------
 const mermaidConfig = (dark: boolean): MermaidConfig => ({
   startOnLoad: false,
@@ -380,9 +426,11 @@ async function boot() {
   $$<HTMLElement>('.done-list').forEach(initChecklist);
   $$<HTMLElement>('.chapter-done').forEach(initChapterDone);
   initIndex();
+  void initReview();
   markLinks();
   P.onChange(markLinks);
   document.documentElement.classList.add('progress-ready');
+  scrollToLinkedQuestion();
 }
 
 void boot();

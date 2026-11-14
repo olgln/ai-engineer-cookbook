@@ -94,6 +94,9 @@
 }
 .quiz-q.is-correct { border-inline-start-color: var(--sl-color-green); }
 .quiz-q.is-wrong { border-inline-start-color: var(--sl-color-red); }
+/* a question opened from the review page (chapter#q-N): highlighted and not hidden under the sticky toolbar */
+.quiz-q { scroll-margin-top: calc(var(--quiz-toolbar-height, 3.5rem) + 0.5rem); }
+.quiz-q:target { box-shadow: 0 0 0 2px var(--sl-color-accent); }
 .quiz-q > :first-child { margin-top: 0; }
 .quiz-q-num {
   font-size: 0.75rem;
@@ -287,4 +290,35 @@ pre.mermaid svg { height: auto; max-width: none !important; }
   html { overscroll-behavior-y: none; }
   /* the footer covers the bottom of the fixed sidebar: keep its last items reachable */
   .sidebar-content { padding-bottom: var(--site-footer-height); }
+}
+
+/* ---------- review page ---------- */
+.quiz-review { min-height: 4rem; }
+.quiz-review-count { font-weight: 600; }
+.quiz-review-empty { color: var(--sl-color-gray-2); }
+.quiz-review-chapter h2 { font-size: var(--sl-text-h4); }
+.quiz-review-chapter h2 a { text-decoration: none; }
+.quiz-review-chapter ul { padding-inline-start: 0; list-style: none; display: grid; gap: 0.5rem; }
+.quiz-review-chapter li {
+  margin: 0 !important;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.25rem 1rem;
+  padding: 0.6rem 0.9rem;
+  border: 1px solid var(--sl-color-gray-5);
+  border-inline-start: 4px solid var(--sl-color-red);
+  border-radius: var(--radius);
+  background: var(--sl-color-bg-nav);
+}
+.quiz-review-chapter li > a { flex: 1 1 20rem; color: var(--sl-color-white); text-decoration: none; }
+.quiz-review-chapter li > a:hover { color: var(--sl-color-accent-high); text-decoration: underline; }
+.quiz-review-num {
+  display: block;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--sl-color-accent-high);
 }

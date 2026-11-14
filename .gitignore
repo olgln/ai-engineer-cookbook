@@ -14,6 +14,7 @@ site/src/content/docs/
 site/src/sidebar.json
 site/src/chapters.json
 site/src/lastmod.json
+site/src/quiz-index.json
 
 # learning progress is personal and lives in ~/.ai-engineer-cookbook/ (see README);
 # ignore the old in-repo location just in case
