@@ -7,6 +7,7 @@ site/dist/
 site/dist-next/
 site/dist-old/
 site/.astro/
+site/.wrangler/
 
 # site: generated from book/*.md by site/scripts/convert.mjs
 site/src/content/docs/

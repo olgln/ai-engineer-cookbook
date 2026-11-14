@@ -1,0 +1,20 @@
+// Cloudflare Workers deployment of the built site (static assets only, no Worker script).
+// Workers Builds runs `npm run build` and then `npx wrangler deploy` from this directory.
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "ai-engineer-cookbook",
+  // Must not be newer than the workerd release that ships with the pinned wrangler.
+  "compatibility_date": "2026-11-04",
+  "assets": {
+    // Astro's build output; dist/_headers carries the security headers.
+    "directory": "./dist",
+    // Unknown paths get dist/404.html with a 404 status.
+    "not_found_handling": "404-page",
+    "html_handling": "auto-trailing-slash"
+  },
+  // Served on <name>.<account>.workers.dev; per-version preview URLs stay off so drafts are not public.
+  "workers_dev": true,
+  "preview_urls": false,
+  // No usage telemetry from wrangler, like ASTRO_TELEMETRY_DISABLED for the build.
+  "send_metrics": false
+}
