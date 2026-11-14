@@ -27,6 +27,7 @@ Nothing has to be configured. To change a default, copy `.env.example` to `.env`
 | `SITE_URL` | — | public address of the deployed site (`https://…`); enables canonical links, the sitemap, the `Sitemap:` line in `robots.txt` and the link preview image. Leave empty for local use |
 | `GOOGLE_SITE_VERIFICATION` | — | ownership token from Google Search Console (HTML tag method, the `content` value); adds `<meta name="google-site-verification">` to every page |
 | `YANDEX_VERIFICATION` | — | ownership token from Yandex Webmaster (meta tag method, the `content` value); adds `<meta name="yandex-verification">` to every page |
+| `CLOUDFLARE_WEB_ANALYTICS_TOKEN` | — | site token from Cloudflare Web Analytics (manual JS snippet, the `token` value); adds the beacon script to every page and allows `static.cloudflareinsights.com` / `cloudflareinsights.com` in the CSP of that build only. Leave empty for local use |
 
 Example: `PROGRESS_FILE=~/path/progress.json npm start`.
 
@@ -58,7 +59,7 @@ The public site runs on Cloudflare Workers as static assets, configured in `wran
 | Build command | `npm run build` |
 | Deploy command | `npx wrangler deploy` (runs the pinned `wrangler` from `devDependencies`) |
 | Preview builds | off |
-| Build variables | `NODE_VERSION` = the version in `.nvmrc`; `SITE_URL` = `https://<name>.<account>.workers.dev` or the custom domain; optionally `GOOGLE_SITE_VERIFICATION`, `YANDEX_VERIFICATION` |
+| Build variables | `NODE_VERSION` = the version in `.nvmrc`; `SITE_URL` = `https://<name>.<account>.workers.dev` or the custom domain; optionally `GOOGLE_SITE_VERIFICATION`, `YANDEX_VERIFICATION`, `CLOUDFLARE_WEB_ANALYTICS_TOKEN` |
 
 Every push to `main` deploys. Check a deploy locally without uploading anything: `npm run build && npx wrangler deploy --dry-run`. `wrangler` is a deploy tool only, so `npm audit --omit=dev` skips it; update it deliberately, keeping `compatibility_date` in `wrangler.jsonc` no newer than its bundled runtime.
 - **Node** version is in `.nvmrc` (CI uses it); `package.json` `engines` + `engine-strict` stop installs on an older Node.
@@ -109,6 +110,7 @@ Code, comments, logs and docs are in English. Russian is used only for what the 
 | `public/favicon.svg` | site icon |
 | `public/og-image.png`, `assets/og-image.svg` | link preview image (1200×630) and its source |
 | `src/components/seo-head.mjs` | extra `<head>` tags: preview image, search-console tokens |
+| `src/components/web-analytics.mjs` | Cloudflare Web Analytics beacon and the CSP origins it needs (only with a token) |
 | `../.github/workflows/ci.yml` | CI: audit, tests, build |
 | `wrangler.jsonc` | Cloudflare Workers deployment: serves `dist/` with the 404 page, no preview URLs, no telemetry |
 | `src/scripts/main.ts`, `progress.ts` | quizzes, checklists, chapter marks, progress storage |
