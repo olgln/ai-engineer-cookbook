@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import { describe, test } from 'node:test';
 import { OG_IMAGE } from '../src/config/app.mjs';
-import { verificationToken } from '../src/config/server.mjs';
+import { publicToken } from '../src/config/server.mjs';
 import strings from '../src/locales/ru.json' with { type: 'json' };
 import { seoHead } from '../src/components/seo-head.mjs';
 
@@ -42,18 +42,18 @@ describe('seoHead', () => {
   });
 });
 
-describe('verificationToken', () => {
+describe('publicToken', () => {
   test('empty means not set', () => {
-    assert.equal(verificationToken('X', ''), undefined);
-    assert.equal(verificationToken('X', undefined), undefined);
+    assert.equal(publicToken('X', ''), undefined);
+    assert.equal(publicToken('X', undefined), undefined);
   });
 
   test('a token is kept as is', () => {
-    assert.equal(verificationToken('X', 'AbC-12_x'), 'AbC-12_x');
+    assert.equal(publicToken('X', 'AbC-12_x'), 'AbC-12_x');
   });
 
   test('anything that could break out of the attribute is refused', () => {
-    assert.throws(() => verificationToken('YANDEX_VERIFICATION', 'a"><script>'), /YANDEX_VERIFICATION/);
-    assert.throws(() => verificationToken('X', '<meta name="x">'), /X must/);
+    assert.throws(() => publicToken('YANDEX_VERIFICATION', 'a"><script>'), /YANDEX_VERIFICATION/);
+    assert.throws(() => publicToken('X', '<meta name="x">'), /X must/);
   });
 });

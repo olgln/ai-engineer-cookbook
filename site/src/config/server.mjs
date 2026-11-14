@@ -17,6 +17,7 @@ export const DEFAULTS = {
   SITE_URL: '',
   GOOGLE_SITE_VERIFICATION: '',
   YANDEX_VERIFICATION: '',
+  CLOUDFLARE_WEB_ANALYTICS_TOKEN: '',
 };
 
 const read = (name) => process.env[name]?.trim() || DEFAULTS[name];
@@ -41,10 +42,11 @@ export function siteUrl(value) {
 }
 
 /**
- * Ownership token from a search console (Google Search Console, Yandex Webmaster), put into a
- * <meta> tag on every page; empty when not set. Tokens are letters, digits, `-` and `_`.
+ * Public token put into an HTML attribute on every page: an ownership token from a search console
+ * (Google Search Console, Yandex Webmaster) or the Cloudflare Web Analytics site token; empty when
+ * not set. Tokens are letters, digits, `-` and `_`.
  */
-export function verificationToken(name, value) {
+export function publicToken(name, value) {
   if (!value) return undefined;
   if (!/^[\w-]+$/.test(value)) throw new Error(`${name} must hold only letters, digits, - and _, got "${value}"`);
   return value;
@@ -65,7 +67,8 @@ export const config = {
   progressFile: expandHome(read('PROGRESS_FILE')),
   progressMaxBytes: positiveInt('PROGRESS_MAX_BYTES'),
   siteUrl: siteUrl(read('SITE_URL')),
-  googleSiteVerification: verificationToken('GOOGLE_SITE_VERIFICATION', read('GOOGLE_SITE_VERIFICATION')),
-  yandexVerification: verificationToken('YANDEX_VERIFICATION', read('YANDEX_VERIFICATION')),
+  googleSiteVerification: publicToken('GOOGLE_SITE_VERIFICATION', read('GOOGLE_SITE_VERIFICATION')),
+  yandexVerification: publicToken('YANDEX_VERIFICATION', read('YANDEX_VERIFICATION')),
+  webAnalyticsToken: publicToken('CLOUDFLARE_WEB_ANALYTICS_TOKEN', read('CLOUDFLARE_WEB_ANALYTICS_TOKEN')),
   allowedHosts: new Set(WILDCARD_HOSTS.includes(host) ? LOOPBACK_HOSTS : [...LOOPBACK_HOSTS, host]),
 };

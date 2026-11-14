@@ -7,17 +7,21 @@ import progressApi from './src/integrations/progress-api.mjs';
 import deployFiles from './src/integrations/deploy-files.mjs';
 import cspInlineHashes from './src/integrations/csp-inline-hashes.mjs';
 import { seoHead } from './src/components/seo-head.mjs';
+import { webAnalyticsHead, withWebAnalytics } from './src/components/web-analytics.mjs';
 import { CSP } from './src/config/app.mjs';
 import { config } from './src/config/server.mjs';
+
+// Cloudflare Web Analytics only in builds with CLOUDFLARE_WEB_ANALYTICS_TOKEN; its origins join the CSP there.
+const csp = withWebAnalytics(CSP, config.webAnalyticsToken);
 
 export default defineConfig({
   // Public address (SITE_URL): enables canonical links and the sitemap; unset for local builds.
   site: config.siteUrl,
   security: {
     csp: {
-      directives: CSP.directives,
-      scriptDirective: { resources: CSP.scriptSources },
-      styleDirective: { resources: CSP.styleSources },
+      directives: csp.directives,
+      scriptDirective: { resources: csp.scriptSources },
+      styleDirective: { resources: csp.styleSources },
     },
   },
   server: { host: config.host, port: config.port },
@@ -29,12 +33,15 @@ export default defineConfig({
       defaultLocale: 'root',
       locales: { root: { label: strings.languageLabel, lang: strings.lang } },
       sidebar,
-      head: seoHead({
-        site: config.siteUrl,
-        imageAlt: strings.site.ogImageAlt,
-        googleSiteVerification: config.googleSiteVerification,
-        yandexVerification: config.yandexVerification,
-      }),
+      head: [
+        ...seoHead({
+          site: config.siteUrl,
+          imageAlt: strings.site.ogImageAlt,
+          googleSiteVerification: config.googleSiteVerification,
+          yandexVerification: config.yandexVerification,
+        }),
+        ...webAnalyticsHead(config.webAnalyticsToken),
+      ],
       tableOfContents: { minHeadingLevel: 2, maxHeadingLevel: 3 },
       lastUpdated: false,
       // src/pages/404.astro replaces Starlight's built-in 404 page

@@ -45,6 +45,17 @@ export const CSP = {
 };
 
 /**
+ * Cloudflare Web Analytics (cookieless page views, referrers, countries), on only when the build has
+ * CLOUDFLARE_WEB_ANALYTICS_TOKEN. The beacon script loads from `scriptOrigin` and reports to
+ * `reportOrigin`; both are added to the CSP of that build only (src/components/web-analytics.mjs).
+ */
+export const WEB_ANALYTICS = {
+  scriptUrl: 'https://static.cloudflareinsights.com/beacon.min.js',
+  scriptOrigin: 'https://static.cloudflareinsights.com',
+  reportOrigin: 'https://cloudflareinsights.com',
+};
+
+/**
  * Response headers for every page, sent by the local server and written to dist/_headers for the hosting.
  * frame-ancestors only works as a header, not in the <meta> CSP; X-Frame-Options repeats it for old browsers.
  * Cross-Origin-Resource-Policy stops other sites from embedding our files (everything is same-origin).
