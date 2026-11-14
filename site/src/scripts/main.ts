@@ -265,42 +265,45 @@ function markLinks() {
   }
 }
 
-function bar(done: number, total: number) {
+function setBar(bar: HTMLElement | null, done: number, total: number) {
+  if (!bar) return;
   const pct = total ? Math.round((done / total) * 100) : 0;
-  const fill = el('span', { class: 'progress-fill' });
-  fill.style.width = `${pct}%`;
-  return el('span', { class: 'progress-bar', role: 'progressbar', ariaValueNow: String(pct), ariaValueMin: '0', ariaValueMax: '100' }, fill);
+  bar.setAttribute('aria-valuenow', String(pct));
+  bar.querySelector<HTMLElement>('.progress-fill')?.style.setProperty('width', `${pct}%`);
 }
 
+// The progress blocks come pre-rendered in the "nothing done yet" state (scripts/lib/render.mjs,
+// courseProgressHtml / weekProgressHtml); here they are updated in place, so the page does not shift.
 function initIndex() {
   const overall = document.querySelector<HTMLElement>('.course-progress');
   if (!overall) return;
+  const count = overall.querySelector<HTMLElement>('.course-progress-count');
+  const note = overall.querySelector<HTMLElement>('.storage-note');
+  const nextLink = overall.querySelector<HTMLAnchorElement>('.course-progress-next');
+  const allDone = el('span', {}, ui.allDone);
+  overall.querySelector('.course-progress-export')?.addEventListener('click', exportProgress);
+  overall.querySelector('.course-progress-import')?.addEventListener('click', importProgress);
   const render = () => {
     const done = (id: string) => !!P.get().chapters[id]?.done;
     const total = chapters.length;
     const n = chapters.filter((c) => done(c.id)).length;
     const next = chapters.find((c) => !done(c.id));
-    const exp = el('button', { type: 'button', class: 'quiz-btn ghost', textContent: ui.exportProgress });
-    const imp = el('button', { type: 'button', class: 'quiz-btn ghost', textContent: ui.importProgress });
-    exp.addEventListener('click', exportProgress);
-    imp.addEventListener('click', importProgress);
-    overall.replaceChildren(
-      el('div', { class: 'course-progress-head' },
-        el('strong', {}, format(ui.courseProgress, { done: n, total, chapters: plural(total, ui.chaptersOf) })),
-        el('span', { class: 'storage-note', textContent: P.storage === 'file' ? format(ui.savedTo, { path: P.storagePath || ui.progressFileFallback }) : ui.savedInBrowser }),
-      ),
-      bar(n, total),
-      el('div', { class: 'course-progress-actions' },
-        ...(next ? [el('a', { class: 'quiz-btn primary', href: next.href, textContent: format(n ? ui.continueFrom : ui.startFrom, { chapter: `${next.num} · ${next.title}` }) })] : [el('span', {}, ui.allDone)]),
-        exp, imp,
-      ),
-    );
+    if (count) count.textContent = format(ui.courseProgress, { done: n, total, chapters: plural(total, ui.chaptersOf) });
+    if (note) note.textContent = P.storage === 'file' ? format(ui.savedTo, { path: P.storagePath || ui.progressFileFallback }) : ui.savedInBrowser;
+    setBar(overall.querySelector<HTMLElement>(':scope > .progress-bar'), n, total);
+    if (nextLink && next) {
+      nextLink.href = next.href;
+      nextLink.textContent = format(n ? ui.continueFrom : ui.startFrom, { chapter: `${next.num} · ${next.title}` });
+      if (!nextLink.isConnected) allDone.replaceWith(nextLink);
+    } else if (nextLink?.isConnected) nextLink.replaceWith(allDone);
     for (const card of $$<HTMLElement>('.week-card')) {
       const week = +card.dataset.week!;
       const list = chapters.filter((c) => c.week === week);
       const d = list.filter((c) => done(c.id)).length;
       const slot = card.querySelector<HTMLElement>('.week-progress');
-      if (list.length) slot?.replaceChildren(bar(d, list.length), el('span', { class: 'week-progress-label', textContent: `${d}/${list.length}` }));
+      setBar(slot?.querySelector<HTMLElement>('.progress-bar') ?? null, d, list.length);
+      const label = slot?.querySelector<HTMLElement>('.week-progress-label');
+      if (label) label.textContent = `${d}/${list.length}`;
       card.classList.toggle('complete', list.length > 0 && d === list.length);
     }
   };

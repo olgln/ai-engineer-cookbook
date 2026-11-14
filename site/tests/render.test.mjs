@@ -1,13 +1,16 @@
 // Unit tests for scripts/lib/render.mjs: table of contents, links, quizzes, checklists.
 // Book headings come from ru.json, so the fixtures follow the same wording as the real book.
 import assert from 'node:assert/strict';
+import fs from 'node:fs';
 import { describe, test } from 'node:test';
 import { DESCRIPTION_MAX_LENGTH, DESCRIPTION_MARKER, PLAN_PATH, REPO_ONLY_END, REPO_ONLY_START } from '../src/config/app.mjs';
-import { format } from '../src/locales/format.mjs';
+import { format, plural } from '../src/locales/format.mjs';
 import strings from '../src/locales/ru.json' with { type: 'json' };
-import { answerKey, createRenderer, extractOptions, parseToc, splitNumbered, splitSections, tagLines } from '../scripts/lib/render.mjs';
+import {
+  answerKey, courseProgressHtml, createRenderer, extractOptions, parseToc, splitNumbered, splitSections, tagLines,
+} from '../scripts/lib/render.mjs';
 
-const { book, site } = strings;
+const { book, site, ui } = strings;
 
 const TOC = [
   '# Book',
@@ -303,5 +306,45 @@ describe('renderPlan, renderIndex, sidebar, chapters', () => {
 
   test('unlisted finds chapter files missing from the table of contents', () => {
     assert.deepEqual(renderer().unlisted(['AIL-1.md', 'AIL-7.md', 'README.md']), ['AIL-7.md']);
+  });
+});
+
+// The index progress blocks are rendered at build time in the "nothing done yet" state and only updated
+// by src/scripts/main.ts; filling empty blocks after load used to push the week cards down (CLS).
+describe('index progress blocks', () => {
+  const index = () => renderer().renderIndex();
+  const blockOf = (html, cls) => html.split('\n').find((l) => l.startsWith(`<div class="${cls}">`));
+
+  test('course progress is pre-rendered at zero with the first chapter to start from', () => {
+    const block = blockOf(index(), 'course-progress');
+    assert.ok(block, 'one-line raw HTML block (a blank line would end it in Markdown)');
+    const count = format(ui.courseProgress, { done: 0, total: 2, chapters: plural(strings.lang, 2, ui.chaptersOf) });
+    assert.ok(block.includes(`<strong class="course-progress-count">${count}</strong>`));
+    assert.ok(block.includes(`<span class="storage-note">${ui.savedInBrowser}</span>`));
+    assert.ok(block.includes('aria-valuenow="0"'));
+    assert.ok(block.includes(`href="/week-01/1-1/">${format(ui.startFrom, { chapter: '1.1 · Python' })}</a>`));
+    assert.ok(block.includes(`>${ui.exportProgress}</button>`));
+    assert.ok(block.includes(`>${ui.importProgress}</button>`));
+  });
+
+  test('a week with chapter pages gets a 0/N progress row, a week without pages gets none', () => {
+    const [w1, w2] = index().split('<section class="week-card"').slice(1);
+    assert.match(w1, /<div class="week-progress"><span class="progress-bar"[^>]*><span class="progress-fill"><\/span><\/span><span class="week-progress-label">0\/2<\/span><\/div>/);
+    assert.doesNotMatch(w2, /week-progress/);
+  });
+
+  test('chapter titles are escaped', () => {
+    const html = courseProgressHtml([{ num: '1.1', title: 'a <b> & c', href: '/week-01/1-1/' }]);
+    assert.ok(html.includes('1.1 · a &lt;b&gt; &amp; c'));
+    assert.doesNotMatch(html, /<b>/);
+  });
+
+  test('every element the index script updates is in the pre-rendered page', () => {
+    const script = fs.readFileSync(new URL('../src/scripts/main.ts', import.meta.url), 'utf8');
+    const initIndex = script.slice(script.indexOf('function initIndex'), script.indexOf('function exportProgress'));
+    const classes = [...new Set([...initIndex.matchAll(/'[^']*?\.([a-z][\w-]*)'/g)].map((m) => m[1]))];
+    assert.ok(classes.length >= 6, `found ${classes.join(', ')}`);
+    const html = index();
+    for (const cls of classes) assert.match(html, new RegExp(`class="[^"]*\\b${cls}\\b`), cls);
   });
 });

@@ -4,10 +4,10 @@
 import {
   BOOK_DIR, CHAPTER_PREFIX, DESCRIPTION_MARKER, DESCRIPTION_MAX_LENGTH, PLAN_PATH, REPO_ONLY_END, REPO_ONLY_START,
 } from '../../src/config/app.mjs';
-import { escapeRegExp, format } from '../../src/locales/format.mjs';
+import { escapeRegExp, format, plural } from '../../src/locales/format.mjs';
 import strings from '../../src/locales/ru.json' with { type: 'json' };
 
-const { site, book } = strings;
+const { site, book, ui } = strings;
 export const weekLabel = (n, title) => format(site.week, { n, title });
 export const chapterFile = (n) => `${CHAPTER_PREFIX}${n}.md`;
 
@@ -99,6 +99,47 @@ export function outsideInlineCode(line, fn) {
 }
 
 export const escapeHtml = (s) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+
+// Progress blocks of the index page, rendered in the "nothing done yet" state. src/scripts/main.ts
+// (initIndex) fills in the reader's progress in place, so the page does not shift when it loads
+// (Cumulative Layout Shift). Class names are the contract between the two.
+
+/** A progress bar at 0%; main.ts sets the fill width and aria-valuenow. */
+const progressBarHtml = () =>
+  '<span class="progress-bar" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"><span class="progress-fill"></span></span>';
+
+/**
+ * Course progress block: count, storage note, bar, the first chapter to start from, export and import.
+ * One line: a blank line would end the raw HTML block in Markdown.
+ * @param {{ num: string, title: string, href: string }[]} chapters chapters that have a page
+ */
+export function courseProgressHtml(chapters) {
+  const total = chapters.length;
+  const count = format(ui.courseProgress, { done: 0, total, chapters: plural(strings.lang, total, ui.chaptersOf) });
+  const [first] = chapters;
+  const start = format(ui.startFrom, { chapter: `${first.num} · ${first.title}` });
+  return [
+    '<div class="course-progress">',
+    '<div class="course-progress-head">',
+    `<strong class="course-progress-count">${escapeHtml(count)}</strong>`,
+    `<span class="storage-note">${escapeHtml(ui.savedInBrowser)}</span>`,
+    '</div>',
+    progressBarHtml(),
+    '<div class="course-progress-actions">',
+    `<a class="quiz-btn primary course-progress-next" href="${first.href}">${escapeHtml(start)}</a>`,
+    `<button type="button" class="quiz-btn ghost course-progress-export">${escapeHtml(ui.exportProgress)}</button>`,
+    `<button type="button" class="quiz-btn ghost course-progress-import">${escapeHtml(ui.importProgress)}</button>`,
+    '</div>',
+    '</div>',
+  ].join('');
+}
+
+/**
+ * Progress row of a week card: bar and "0/N".
+ * @param {number} pages chapters of the week that have a page
+ */
+export const weekProgressHtml = (pages) =>
+  `<div class="week-progress">${progressBarHtml()}<span class="week-progress-label">0/${pages}</span></div>`;
 
 /** Split markdown into top-level "## " sections (fence-aware). */
 export function splitSections(text) {
@@ -386,12 +427,13 @@ export function createRenderer(weeks) {
       '',
       format(site.indexIntro, { planLabel: site.planLabel, planPath: PLAN_PATH }),
       '',
-      '<div class="course-progress"></div>',
+      courseProgressHtml(pagedChapters(weeks)),
       '',
     ];
     for (const w of weeks) {
       lines.push(`<section class="week-card" data-week="${w.n}">`, '', `### ${weekLabel(w.n, w.title)}`, '');
-      lines.push('<div class="week-progress"></div>', '');
+      const pages = w.items.filter((it) => !it.noPage).length;
+      if (pages) lines.push(weekProgressHtml(pages), '');
       for (const it of w.items) {
         if (it.noPage) lines.push(`- ${it.num} · ${it.title}`);
         else lines.push(`- [${it.num} · ${it.title}](${it.href})`);
