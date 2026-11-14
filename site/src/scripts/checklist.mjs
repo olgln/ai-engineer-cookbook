@@ -14,3 +14,10 @@ export function clickTogglesItem(target, selectedText) {
   if (selectedText.trim() !== '') return false;
   return !target.closest(OWN_CLICK_SELECTOR);
 }
+
+/**
+ * Accessible name of a task-list checkbox: the text of its item. Markdown task lists render a bare
+ * <input type="checkbox"> next to the text, not inside a <label>, so a screen reader would say only "checkbox".
+ * @param {string} itemText text content of the list item
+ */
+export const checkboxLabel = (itemText) => itemText.replace(/\s+/g, ' ').trim();

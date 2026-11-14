@@ -2,7 +2,7 @@ import * as P from './progress';
 import chapters from '../chapters.json';
 import strings from '../locales/ru.json';
 import { format, plural as pluralForm } from '../locales/format.mjs';
-import { clickTogglesItem } from './checklist.mjs';
+import { checkboxLabel, clickTogglesItem } from './checklist.mjs';
 import type { MermaidConfig } from 'mermaid';
 
 const ui = strings.ui;
@@ -210,6 +210,14 @@ function initChecklist(box: HTMLElement) {
   P.onChange(render);
 }
 
+/** Name every task-list checkbox (the "done when" checklists, the tracker on the plan page) by its item text. */
+function labelCheckboxes() {
+  for (const inp of $$<HTMLInputElement>('.sl-markdown-content li input[type="checkbox"]')) {
+    const li = inp.closest('li');
+    if (li && !inp.hasAttribute('aria-label')) inp.setAttribute('aria-label', checkboxLabel(li.textContent ?? ''));
+  }
+}
+
 // ---------------- chapter done card ----------------
 function initChapterDone(box: HTMLElement) {
   const id = box.dataset.chapter!;
@@ -374,6 +382,7 @@ function openExternalLinksInNewTab() {
 // ---------------- boot ----------------
 async function boot() {
   openExternalLinksInNewTab();
+  labelCheckboxes();
   void initMermaid();
   await P.load();
   $$<HTMLElement>('.quiz').forEach(initQuiz);
