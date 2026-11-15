@@ -1,5 +1,5 @@
 // Tests for the account menu in the header: its markup (src/components/account-menu.mjs), how it is put
-// into every page (ThemeSelect override), its states in CSS, and the wiring of src/scripts/account/,
+// into every page (ThemeSelect override, ahead of the language and theme switches), its states in CSS, and the wiring of src/scripts/account/,
 // which is DOM code without a test DOM (checked as text, like the other DOM wiring).
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
@@ -88,11 +88,19 @@ describe('account menu markup', () => {
 });
 
 describe('account menu on the page', () => {
-  test('sits next to the theme switch: the ThemeSelect override renders both', () => {
+  test('comes first, then the language and theme switches: the ThemeSelect override renders all three', () => {
     const astro = read('../../src/components/ThemeSelect.astro');
-    assert.match(astro, /import Default from '@astrojs\/starlight\/components\/ThemeSelect\.astro';/);
-    assert.match(astro, /<Default \/>\s*<Fragment set:html=\{accountMenu\} \/>/);
-    assert.match(read('../../astro.config.mjs'), /ThemeSelect: '\.\/src\/components\/ThemeSelect\.astro'/);
+    assert.match(astro, /import DefaultLanguageSelect from '@astrojs\/starlight\/components\/LanguageSelect\.astro';/);
+    assert.match(astro, /import DefaultThemeSelect from '@astrojs\/starlight\/components\/ThemeSelect\.astro';/);
+    assert.match(astro, /<Fragment set:html=\{accountMenu\} \/>\s*<DefaultLanguageSelect \/>\s*<DefaultThemeSelect \/>/);
+    const config = read('../../astro.config.mjs');
+    assert.match(config, /ThemeSelect: '\.\/src\/components\/ThemeSelect\.astro'/);
+    assert.match(config, /LanguageSelect: '\.\/src\/components\/LanguageSelect\.astro'/);
+  });
+
+  test('the LanguageSelect override renders nothing, so the language switch is not shown twice', () => {
+    const astro = read('../../src/components/LanguageSelect.astro');
+    assert.equal(astro.replace(/^---\n(\/\/.*\n)*---\n?$/, ''), '');
   });
 
   test('CSS shows only the part of the current state and hides what the markup hides', () => {
