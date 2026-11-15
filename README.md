@@ -70,9 +70,9 @@ README.md   этот файл: описание и полный план кур�
 
 # План: как стать AI-инженером
 
-> 📖 Учебник по главам: [book/README.md](book/README.md)
-
 <!-- repo-only:start -->
+> 📖 Учебник по главам: [book/README.md](book/README.md)
+>
 > 🖥 Локальный сайт учебника (запуск, настройки): [site/README.md](site/README.md)
 <!-- repo-only:end -->
 
