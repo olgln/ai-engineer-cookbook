@@ -97,21 +97,3 @@ describe('longDate', () => {
     for (const bad of ['2026-02-30', '2026-11-4', 'today', '']) assert.equal(longDate(bad), null, bad);
   });
 });
-
-// The account box is DOM code without a test DOM; these checks keep its wiring to the store and to ru.json.
-describe('account box on the index page', () => {
-  const script = read('../src/scripts/main.ts');
-  const initAccount = script.slice(script.indexOf('async function initAccount'), script.indexOf('function exportProgress'));
-
-  test('signed in: deleting asks first, then calls the store and reloads only on success', () => {
-    assert.match(initAccount, /if \(!confirm\(ui\.confirmDeleteAccount\)\) return;/);
-    assert.match(initAccount, /if \(await P\.deleteAccount\(\)\) \{\s*location\.reload\(\);/);
-    assert.match(initAccount, /textContent = ui\.deleteAccountFailed/);
-    assert.match(initAccount, /box\.replaceChildren\(status, signOut, remove\)/);
-  });
-
-  test('signed out: a link to the privacy page next to the sign-in buttons', () => {
-    assert.match(initAccount, /el\('a', \{ class: 'account-privacy', href: PRIVACY_PATH, textContent: ui\.privacyLink \}\)/);
-    assert.match(initAccount, /box\.replaceChildren\(text, \.\.\.links, privacy\)/);
-  });
-});

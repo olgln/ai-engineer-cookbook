@@ -55,6 +55,7 @@ export default defineConfig({
       components: {
         Footer: './src/components/Footer.astro',
         PageFrame: './src/components/PageFrame.astro',
+        ThemeSelect: './src/components/ThemeSelect.astro',
       },
     }),
     // Starlight adds this integration itself unless it is listed; listed here to give pages a <lastmod>.

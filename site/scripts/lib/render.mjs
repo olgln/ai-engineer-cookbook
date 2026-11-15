@@ -131,8 +131,6 @@ export function courseProgressHtml(chapters) {
     `<button type="button" class="quiz-btn ghost course-progress-export">${escapeHtml(ui.exportProgress)}</button>`,
     `<button type="button" class="quiz-btn ghost course-progress-import">${escapeHtml(ui.importProgress)}</button>`,
     '</div>',
-    // filled by the browser where accounts are available (src/scripts/main.ts, initAccount)
-    '<div class="account-box" hidden></div>',
     '</div>',
   ].join('');
 }

@@ -4,9 +4,8 @@ import strings from '../locales/ru.json';
 import { format, plural as pluralForm } from '../locales/format.mjs';
 import { checkboxLabel, clickTogglesItem } from './checklist.mjs';
 import { reviewItems } from './review.mjs';
-import {
-  AUTH_API_PREFIX, LOGIN_ERROR_PARAM, ME_API_PATH, PRIVACY_PATH, QUESTION_ANCHOR_PREFIX, RETURN_TO_PARAM,
-} from '../config/app.mjs';
+import { initAccountMenus } from './account-ui';
+import { QUESTION_ANCHOR_PREFIX } from '../config/app.mjs';
 import type { MermaidConfig } from 'mermaid';
 
 const ui = strings.ui;
@@ -328,71 +327,6 @@ function initIndex() {
   };
   render();
   P.onChange(render);
-  void initAccount(overall);
-}
-
-// ---------------- account ----------------
-interface Me { providers?: string[]; available?: string[] }
-
-const providerName = (p: string) => (ui.providerNames as Record<string, string>)[p] ?? p;
-
-/** Removes the "sign-in failed" mark from the address, so a reload does not show the message again. */
-function takeLoginError(): boolean {
-  const params = new URLSearchParams(location.search);
-  if (!params.has(LOGIN_ERROR_PARAM)) return false;
-  params.delete(LOGIN_ERROR_PARAM);
-  const query = params.toString();
-  history.replaceState(null, '', location.pathname + (query ? `?${query}` : '') + location.hash);
-  return true;
-}
-
-// Sign-in / sign-out under the course progress. Shown only where the account API answers (the hosting
-// with a sign-in provider set up); the local server has no /api/me, so the box stays hidden there.
-async function initAccount(overall: HTMLElement) {
-  const box = overall.querySelector<HTMLElement>('.account-box');
-  if (!box) return;
-  const failed = takeLoginError();
-  let me: Me;
-  try {
-    const res = await fetch(ME_API_PATH, { cache: 'no-store' });
-    if (![200, 401].includes(res.status) || !(res.headers.get('content-type') ?? '').includes('json')) return;
-    me = await res.json();
-  } catch {
-    return;
-  }
-  if (me.providers?.length) {
-    const signOut = el('button', { class: 'quiz-btn ghost', type: 'button', textContent: ui.signOut });
-    signOut.addEventListener('click', async () => {
-      signOut.disabled = true;
-      await P.signOut();
-      location.reload();
-    });
-    const who = format(ui.signedInWith, { provider: me.providers.map(providerName).join(', ') });
-    const status = el('span', { class: 'account-status' }, who);
-    const remove = el('button', { class: 'quiz-btn ghost account-delete', type: 'button', textContent: ui.deleteAccount });
-    remove.addEventListener('click', async () => {
-      if (!confirm(ui.confirmDeleteAccount)) return;
-      signOut.disabled = remove.disabled = true;
-      if (await P.deleteAccount()) {
-        location.reload();
-        return;
-      }
-      signOut.disabled = remove.disabled = false;
-      status.className = 'account-status error';
-      status.setAttribute('role', 'alert');
-      status.textContent = ui.deleteAccountFailed;
-    });
-    box.replaceChildren(status, signOut, remove);
-  } else if (me.available?.length) {
-    const back = `${RETURN_TO_PARAM}=${encodeURIComponent(location.pathname)}`;
-    const links = me.available.map((p) =>
-      el('a', { class: 'quiz-btn', href: `${AUTH_API_PREFIX}${p}?${back}`, textContent: format(ui.signInWith, { provider: providerName(p) }) }));
-    const text = el('span', { class: failed ? 'account-status error' : 'account-status' }, failed ? ui.signInFailed : ui.signInPrompt);
-    if (failed) text.setAttribute('role', 'alert');
-    const privacy = el('a', { class: 'account-privacy', href: PRIVACY_PATH, textContent: ui.privacyLink });
-    box.replaceChildren(text, ...links, privacy);
-  } else return;
-  box.hidden = false;
 }
 
 function exportProgress() {
@@ -498,6 +432,7 @@ function openExternalLinksInNewTab() {
 
 // ---------------- boot ----------------
 async function boot() {
+  void initAccountMenus();
   openExternalLinksInNewTab();
   labelCheckboxes();
   void initMermaid();

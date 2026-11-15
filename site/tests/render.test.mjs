@@ -395,9 +395,8 @@ describe('index progress blocks', () => {
     assert.ok(block.includes(`>${ui.importProgress}</button>`));
   });
 
-  test('the account box is pre-rendered hidden, for the browser to fill where accounts exist', () => {
-    const block = blockOf(index(), 'course-progress');
-    assert.ok(block.includes('<div class="account-box" hidden></div>'));
+  test('the index has no sign-in box of its own: signing in lives in the header on every page', () => {
+    assert.ok(!index().includes('account-'));
   });
 
   test('a week with chapter pages gets a 0/N progress row, a week without pages gets none', () => {
