@@ -14,8 +14,8 @@ A Russian-language course for developers who want to become AI engineers, plus a
 
 ## Site and code
 
-- Generated files are never edited: `site/src/content/docs/`, `site/src/sidebar.json`,
-  `site/src/chapters.json`, `site/src/lastmod.json`, `site/src/quiz-index.json` come from `site/scripts/convert.mjs`.
+- Generated files are never edited: `site/src/content/docs/` and `site/src/generated/` come from
+  `site/scripts/convert.mjs`.
 - No hardcoded settings: machine-level values go through `.env` (`site/.env.example`,
   `site/src/config/server.mjs`), shared constants into `site/src/config/app.mjs`.
 - Verify a change with `cd site && npm test` and `cd site && npm run build`. The build fails on any
@@ -32,8 +32,9 @@ A Russian-language course for developers who want to become AI engineers, plus a
 
 - Every new or changed piece of code in `site/` comes with tests in the same change: new
   behaviour gets a test, a fixed bug gets a test that fails without the fix. Tests live in
-  `site/tests/*.test.mjs` and use the built-in `node:test` (no test dependencies).
-- Keep logic testable: pure functions in modules (e.g. `site/scripts/lib/render.mjs`), file and
+  `site/tests/<area>/*.test.mjs`, grouped like the code (`convert/`, `serve/`, `browser/`, `site/`,
+  `worker/`), and use the built-in `node:test` (no test dependencies).
+- Keep logic testable: pure functions in modules (e.g. `site/scripts/convert/`), file and
   network access in thin entry scripts (`site/scripts/convert.mjs`).
 - `site/tests/book.test.mjs` checks the book itself (conversion warnings, quiz keys, chapter
   titles, Python syntax of the examples), so `npm test` is also run after content changes.

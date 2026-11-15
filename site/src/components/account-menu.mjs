@@ -1,9 +1,9 @@
 // The account menu at the right end of the header (and in the mobile menu, next to the theme switch): a
 // "sign in" button, or the reader's avatar once signed in, opening a panel with the sign-in buttons or the
-// account actions. It is rendered hidden on every page; src/scripts/account-ui.ts shows it only where the
+// account actions. It is rendered hidden on every page; src/scripts/account/account-ui.ts shows it only where the
 // account API answers (the Worker), so the local server and a static hosting never show it. Both states
-// are in the markup and the root's data-state picks one (src/styles/custom.css). Pure, so it can be
-// tested without rendering Astro components (tests/account-menu.test.mjs).
+// are in the markup and the root's data-state picks one (src/styles/account.css). Pure, so it can be
+// tested without rendering Astro components (tests/site/account-menu.test.mjs).
 import { AUTH_API_PREFIX, AUTH_PROVIDERS, PRIVACY_PATH } from '../config/app.mjs';
 import { format } from '../locales/format.mjs';
 
@@ -63,7 +63,7 @@ export function providerButtonsHtml(strings) {
 }
 
 /**
- * The one-time hint for a new signed-out reader at their first piece of progress (src/scripts/save-hint.mjs):
+ * The one-time hint for a new signed-out reader at their first piece of progress (src/scripts/account/save-hint.mjs):
  * a card at the bottom of the window, not modal, with the sign-in buttons. Rendered once per page, hidden.
  * @param {typeof import('../locales/ru.json')} strings
  */

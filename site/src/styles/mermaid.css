@@ -1,0 +1,11 @@
+/* ---------- mermaid ---------- */
+pre.mermaid {
+  background: transparent;
+  border: 1px solid var(--sl-color-gray-5);
+  border-radius: var(--radius);
+  padding: 1rem;
+  text-align: center;
+  overflow-x: auto;
+}
+pre.mermaid:not([data-processed]) { color: var(--site-color-muted); font-size: 0.8rem; white-space: pre; text-align: start; }
+pre.mermaid svg { height: auto; max-width: none !important; }

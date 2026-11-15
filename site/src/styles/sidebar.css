@@ -1,0 +1,19 @@
+/* ---------- sidebar ---------- */
+#starlight__sidebar a[data-chapter].is-done::after,
+nav a[data-chapter].is-done::after {
+  content: '✓';
+  margin-inline-start: auto;
+  padding-inline-start: 0.5rem;
+  color: var(--sl-color-green);
+  font-weight: 700;
+}
+nav a[data-chapter] { display: flex; }
+.group-progress {
+  margin-inline-start: 0.4rem;
+  white-space: nowrap;
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: var(--site-color-muted);
+  font-variant-numeric: tabular-nums;
+}
+.group-progress.complete { color: var(--sl-color-green); }

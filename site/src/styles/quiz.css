@@ -1,0 +1,98 @@
+/* ---------- quiz ---------- */
+.quiz { margin-top: 1rem; }
+.quiz-toolbar {
+  position: sticky;
+  top: calc(var(--sl-nav-height) + 0.25rem);
+  z-index: 2;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1rem;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.6rem 0.9rem;
+  border: 1px solid var(--sl-color-gray-5);
+  border-radius: var(--radius);
+  background: color-mix(in srgb, var(--sl-color-bg) 88%, transparent);
+  backdrop-filter: blur(8px);
+}
+/* On a phone the toolbar wraps into three rows; stuck to the top it would cover a sixth of the screen. */
+@media (max-width: 50rem) {
+  .quiz-toolbar { position: static; }
+}
+.quiz-toolbar-actions { display: flex; gap: 0.4rem; flex-wrap: wrap; margin: 0 !important; }
+.quiz-summary { font-size: 0.9rem; color: var(--sl-color-gray-2); margin: 0 !important; }
+.quiz-summary.complete { color: var(--sl-color-green-high); font-weight: 600; }
+
+.quiz-q {
+  margin-top: 1rem !important;
+  padding: 1rem 1.1rem 1.1rem;
+  border: 1px solid var(--sl-color-gray-5);
+  border-inline-start: 4px solid var(--sl-color-gray-5);
+  border-radius: var(--radius);
+  background: var(--sl-color-bg-nav);
+}
+.quiz-q.is-correct { border-inline-start-color: var(--sl-color-green); }
+.quiz-q.is-wrong { border-inline-start-color: var(--sl-color-red); }
+/* a question opened from the review page (chapter#q-N): highlighted and not hidden under the sticky toolbar */
+.quiz-q { scroll-margin-top: calc(var(--quiz-toolbar-height, 3.5rem) + 0.5rem); }
+/* the toolbar does not stick on phones (see above), so nothing covers the question there */
+@media (max-width: 50rem) {
+  .quiz-q { scroll-margin-top: 0; }
+}
+.quiz-q:target { box-shadow: 0 0 0 2px var(--sl-color-accent); }
+.quiz-q > :first-child { margin-top: 0; }
+.quiz-q-num {
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--sl-color-accent-high);
+  margin-bottom: 0.3rem !important;
+}
+.quiz-options ul { list-style: none; padding: 0; display: grid; gap: 0.45rem; }
+.quiz-options li {
+  margin: 0 !important;
+  padding: 0.55rem 0.8rem;
+  border: 1px solid var(--sl-color-gray-5);
+  border-radius: 0.5rem;
+  cursor: pointer;
+  background: var(--sl-color-bg);
+  transition: border-color 0.15s, background 0.15s;
+}
+html:not(.progress-ready) .quiz-options li { cursor: default; }
+.quiz-options li:hover { border-color: var(--sl-color-accent); }
+.quiz-options li:focus-visible { outline: 2px solid var(--sl-color-accent); outline-offset: 2px; }
+.quiz-options li.picked { border-color: var(--sl-color-accent); background: var(--sl-color-accent-low); }
+.quiz-q.revealed .quiz-options li { cursor: default; }
+.quiz-options li.correct { border-color: var(--sl-color-green); background: var(--sl-color-green-low); }
+.quiz-options li.wrong { border-color: var(--sl-color-red); background: var(--sl-color-red-low); }
+.quiz-options li.correct::after { content: ' ✓'; color: var(--sl-color-green-high); font-weight: 700; }
+.quiz-options li.wrong::after { content: ' ✗'; color: var(--sl-color-red-high); font-weight: 700; }
+
+.quiz-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem 0.75rem; margin-top: 0.9rem !important; }
+.quiz-hint { font-size: 0.85rem; color: var(--site-color-muted); }
+.quiz-verdict { font-weight: 700; font-size: 0.9rem; }
+.quiz-verdict.good { color: var(--sl-color-green-high); }
+.quiz-verdict.bad { color: var(--sl-color-red-high); }
+
+.quiz-answer { display: none; }
+.quiz-q.revealed .quiz-answer {
+  display: block;
+  margin-top: 0.8rem;
+  padding: 0.75rem 0.95rem;
+  border-radius: 0.5rem;
+  background: var(--sl-color-gray-6);
+  animation: reveal 0.2s ease-out;
+}
+.quiz-answer-label {
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--site-color-muted);
+  margin-bottom: 0.25rem !important;
+}
+@keyframes reveal { from { opacity: 0; transform: translateY(-4px); } }
+@media (prefers-reduced-motion: reduce) {
+  .quiz-q.revealed .quiz-answer { animation: none; }
+}

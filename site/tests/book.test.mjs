@@ -9,7 +9,9 @@ import { describe, test } from 'node:test';
 import { BOOK_DIR, CHAPTER_PREFIX } from '../src/config/app.mjs';
 import strings from '../src/locales/ru.json' with { type: 'json' };
 import { escapeRegExp } from '../src/locales/format.mjs';
-import { chapterFile, createRenderer, pagedChapters, parseToc, tagLines } from '../scripts/lib/render.mjs';
+import { tagLines } from '../scripts/convert/markdown.mjs';
+import { createRenderer } from '../scripts/convert/renderer.mjs';
+import { chapterFile, pagedChapters, parseToc } from '../scripts/convert/toc.mjs';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '..');
 const BOOK = path.join(ROOT, BOOK_DIR);

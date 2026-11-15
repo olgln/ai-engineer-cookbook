@@ -8,7 +8,7 @@ import { fileURLToPath } from 'node:url';
 const envFile = fileURLToPath(new URL('../../.env', import.meta.url));
 if (fs.existsSync(envFile)) process.loadEnvFile(envFile);
 
-/** Every setting with its default; site/.env.example lists the same names (tests/settings.test.mjs). */
+/** Every setting with its default; site/.env.example lists the same names (tests/site/settings.test.mjs). */
 export const DEFAULTS = {
   HOST: '127.0.0.1',
   PORT: '4321',

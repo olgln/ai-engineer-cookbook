@@ -11,8 +11,8 @@ import {
   REBUILD_DEBOUNCE_MS, RELOAD_EVENTS_PATH, RELOAD_SCRIPT_PATH, SECURITY_HEADERS,
 } from '../src/config/app.mjs';
 import { config } from '../src/config/server.mjs';
-import { progressHandler } from '../src/integrations/progress-handler.mjs';
-import { staticHandler } from './lib/static-server.mjs';
+import { progressHandler } from './serve/progress-handler.mjs';
+import { staticHandler } from './serve/static-server.mjs';
 
 const SITE = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const ROOT = path.resolve(SITE, '..');

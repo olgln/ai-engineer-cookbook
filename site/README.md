@@ -47,7 +47,7 @@ SITE_URL=https://your-domain.example npm run build   # → dist/
 - **Security headers.** Every page carries a Content Security Policy `<meta>` tag (Astro `security.csp`: scripts only from the site itself plus hashes of the inline scripts, no plugins, no foreign forms or `<base>`). The build also writes `dist/_headers` with the headers a `<meta>` cannot set: `frame-ancestors 'none'` (plus `X-Frame-Options: DENY` for old browsers), `nosniff`, `Referrer-Policy`, `Permissions-Policy`, `Cross-Origin-Opener-Policy`, `Cross-Origin-Resource-Policy: same-origin`, HSTS, and long caching for the hashed files in `/_astro/`. Netlify and Cloudflare Pages read `_headers` as is; on other hostings (Vercel, nginx, S3 + CloudFront) set the same headers in their config. GitHub Pages cannot set headers at all — prefer a hosting that can.
 - **`robots.txt`** is written next to the pages; with `SITE_URL` set it points to `sitemap-index.xml`.
 - **Sitemap contents.** Every page, including the privacy page `/privacy/`, except the personal review page `/review/` (it is `noindex`; `SITEMAP_EXCLUDED_PATHS` in `src/config/app.mjs`).
-- **Sitemap dates.** Every page in the sitemap gets a `<lastmod>`: the date of the last commit that changed its source (`book/AIL-*.md`, `book/README.md` for the index, the root `README.md` for the plan), so search engines re-crawl edited chapters sooner. The converter reads them from `git log` into `src/lastmod.json`. A shallow clone has no history to read: the build then logs `shallow git clone` and the sitemap goes without dates; run `git fetch --unshallow` before the build (see the Cloudflare build command below).
+- **Sitemap dates.** Every page in the sitemap gets a `<lastmod>`: the date of the last commit that changed its source (`book/AIL-*.md`, `book/README.md` for the index, the root `README.md` for the plan), so search engines re-crawl edited chapters sooner. The converter reads them from `git log` into `src/generated/lastmod.json`. A shallow clone has no history to read: the build then logs `shallow git clone` and the sitemap goes without dates; run `git fetch --unshallow` before the build (see the Cloudflare build command below).
 - **Search engines.** Every page has a title, a description (chapters: the `<!-- description: … -->` line under the meta line of `book/AIL-*.md`, at most 160 characters, required — the build fails without it; the index and the plan: `indexDescription` / `planDescription` in `ru.json`), a canonical link and Open Graph tags; with `SITE_URL` set, also the preview image `public/og-image.png`. To get the site indexed, add it to Google Search Console (URL-prefix property) and Yandex Webmaster, choose the meta tag method, put the tokens into the `GOOGLE_SITE_VERIFICATION` / `YANDEX_VERIFICATION` build variables, redeploy, confirm, then submit `sitemap-index.xml` in both.
 - **CI** (`.github/workflows/ci.yml`) runs `npm ci`, `npm audit`, `npm test` and `npm run build` on every push and pull request and keeps `dist/` as a build artifact. Set the repository variable `SITE_URL` for production builds. Publishing is left to the hosting (connect the repository there, build command `npm run build`, base directory `site`, output `dist`) or to a deploy step added to the workflow.
 
@@ -78,17 +78,17 @@ Readers can sign in with Google or GitHub and keep their progress in their accou
   - `POST /api/logout`;
   - `DELETE /api/account` → deletes the signed-in reader: the user row, and with it (`ON DELETE CASCADE`) every sign-in identity, every session on every device and the stored progress; removes the cookie. The account menu has a delete button for it (with an inline confirmation); the browser copy of the progress stays;
   - `GET /api/progress` / `PUT /api/progress` for the signed-in reader (401 otherwise, so the page keeps the browser copy).
-- **Account menu.** At the right end of the header, next to the theme switch, on every page (in the mobile menu on narrow screens, where Starlight moves the theme switch): a «Войти» button, or once signed in an avatar with the provider's logo. It opens a panel: signed out, why to sign in, a button per available provider (Google's "Sign in with Google" colours for light and dark, GitHub's mark in the same frame) and what we get from them; signed in, the provider, sign-out and account deletion. After a failed sign-in (`?login_error=1`) the panel opens by itself with the message. Signed out, the note under the course progress on the index page is an invitation to sign in that opens the menu (`progressNote`); the browser copy is not announced there. The menu is rendered hidden and shown only where `/api/me` answers with providers, so `npm start` and a static hosting never show it. Markup: `src/components/account-menu.mjs` (put in by the `ThemeSelect` override, `src/components/ThemeSelect.astro`); decisions (API answer, sign-in links, panel position): `src/scripts/account.mjs`; DOM: `src/scripts/account-ui.ts`.
-- **Save hint.** A new reader who is signed out (no progress when the page loaded) gets, at their first piece of progress (a finished chapter, a ticked item, a quiz answer), a card at the bottom of the window: the progress is only in this browser, sign in to keep it, with the sign-in buttons, «Не сейчас» and a close button. Once per browser (`SAVE_HINT_STORAGE_KEY` in localStorage), never for a signed-in reader or where there are no accounts. Not modal, it does not take the focus and is announced through a live region. Markup: `saveHintHtml` in `src/components/account-menu.mjs` (in `PageFrame.astro`); decision: `src/scripts/save-hint.mjs`; DOM: `initSaveHint` in `src/scripts/account-ui.ts`.
+- **Account menu.** At the right end of the header, next to the theme switch, on every page (in the mobile menu on narrow screens, where Starlight moves the theme switch): a «Войти» button, or once signed in an avatar with the provider's logo. It opens a panel: signed out, why to sign in, a button per available provider (Google's "Sign in with Google" colours for light and dark, GitHub's mark in the same frame) and what we get from them; signed in, the provider, sign-out and account deletion. After a failed sign-in (`?login_error=1`) the panel opens by itself with the message. Signed out, the note under the course progress on the index page is an invitation to sign in that opens the menu (`progressNote`); the browser copy is not announced there. The menu is rendered hidden and shown only where `/api/me` answers with providers, so `npm start` and a static hosting never show it. Markup: `src/components/account-menu.mjs` (put in by the `ThemeSelect` override, `src/components/ThemeSelect.astro`); decisions (API answer, sign-in links, panel position): `src/scripts/account/account.mjs`; DOM: `src/scripts/account/account-ui.ts`.
+- **Save hint.** A new reader who is signed out (no progress when the page loaded) gets, at their first piece of progress (a finished chapter, a ticked item, a quiz answer), a card at the bottom of the window: the progress is only in this browser, sign in to keep it, with the sign-in buttons, «Не сейчас» and a close button. Once per browser (`SAVE_HINT_STORAGE_KEY` in localStorage), never for a signed-in reader or where there are no accounts. Not modal, it does not take the focus and is announced through a live region. Markup: `saveHintHtml` in `src/components/account-menu.mjs` (in `PageFrame.astro`); decision: `src/scripts/account/save-hint.mjs`; DOM: `src/scripts/account/save-hint-ui.ts`.
 - **Sign-in.** OAuth 2.0 authorization code flow with PKCE (S256) and `state`, plus a `nonce` for OpenID Connect providers (Google), kept for 10 minutes in the `__Host-oauth` cookie between the redirect and the callback. We ask for nothing beyond the provider's user id: Google gets only the `openid` scope (the id is `sub` of the ID token); GitHub gets no scope at all (public profile only), and the Worker reads the numeric `id` from `GET https://api.github.com/user` — not the `login`, which users can rename. The provider's tokens are used once and neither stored nor logged. A token endpoint answer with an `error` field fails the sign-in even with status 200 (that is how GitHub reports a bad code). A provider is on only when both of its secrets are set (`<PROVIDER>_CLIENT_ID`, `<PROVIDER>_CLIENT_SECRET`); endpoints and per-provider options (scope, nonce, extra authorize parameters) are in `OAUTH_PROVIDERS` in `src/config/app.mjs`. The sign-in buttons follow `AUTH_PROVIDERS` (Google first).
-- **Progress sync.** The account copy is the same JSON as the browser copy, with a revision number: every `PUT` names the revision it was based on (`X-Progress-Rev`) and gets 409 if another device wrote in between; the page then merges and retries. The browser keeps its copy too, plus a marker (`ai-cookbook-progress-sync`) saying which revision it matches and whether it has unsent changes. On the first sign-in in a browser the two copies are merged (finished chapters and ticks from both, newer answers win); after that the account copy wins on load. Signing out keeps the browser copy. Logic: `src/scripts/sync.mjs`, wiring: `src/scripts/progress.ts`.
+- **Progress sync.** The account copy is the same JSON as the browser copy, with a revision number: every `PUT` names the revision it was based on (`X-Progress-Rev`) and gets 409 if another device wrote in between; the page then merges and retries. The browser keeps its copy too, plus a marker (`ai-cookbook-progress-sync`) saying which revision it matches and whether it has unsent changes. On the first sign-in in a browser the two copies are merged (finished chapters and ticks from both, newer answers win); after that the account copy wins on load. Signing out keeps the browser copy. Logic: `src/scripts/progress/sync.mjs`, wiring: `src/scripts/progress/store.ts`.
 - **Data.** Cloudflare D1, binding `DB`, schema in `migrations/`. A user is a random id plus the provider's user id (no e-mail, name or provider token); progress is one row per user. A session is a random token in the `__Host-session` cookie (`HttpOnly; Secure; SameSite=Lax`); the database keeps only its SHA-256. Sessions last 30 days and are extended at most once a day while used; a daily cron (`triggers` in `wrangler.jsonc`) deletes expired ones. Lifetimes, names and limits are in `src/config/app.mjs`.
 - **Security.** State-changing requests need an `Origin` equal to the site's own; the page to return to after sign-in must be a path on the site; API responses carry the same security headers as the pages and `Cache-Control: no-store`. The page CSP does not change: sign-in is a plain link (navigation), and the API is same-origin.
 - **One-time setup** (needs `npx wrangler login`): `npx wrangler d1 create ai-engineer-cookbook`. The config finds the database by name, so no id goes into the repository. Then set the deploy command to `npm run deploy` (table above). If the build token cannot reach D1, give it the D1 Edit permission.
 - **Google client.** Google Cloud Console → Google Auth Platform: *Branding* (app name, home page, privacy policy link, the site's domain under *Authorized domains*), *Audience* → External → *Publish app* (in "Testing" only listed test users can sign in), *Data access* → only `openid`. Then *Clients* → *Create client* → Web application, *Authorized redirect URIs*: `https://<site>/api/auth/google/callback` (and `http://localhost:8787/api/auth/google/callback` for local runs, or a separate client for them). Put the values on the hosting with `npx wrangler secret put GOOGLE_CLIENT_ID` and `... GOOGLE_CLIENT_SECRET` (this deploys the current Worker version with the new secrets).
 - **GitHub client.** GitHub → *Settings* → *Developer settings* → *OAuth Apps* → *New OAuth App* (an OAuth App, not a GitHub App): application name, homepage URL `https://<site>/`, *Authorization callback URL* `https://<site>/api/auth/github/callback`; device flow stays off. Generate a client secret, then `npx wrangler secret put GITHUB_CLIENT_ID` and `... GITHUB_CLIENT_SECRET`. For local runs register a second OAuth App with `http://localhost:8787/api/auth/github/callback`, so the site's secret never sits on a dev machine. No permissions or scopes are set: the app can read only public profile data, and we keep only the numeric user id.
 - **Locally:** copy `.dev.vars.example` to `.dev.vars` (ignored by git) and fill in the credentials. `npm run dev:worker` applies the migrations to a local database in `.wrangler/` and serves the last build from `dist/` together with the Worker on http://localhost:8787 (keep `npm start` running, or run `npm run build` first). The secure cookies work on `localhost` in Chrome and Firefox; Safari does not keep them over plain HTTP. `npm start` itself has no accounts.
-- **Privacy page.** `/privacy/` (`PRIVACY_PATH`) is generated by the converter like the review page (`renderPrivacy` in `scripts/lib/render.mjs`, text in `privacy` in `ru.json`) and linked from the footer of every page and from the account menu. The text is short on purpose: what is kept (progress, and after sign-in only the provider's account id), no ads, no sharing, cookies only for staying signed in, how to delete the account; no hosting or storage details. The statistics paragraph appears only in builds with `CLOUDFLARE_WEB_ANALYTICS_TOKEN`. The contact is `PRIVACY_CONTACT` (a placeholder is shown while it is empty), the date is `PRIVACY_POLICY_DATE` — update it whenever the text or what the Worker stores changes.
+- **Privacy page.** `/privacy/` (`PRIVACY_PATH`) is generated by the converter like the review page (`scripts/convert/pages/privacy.mjs`, text in `privacy` in `ru.json`) and linked from the footer of every page and from the account menu. The text is short on purpose: what is kept (progress, and after sign-in only the provider's account id), no ads, no sharing, cookies only for staying signed in, how to delete the account; no hosting or storage details. The statistics paragraph appears only in builds with `CLOUDFLARE_WEB_ANALYTICS_TOKEN`. The contact is `PRIVACY_CONTACT` (a placeholder is shown while it is empty), the date is `PRIVACY_POLICY_DATE` — update it whenever the text or what the Worker stores changes.
 - **Going live.** Before turning sign-in on in production, in this order:
   1. Fill in `PRIVACY_CONTACT` in `src/config/app.mjs` (an e-mail or an `https://` link) and check the text of `/privacy/`.
   2. Make sure the deploy command on Cloudflare is `npm run deploy` (it applies the D1 migrations before `wrangler deploy`).
@@ -97,7 +97,7 @@ Readers can sign in with Google or GitHub and keep their progress in their accou
   5. Merge to `main`: the push deploys the Worker and applies the D1 migrations. Without secrets `/api/me` lists no providers, so the account menu stays hidden and the site looks as before. Check that the deploy succeeded and `/api/me` answers 401 with an empty `available`.
   6. `npx wrangler secret put GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `GITHUB_CLIENT_ID`, `GITHUB_CLIENT_SECRET` with the production clients' values. Each `secret put` deploys the current Worker version with the new secret, so the sign-in button of a provider appears as soon as both of its secrets are set. Secrets go after the merge because before it there is no Worker script in production to attach them to.
   7. Check in production: sign-in with each provider, progress sync between two browsers, sign-out and account deletion.
-- **Tests** run the Worker against an in-memory stand-in for D1 on `node:sqlite` with the real migrations (`tests/helpers/d1.mjs`) and fake provider endpoints (token endpoints, GitHub's `/user`; `tests/helpers/oauth.mjs`); the browser side of the sync runs `src/scripts/progress.ts` under Node with fake `fetch` and `localStorage` (`tests/progress-sync.test.mjs`).
+- **Tests** run the Worker against an in-memory stand-in for D1 on `node:sqlite` with the real migrations (`tests/helpers/d1.mjs`) and fake provider endpoints (token endpoints, GitHub's `/user`; `tests/helpers/oauth.mjs`); the browser side of the sync runs `src/scripts/progress/store.ts` under Node with fake `fetch` and `localStorage` (`tests/browser/progress-sync.test.mjs`).
 
 ### Icons
 
@@ -145,42 +145,61 @@ Code, comments, logs and docs are in English. Russian is used only for what the 
 
 ## Files
 
-| File | Purpose |
-|---|---|
-| `.env.example` | the environment variables and their defaults |
-| `src/config/server.mjs` | reads the environment (`.env`) into the server settings |
-| `src/config/app.mjs` | constants shared by the browser, the server and the build: API route, storage key, paths, CSP and security headers |
-| `src/locales/ru.json` | every reader-facing string: site title, interface texts, the book headings the converter looks for; the 404 page (`notFound`) is in English on purpose |
-| `scripts/convert.mjs` | `book/*.md` → pages: reads the book, writes the generated files, fails on warnings |
-| `scripts/lib/render.mjs` | the conversion itself, without file access: table of contents, `AIL-N` references → chapter links, quizzes, checklists, mermaid diagrams, the review and privacy pages |
-| `tests/*.test.mjs` | `npm test`: converter, progress API, account Worker, privacy page (`privacy.test.mjs`), checks of the book (`book.test.mjs`) |
-| `../.githooks/pre-commit` | runs `npm test` before every commit |
-| `scripts/serve.mjs` | local server for `npm start`: routes, watching, rebuilds |
-| `scripts/lib/static-server.mjs` | serving `dist/`: path checks, content types, security headers, 404 |
-| `src/integrations/csp-inline-hashes.mjs` | after the build, adds the hashes of inline scripts (Starlight's theme and sidebar) to each page's CSP |
-| `src/integrations/deploy-files.mjs` | after the build, writes `dist/_headers` and `dist/robots.txt` |
-| `public/favicon.svg` | site icon |
-| `public/apple-touch-icon.png`, `public/favicon.ico`, `assets/apple-touch-icon.svg` | iOS home-screen icon, the `.ico` fallback, and the source of the first (see "Icons") |
-| `scripts/lib/lastmod.mjs` | page dates for the sitemap from `git log` |
-| `public/og-image.png`, `assets/og-image.svg` | link preview image (1200×630) and its source |
-| `src/components/ThemeSelect.astro`, `account-menu.mjs` | the theme switch followed by the account menu in the header; the menu's markup and provider logos |
-| `src/scripts/account.mjs`, `save-hint.mjs`, `account-ui.ts` | the account menu: what `/api/me` means, sign-in links, panel position, the index note; when to show the save hint; the DOM wiring (sign-out, deletion, the hint) |
-| `src/components/PageFrame.astro`, `footer.mjs` | the site footer on every page: copyright and the link to the privacy page |
-| `src/components/seo-head.mjs` | extra `<head>` tags: preview image, search-console tokens, iOS icon |
-| `src/components/web-analytics.mjs` | Cloudflare Web Analytics beacon and the CSP origins it needs (only with a token) |
-| `../.github/workflows/ci.yml` | CI: audit, tests, build |
-| `wrangler.jsonc` | Cloudflare Workers deployment: serves `dist/` with the 404 page, runs the Worker for `/api/*`, the D1 binding and the session clean-up cron, no preview URLs, no telemetry |
-| `worker/index.mjs` | the Worker entry: `fetch` for `/api/*`, `scheduled` for the cron |
-| `worker/lib/api.mjs`, `oauth.mjs`, `session.mjs`, `users.mjs`, `progress.mjs`, `http.mjs` | account API routes, sign-in with OAuth providers, sessions and cookies, users and sign-in identities (and account deletion), stored progress, response helpers |
-| `src/scripts/sync.mjs` | merging the browser and account copies of the progress, what to do after loading |
-| `.dev.vars.example` | the Worker secrets for local runs (`.dev.vars`) |
-| `migrations/*.sql` | D1 schema, applied in order by `wrangler d1 migrations apply` |
-| `tests/helpers/d1.mjs`, `tests/helpers/oauth.mjs` | in-memory D1 for the tests, on `node:sqlite`; fake Google and GitHub token responses, JSON responses of fake provider endpoints |
-| `src/scripts/main.ts`, `progress.ts` | quizzes, checklists, chapter marks, the review page, progress storage (file, account or browser) |
-| `src/scripts/review.mjs` | which answered questions go to the review page (`/review/`); the page loads the question list (`src/quiz-index.json`, generated) only there |
-| `src/integrations/progress-handler.mjs` | `GET/PUT /api/progress` → the progress file |
-| `src/styles/custom.css`, `ec.config.mjs` | styling and code highlighting |
-| `src/pages/404.astro`, `src/components/not-found.mjs` | the custom 404 page (in English), in place of Starlight's built-in one |
+```text
+site/
+├── astro.config.mjs, ec.config.mjs   Astro + Starlight setup, code highlighting
+├── wrangler.jsonc                    Cloudflare Workers deployment (static assets + /api/* Worker, D1, cron)
+├── .env.example, .dev.vars.example   settings of the build and the local server; Worker secrets for local runs
+├── assets/                           SVG sources of the rendered icons and the preview image
+├── public/                           files served as is: favicon, iOS icon, og-image.png
+├── migrations/                       D1 schema, applied in order by `wrangler d1 migrations apply`
+├── scripts/                          Node scripts, run by npm
+│   ├── convert.mjs                   book/*.md → pages: reads the book, writes the generated files, fails on warnings
+│   ├── convert/                      the conversion itself, without file access
+│   │   ├── renderer.mjs              createRenderer: one renderer per build, collects warnings and stats
+│   │   ├── toc.mjs                   book/README.md → weeks and chapters; sidebar, chapter list, page sources
+│   │   ├── patterns.mjs              regular expressions built from the chapter prefix and the book headings
+│   │   ├── markdown.mjs              fence-aware line, section and numbered-list helpers
+│   │   ├── links.mjs                 `AIL-N` references and README links → site links; mermaid fences
+│   │   ├── quiz.mjs                  quiz parsing (options, answer keys, previews) and quiz markup
+│   │   ├── lastmod.mjs               page dates for the sitemap from `git log`
+│   │   └── pages/                    one module per generated page: chapter, plan, index page, review, privacy
+│   ├── serve.mjs                     local server for `npm start`: routes, watching, rebuilds, live reload
+│   └── serve/
+│       ├── static-server.mjs         serving `dist/`: path checks, content types, security headers, 404
+│       └── progress-handler.mjs      `GET/PUT /api/progress` → the progress file (also used by `astro dev`)
+├── src/
+│   ├── config/app.mjs                constants shared by the browser, the server and the build: routes, storage keys, paths, CSP, headers
+│   ├── config/server.mjs             reads the environment (`.env`) into the server settings
+│   ├── locales/ru.json, format.mjs   every reader-facing string (the 404 page is in English on purpose); placeholder and plural helpers
+│   ├── components/                   Starlight overrides (Footer, PageFrame, ThemeSelect) and the pure markup they render:
+│   │                                 the account menu and save hint, the site footer, the 404 page props
+│   ├── pages/404.astro               the custom 404 page, in place of Starlight's built-in one
+│   ├── head/                         extra `<head>` tags: SEO and icons, Cloudflare Web Analytics with its CSP origins
+│   ├── integrations/                 Astro integrations: inline-script hashes for the CSP, `_headers` and `robots.txt`, the dev progress API
+│   ├── scripts/                      browser code, started by main.ts
+│   │   ├── main.ts                   boot: loads the progress and starts every widget of the page
+│   │   ├── dom.ts                    `$$` and `el` helpers
+│   │   ├── progress/                 progress store (file, account or browser) and its account sync
+│   │   ├── account/                  account menu and the one-time save hint
+│   │   ├── quiz/                     quizzes and the review page
+│   │   ├── chapter/                  "done when" checklist and the chapter done card
+│   │   ├── course/                   index page progress and done marks on chapter links
+│   │   └── mermaid.ts, external-links.ts
+│   ├── styles/                       one stylesheet per part of the site, listed in order in astro.config.mjs `customCss`
+│   ├── content/                      Starlight content: docs/ (generated pages), i18n/ (Starlight UI strings)
+│   └── generated/                    sidebar, chapter list, sitemap dates and quiz index, written by convert.mjs
+├── worker/                           the account API on Cloudflare Workers: index.mjs (entry), lib/ (routes, OAuth, sessions, users, progress, HTTP)
+└── tests/                            `npm test`, grouped like the code: convert/, serve/, browser/, site/, worker/, helpers/;
+                                      book.test.mjs checks the book itself
+```
+
+Conventions:
+
+- Generated files (`src/content/docs/`, `src/generated/`) are not stored in git and are never edited by hand.
+- In `src/scripts/`, a `.mjs` module is pure logic tested with `node:test`; the `-ui.ts` module next to it wires that logic to the DOM (`account.mjs` + `account-ui.ts`, `checklist.mjs` + `checklist-ui.ts`).
+- Each folder of `tests/` covers the folder of the same name in the code (`tests/browser/` covers `src/scripts/`, `tests/site/` the components, head tags, integrations, settings, styles and deployment config).
+- CI (`../.github/workflows/ci.yml`) runs the audit, the tests and the build; `../.githooks/pre-commit` runs `npm test` before every commit.
 
 ## Dependencies
 

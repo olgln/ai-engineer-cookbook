@@ -1,0 +1,31 @@
+/* ---------- site footer: full width, under the sidebar and the content ---------- */
+:root { --site-footer-height: 3.5rem; }
+.site-footer {
+  position: relative;
+  z-index: calc(var(--sl-z-index-menu) + 1); /* above the fixed sidebar when scrolled to the end */
+  min-height: var(--site-footer-height);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 0.25rem 1.25rem;
+  padding: 0.5rem var(--sl-nav-pad-x);
+  border-top: 1px solid var(--sl-color-hairline-shade);
+  background-color: var(--sl-color-bg-nav);
+  color: var(--site-color-muted);
+  font-size: var(--sl-text-sm);
+  /* paint the footer colour below it, so an elastic overscroll never shows a gap under the footer */
+  box-shadow: 0 100vh 0 100vh var(--sl-color-bg-nav);
+}
+.site-footer p { margin: 0; }
+.site-footer a { color: inherit; text-decoration: underline; text-underline-offset: 0.2em; }
+.site-footer a:hover, .site-footer a[aria-current='page'] { color: var(--sl-color-white); }
+/* short pages: the frame plus the footer fill exactly one screen */
+.page { min-height: calc(100vh - var(--site-footer-height)); }
+@media (min-width: 50rem) {
+  /* no elastic bounce at the page ends: with momentum scrolling the footer would jump up
+     against the fixed sidebar and header */
+  html { overscroll-behavior-y: none; }
+  /* the footer covers the bottom of the fixed sidebar: keep its last items reachable */
+  .sidebar-content { padding-bottom: var(--site-footer-height); }
+}

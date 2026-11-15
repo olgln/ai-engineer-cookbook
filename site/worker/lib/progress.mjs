@@ -1,6 +1,6 @@
 // Progress of signed-in readers in D1: one JSON document per user with a revision number. A write must
 // name the revision it was based on; a stale one is refused, so two devices never overwrite each other
-// silently (the browser then merges and retries, src/scripts/sync.mjs).
+// silently (the browser then merges and retries, src/scripts/progress/sync.mjs).
 
 const EMPTY = { version: 1, chapters: {} };
 
