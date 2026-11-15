@@ -8,12 +8,14 @@ import { markLinks } from './course/chapter-marks-ui';
 import { initIndex } from './course/index-page-ui';
 import { $$ } from './dom';
 import { openExternalLinksInNewTab } from './external-links';
+import { initLanguageChoice } from './language/language-ui';
 import { initMermaid } from './mermaid';
 import { initQuiz, scrollToLinkedQuestion } from './quiz/quiz-ui';
 import { initReview } from './quiz/review-ui';
 
 async function boot() {
   void initAccountMenus();
+  initLanguageChoice();
   openExternalLinksInNewTab();
   labelCheckboxes();
   void initMermaid();

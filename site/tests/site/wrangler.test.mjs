@@ -1,12 +1,12 @@
 // Checks the Cloudflare Workers config (wrangler.jsonc) against the build: it must deploy what Astro
-// builds, run the Worker only for the API, answer unknown paths with our 404 page, bind the accounts
+// builds, run the Worker only for the API and the home page's language, answer unknown paths with our 404 page, bind the accounts
 // database with its migrations, and keep drafts and telemetry off.
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { describe, test } from 'node:test';
-import { API_PREFIX, DIST_DIR } from '../../src/config/app.mjs';
+import { API_PREFIX, DIST_DIR, LANGUAGE_REDIRECT_PATHS } from '../../src/config/app.mjs';
 
 const SITE_DIR = fileURLToPath(new URL('../..', import.meta.url));
 
@@ -27,10 +27,15 @@ describe('wrangler.jsonc', () => {
     assert.equal(path.resolve(SITE_DIR, config.assets.directory), path.resolve(SITE_DIR, DIST_DIR));
   });
 
-  test('the Worker script exists and runs only for API paths', () => {
+  test('the Worker script exists and runs only for API paths and the language redirect pages', () => {
     assert.ok(fs.existsSync(path.join(SITE_DIR, config.main)), config.main);
-    assert.deepEqual(config.assets.run_worker_first, [`${API_PREFIX}*`]);
-    assert.equal(config.assets.binding, undefined, 'the Worker never serves pages, so it needs no assets binding');
+    assert.deepEqual(config.assets.run_worker_first, [`${API_PREFIX}*`, ...LANGUAGE_REDIRECT_PATHS]);
+    assert.ok(LANGUAGE_REDIRECT_PATHS.every((p) => !p.includes('*')), 'exact pages only, never a whole subtree');
+  });
+
+  test('binds the assets as ASSETS, which the Worker serves the home page from', () => {
+    assert.equal(config.assets.binding, 'ASSETS');
+    assert.match(fs.readFileSync(path.join(SITE_DIR, 'worker/index.mjs'), 'utf8'), /env\.ASSETS\b/);
   });
 
   test('binds the accounts database by name, with the migrations folder', () => {

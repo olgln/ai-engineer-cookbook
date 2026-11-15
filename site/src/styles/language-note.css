@@ -1,0 +1,33 @@
+/* ---------- language note: the site in the reader's browser language (src/components/language-note.mjs) ---------- */
+.language-note {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.5rem var(--sl-nav-pad-x);
+  border-bottom: 1px solid var(--sl-color-gray-5);
+  background: var(--sl-color-accent-low);
+  color: var(--sl-color-white);
+  font-size: var(--sl-text-sm);
+  line-height: 1.45;
+}
+.language-note[hidden] { display: none; }
+.language-note p { flex: 1; margin: 0; }
+.language-note a { color: var(--sl-color-white); font-weight: 600; }
+.language-note-close {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 2rem;
+  height: 2rem;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: none;
+  color: var(--sl-color-white);
+  cursor: pointer;
+}
+.language-note-close svg { width: 1.1rem; height: 1.1rem; }
+.language-note-close:hover { background: var(--sl-color-gray-6); }
+@media print {
+  .language-note { display: none; }
+}

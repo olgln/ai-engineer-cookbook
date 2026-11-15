@@ -7,6 +7,29 @@ export const PROGRESS_API_PATH = '/api/progress';
 /** Paths the Cloudflare Worker (worker/index.mjs) answers before the static assets (wrangler.jsonc `run_worker_first`). */
 export const API_PREFIX = '/api/';
 
+/**
+ * Pages the Worker sees before the static assets (wrangler.jsonc `run_worker_first`, next to the API): only
+ * the home page, where a new reader is sent to the site in their browser's language
+ * (src/scripts/language/language.mjs). Links to any other page keep the language they were shared in.
+ */
+export const LANGUAGE_REDIRECT_PATHS = ['/'];
+
+/**
+ * The reader's own choice of language: set by the language switch, the language note's link and its close
+ * button, read by the Worker on the home page and by the language note. Not HttpOnly: the page sets it.
+ */
+export const LANGUAGE_COOKIE = 'ai-cookbook-lang';
+export const LANGUAGE_COOKIE_MAX_AGE_SECONDS = 365 * 24 * 60 * 60;
+
+/** The language for a reader whose browser asks for none of the site's languages. */
+export const FALLBACK_LANG = 'en';
+
+/**
+ * User agents of crawlers and link previews: the home page never redirects them, so they see the original at
+ * `/`, as the hreflang links describe it. Googlebot sends no Accept-Language, which also means no redirect.
+ */
+export const CRAWLER_USER_AGENT = /bot|crawl|spider|slurp|facebookexternalhit/i;
+
 /** Account API, served by the Worker only (the local server has no accounts). */
 export const ME_API_PATH = '/api/me';
 export const LOGOUT_API_PATH = '/api/logout';

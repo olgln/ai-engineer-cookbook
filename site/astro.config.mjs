@@ -68,6 +68,7 @@ export default defineConfig({
         './src/styles/review.css',
         './src/styles/account.css',
         './src/styles/save-hint.css',
+        './src/styles/language-note.css',
       ],
       components: {
         Footer: './src/components/Footer.astro',

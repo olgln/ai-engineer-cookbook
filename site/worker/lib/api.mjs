@@ -1,5 +1,5 @@
-// Routes of the Worker API (everything under API_PREFIX). The Worker sees only these paths; pages and
-// assets are served by Cloudflare straight from dist/. The context holds the D1 binding `db`, `now`
+// Routes of the Worker API (everything under API_PREFIX). Besides these the Worker sees only the home page
+// (./pages.mjs); other pages and assets are served by Cloudflare straight from dist/. The context holds the D1 binding `db`, `now`
 // (Unix seconds), the Worker `env` (provider credentials) and `fetch` (calls to the providers).
 import {
   ACCOUNT_API_PATH, ACCOUNT_PROGRESS_MAX_BYTES, AUTH_API_PREFIX, AUTH_CALLBACK_SUFFIX, LOGIN_ERROR_PARAM, LOGOUT_API_PATH, ME_API_PATH,
