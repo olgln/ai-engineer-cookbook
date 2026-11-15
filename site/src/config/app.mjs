@@ -238,7 +238,7 @@ export const FAVICON_ICO = { path: '/favicon.ico', size: 32 };
 export const DESCRIPTION_MARKER = 'description:';
 export const DESCRIPTION_MAX_LENGTH = 160;
 
-/** Route of the course plan page (generated from the root README.md). */
+/** Route of the course plan page (generated from the root plan file of each language, `planFile` in LOCALES). */
 export const PLAN_PATH = '/plan/';
 
 /** Route of the review page: quiz questions answered wrong or marked "didn't know", across all chapters. */
@@ -287,9 +287,9 @@ export const CHAPTER_PREFIX = 'AIL-';
  * @type {Locale[]}
  */
 export const LOCALES = [
-  { lang: 'ru', prefix: '', bookDir: BOOK_DIR, planFile: 'README.md', ogLocale: 'ru_RU', ogImage: '/og-image.png' },
+  { lang: 'ru', prefix: '', bookDir: BOOK_DIR, planFile: 'README.ru.md', ogLocale: 'ru_RU', ogImage: '/og-image.png' },
   {
-    lang: 'en', prefix: '/en', bookDir: `${BOOK_DIR}/en`, planFile: 'README.en.md', ogLocale: 'en_US', ogImage: '/og-image.en.png',
+    lang: 'en', prefix: '/en', bookDir: `${BOOK_DIR}/en`, planFile: 'README.md', ogLocale: 'en_US', ogImage: '/og-image.en.png',
   },
 ];
 export const DEFAULT_LOCALE = LOCALES[0];
@@ -319,6 +319,6 @@ export const I18N_FILE = `${GENERATED_DIR}/i18n.json`;
 /** Everything scripts/convert.mjs writes under site/: ignored by git and by the `npm start` watcher (no rebuild loop). */
 export const GENERATED_PATHS = [DOCS_DIR, GENERATED_DIR];
 
-/** Blocks of the root README.md between these markers are not shown on the site. */
+/** Blocks of the root plan files (README.md, README.ru.md) between these markers are not shown on the site. */
 export const REPO_ONLY_START = '<!-- repo-only:start -->';
 export const REPO_ONLY_END = '<!-- repo-only:end -->';

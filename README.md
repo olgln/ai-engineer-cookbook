@@ -1,52 +1,52 @@
 <!-- repo-only:start -->
-**Русский** · [English](README.en.md)
+[Русский](README.ru.md) · **English**
 
 <div align="center">
 
-<img src=".github/assets/banner.svg" alt="AI Engineer Cookbook — учебник AI-инженера" width="100%">
+<img src=".github/assets/banner.en.svg" alt="AI Engineer Cookbook — an AI engineering course" width="100%">
 
 <br>
 
-[![Главы: 51](https://img.shields.io/badge/%D0%B3%D0%BB%D0%B0%D0%B2%D1%8B-51-4f46e5?style=flat-square)](book/README.md)
-[![Недели: 10](https://img.shields.io/badge/%D0%BD%D0%B5%D0%B4%D0%B5%D0%BB%D0%B8-10-4f46e5?style=flat-square)](#план-по-неделям)
-[![Проекты: 4](https://img.shields.io/badge/%D0%BF%D1%80%D0%BE%D0%B5%D0%BA%D1%82%D1%8B-4-4f46e5?style=flat-square)](#-маршрут)
-[![Python 3.12+](https://img.shields.io/badge/Python-3.12%2B-3776AB?style=flat-square&logo=python&logoColor=white)](book/AIL-2.md)
-[![Модели: DeepSeek + Ollama](https://img.shields.io/badge/%D0%BC%D0%BE%D0%B4%D0%B5%D0%BB%D0%B8-DeepSeek_%2B_Ollama-0ea5e9?style=flat-square)](#модели-для-учёбы-deepseek--ollama)
+[![Chapters: 51](https://img.shields.io/badge/chapters-51-4f46e5?style=flat-square)](book/en/README.md)
+[![Weeks: 10](https://img.shields.io/badge/weeks-10-4f46e5?style=flat-square)](#plan-by-week)
+[![Projects: 4](https://img.shields.io/badge/projects-4-4f46e5?style=flat-square)](#-roadmap)
+[![Python 3.12+](https://img.shields.io/badge/Python-3.12%2B-3776AB?style=flat-square&logo=python&logoColor=white)](book/en/AIL-2.md)
+[![Models: DeepSeek + Ollama](https://img.shields.io/badge/models-DeepSeek_%2B_Ollama-0ea5e9?style=flat-square)](#models-for-study-deepseek--ollama)
 <br>
-[![Сайт: Astro Starlight](https://img.shields.io/badge/%D1%81%D0%B0%D0%B9%D1%82-Astro_Starlight-BC52EE?style=flat-square&logo=astro&logoColor=white)](site/README.md)
-[![Текст: CC BY-NC-SA 4.0](https://img.shields.io/badge/%D1%82%D0%B5%D0%BA%D1%81%D1%82-CC_BY--NC--SA_4.0-ef9421?style=flat-square&logo=creativecommons&logoColor=white)](LICENSE-CONTENT)
-[![Код: MIT](https://img.shields.io/badge/%D0%BA%D0%BE%D0%B4-MIT-16a34a?style=flat-square)](LICENSE)
+[![Site: Astro Starlight](https://img.shields.io/badge/site-Astro_Starlight-BC52EE?style=flat-square&logo=astro&logoColor=white)](site/README.md)
+[![Text: CC BY-NC-SA 4.0](https://img.shields.io/badge/text-CC_BY--NC--SA_4.0-ef9421?style=flat-square&logo=creativecommons&logoColor=white)](LICENSE-CONTENT)
+[![Code: MIT](https://img.shields.io/badge/code-MIT-16a34a?style=flat-square)](LICENSE)
 
-**Курс для разработчиков, которые хотят стать AI-инженерами.**<br>
-Теория, практика и проекты для портфолио — на дешёвых облачных и бесплатных локальных моделях.
+**A course for developers who want to become AI engineers.**<br>
+Theory, practice and portfolio projects — on cheap cloud and free local models.
 
-[📖 Оглавление](book/README.md) · [🗺 План курса](#план-как-стать-ai-инженером) · [🖥 Сайт учебника](https://ai-engineer-cookbook.olgln.workers.dev) · [⚖️ Лицензия](#лицензия)
+[📖 Contents](book/en/README.md) · [🗺 Course plan](#plan-how-to-become-an-ai-engineer) · [🖥 Study site](https://ai-engineer-cookbook.olgln.workers.dev/en/) · [⚖️ License](#license)
 
 </div>
 
-## ✨ Что внутри
+## ✨ What's inside
 
-- 📚 **Главы по неделям** — от Python и первого запроса к API до RAG, evals, агентов и продакшена. В каждой главе: теория, маршрут изучения, практика, чек-лист «Готово, когда» и тест с ответами.
-- 🛒 **Один сквозной пример** — выдуманный интернет-магазин Shelf: его база заказов, база знаний и обращения клиентов проходят через весь курс.
-- 🛠 **Четыре проекта для портфолио** — бот-аналитик, ассистент поддержки на RAG, evals с таблицей экспериментов и агент-разборщик заказов.
-- 💸 **Дёшево и приватно** — DeepSeek в облаке (несколько долларов за весь курс) и Ollama локально; персональные данные клиентов в облако не уходят.
-- 🖥 **Сайт для учёбы** — поиск, тесты с проверкой ответов, отметки пройденных глав и прогресс по неделям; запускается локально одной командой.
+- 📚 **Chapters by week** — from Python and the first API request to RAG, evals, agents and production. Every chapter has theory, a learning path, practice, a "Done when" checklist and a quiz with answers.
+- 🛒 **One running example** — Shelf, a fictional online shop: its order database, knowledge base and customer messages run through the whole course.
+- 🛠 **Four portfolio projects** — an analyst bot, a RAG support assistant, evals with an experiments table and an agent that investigates orders.
+- 💸 **Cheap and private** — DeepSeek in the cloud (a few dollars for the whole course) and Ollama locally; customers' personal data never goes to the cloud.
+- 🖥 **A study site** — search, quizzes with answer checking, marks for finished chapters and progress by week; starts locally with one command.
 
-## 🧭 Маршрут
+## 🧭 Roadmap
 
-| | Этап | Недели | Результат |
+| | Stage | Weeks | Result |
 |---|---|---|---|
-| 🐍 | Python, API, промптинг, tool calling | 1–3 | **Проект 1:** Telegram-бот «аналитик магазина» |
-| 🔎 | RAG и эмбеддинги | 4–5 | **Проект 2:** ассистент поддержки по базе знаний |
-| 📏 | Evals и эксперименты | 6–7 | **Проект 3:** таблица экспериментов в цифрах |
-| 🤖 | Агенты и MCP | 8–9 | **Проект 4:** агент-разборщик заказов |
-| 🚀 | Продакшен | 10 | облачная и локальная модель в сравнении: цена, качество, задержка |
+| 🐍 | Python, API, prompting, tool calling | 1–3 | **Project 1:** a "shop analyst" Telegram bot |
+| 🔎 | RAG and embeddings | 4–5 | **Project 2:** a support assistant over the knowledge base |
+| 📏 | Evals and experiments | 6–7 | **Project 3:** an experiments table in numbers |
+| 🤖 | Agents and MCP | 8–9 | **Project 4:** an agent that investigates orders |
+| 🚀 | Production | 10 | a cloud and a local model compared: price, quality, latency |
 
-## 🚀 Как начать
+## 🚀 Getting started
 
-**Читать на GitHub:** открыть [оглавление](book/README.md) и начать с главы [1.1 · Python для тех, кто уже программирует](book/AIL-1.md).
+**Read on GitHub:** open the [table of contents](book/en/README.md) and start with chapter [1.1 · Python for developers who already code](book/en/AIL-1.md).
 
-**Или запустить сайт учебника** — нужен Node.js (версия в `.nvmrc`):
+**Or run the study site** — it needs Node.js (the version is in `.nvmrc`):
 
 ```bash
 cd site
@@ -54,320 +54,322 @@ npm ci
 npm start   # http://127.0.0.1:4321
 ```
 
-Прогресс хранится локально и в git не попадает; подробности и настройки — в [site/README.md](site/README.md).
+Progress is stored locally and never gets into git; details and settings are in [site/README.md](site/README.md).
 
-## 🗂 Структура
+## 🗂 Structure
 
 ```text
-book/       главы курса (AIL-*.md) и оглавление
-site/       сайт учебника: Astro + Starlight, генерируется из book/
-README.md   этот файл: описание и полный план курса
+book/          course chapters (AIL-*.md) and the table of contents
+book/en/       the English translation of the chapters
+site/          the study site: Astro + Starlight, generated from book/
+README.md      this file: the description and the full course plan
+README.ru.md   the same in Russian
 ```
 
 ---
 
 <!-- repo-only:end -->
 
-# План: как стать AI-инженером
+# Plan: how to become an AI engineer
 
 <!-- repo-only:start -->
-> 📖 Учебник по главам: [book/README.md](book/README.md)
+> 📖 The textbook by chapter: [book/en/README.md](book/en/README.md)
 >
-> 🖥 Локальный сайт учебника (запуск, настройки): [site/README.md](site/README.md)
+> 🖥 The local study site (running, settings): [site/README.md](site/README.md)
 <!-- repo-only:end -->
 
-> Для кого: разработчик, который уже программирует на каком-то языке и знает основы git, SQL и командной строки. Python, опыт с моделями и ML не нужны.
-> Нагрузка: ~8–10 часов в неделю → ~4–5 месяцев. **Интенсивный вариант: 4 часа в день → ~2,5 месяца** (см. ниже).
-> Принцип: 20% теории, 80% проектов. Каждый этап заканчивается проектом, который можно показать.
+> Who it is for: a developer who already programs in some language and knows the basics of git, SQL and the command line. No Python, model or ML experience is required.
+> Workload: ~8–10 hours a week → ~4–5 months. **Intensive option: 4 hours a day → ~2.5 months** (see below).
+> Principle: 20% theory, 80% projects. Every stage ends with a project worth showing.
 
-## Модели для учёбы: DeepSeek + Ollama
+## Models for study: DeepSeek + Ollama
 
-Курс проходится на дешёвых и бесплатных моделях; Claude и OpenAI остаются в главах «для сравнения».
+The course runs on cheap and free models; Claude and OpenAI stay in the chapters "for comparison".
 
-| Что | Где | Для чего |
+| What | Where | What for |
 |---|---|---|
-| **DeepSeek API** (`deepseek-flash`, `deepseek-v4-pro`) | облако, копейки | основная облачная модель; судья в evals — `deepseek-v4-pro`. **Серверы в Китае: только публичные тексты, база знаний магазина и демо-база** |
-| **Ollama** (`qwen3:4b` по умолчанию, эмбеддинги `bge-m3`) | локально, бесплатно | персональные данные клиентов, рабочий код и всё приватное (в том числе снимок базы магазина); эмбеддинги и реранкер. Запуск с `OLLAMA_NO_CLOUD=1` |
-| **OpenRouter** (глава 2.4) | облако, один ключ ко многим моделям | сравнение моделей, бесплатные `:free` модели, фолбэки |
-| Claude / OpenAI | облако | по желанию, для сравнения |
+| **DeepSeek API** (`deepseek-flash`, `deepseek-v4-pro`) | cloud, pennies | the main cloud model; the judge in evals is `deepseek-v4-pro`. **Servers in China: only public texts, the shop's knowledge base and the demo database** |
+| **Ollama** (`qwen3:4b` by default, `bge-m3` embeddings) | local, free | customers' personal data, work code and everything private (including the shop database snapshot); embeddings and the reranker. Run with `OLLAMA_NO_CLOUD=1` |
+| **OpenRouter** (chapter 2.4) | cloud, one key for many models | comparing models, free `:free` models, fallbacks |
+| Claude / OpenAI | cloud | optional, for comparison |
 
-**Железо** (локальные модели по объёму памяти): 8 ГБ → модели 3–4B; 16 ГБ → 7–8B; 32 ГБ и больше → 14B и крупнее. Курс рассчитан на минимум: `qwen3:4b` для чата, `bge-m3` для эмбеддингов.
+**Hardware** (local models by memory size): 8 GB → 3–4B models; 16 GB → 7–8B; 32 GB and more → 14B and larger. The course targets the minimum: `qwen3:4b` for chat, `bge-m3` for embeddings.
 
-**Приватность:** персональные данные клиентов, рабочий код и всё, что нельзя показывать посторонним, никогда не уходят в облачные модели — их обрабатывает локальная модель. Облаку достаются публичные тексты, база знаний магазина и демо-база. Правило касается любого облачного провайдера, не только DeepSeek.
+**Privacy:** customers' personal data, work code and anything outsiders must not see never go to cloud models — a local model handles them. The cloud gets public texts, the shop's knowledge base and the demo database. The rule applies to any cloud provider, not only DeepSeek.
 
-**Нумерация:** главы пронумерованы «неделя.порядок» (1.1, 1.2, 2.1 …) — как в [оглавлении учебника](book/README.md).
+**Numbering:** chapters are numbered "week.order" (1.1, 1.2, 2.1 …), as in the [textbook's table of contents](book/en/README.md).
 
-### Что важно знать про DeepSeek и Ollama с первого дня
-- DeepSeek совместим с OpenAI SDK: меняются только `base_url`, ключ и имя модели. У Ollama то же самое через `http://localhost:11434/v1`.
-- **У DeepSeek нет API эмбеддингов** → эмбеддинги и реранкер всегда локально (Ollama / sentence-transformers).
-- **Кэш у DeepSeek автоматический** и без наценки; у Claude — явный `cache_control`.
-- **Structured output:** у DeepSeek только JSON mode (`json_object`), у Ollama — строгая схема через `format`.
-- **Режим размышления DeepSeek** включён по умолчанию: `temperature` в нём игнорируется, с инструментами нужно возвращать `reasoning_content`, принудительный `tool_choice` даёт 400.
-- **Цена DeepSeek** зависит от часа: вне пика (вечер и выходные по UTC) вдвое дешевле — длинные прогоны evals удобно запускать тогда.
-- У Ollama контекст по умолчанию 4096 токенов и молча обрезается — для RAG и агентов нужно увеличивать `num_ctx`.
-- Факты на ноябрь 2026 — актуальное стоит проверять в [документации DeepSeek](https://api-docs.deepseek.com) и [Ollama](https://docs.ollama.com).
+### What to know about DeepSeek and Ollama from day one
+- DeepSeek is compatible with the OpenAI SDK: only `base_url`, the key and the model name change. Ollama does the same through `http://localhost:11434/v1`.
+- **DeepSeek has no embeddings API** → embeddings and the reranker always run locally (Ollama / sentence-transformers).
+- **DeepSeek's cache is automatic** and costs nothing extra; Claude uses an explicit `cache_control`.
+- **Structured output:** DeepSeek has only JSON mode (`json_object`), Ollama has a strict schema through `format`.
+- **DeepSeek's thinking mode** is on by default: it ignores `temperature`, with tools `reasoning_content` must be sent back, and a forced `tool_choice` returns 400.
+- **DeepSeek's price** depends on the hour: off-peak (evenings and weekends UTC) it is half as expensive — a good time for long eval runs.
+- Ollama's default context is 4096 tokens and it is silently truncated — RAG and agents need a larger `num_ctx`.
+- Facts as of November 2026 — check the current state in the [DeepSeek docs](https://api-docs.deepseek.com) and the [Ollama docs](https://docs.ollama.com).
 
 ---
 
-## Интенсивный график: 4 часа в день, 5 дней в неделю
+## Intensive schedule: 4 hours a day, 5 days a week
 
-~20 часов в неделю, ~200 часов всего, **10 недель**.
+~20 hours a week, ~200 hours in total, **10 weeks**.
 
-### Структура одного дня (4 часа)
-| Время | Что делать |
+### The structure of one day (4 hours)
+| Time | What to do |
 |---|---|
-| 1 час | Теория: глава учебника, документация, видео |
-| 2,5 часа | Практика: упражнение или проект (AI генерирует — мы читаем, правим, спрашиваем «почему так») |
-| 0,5 часа | Заметки: что поняли, что не получилось, вопросы на завтра (папка `notes/` в репозитории для учёбы) |
+| 1 hour | Theory: a textbook chapter, docs, videos |
+| 2.5 hours | Practice: an exercise or a project (AI generates — we read, fix and ask "why this way") |
+| 0.5 hours | Notes: what we understood, what didn't work, questions for tomorrow (the `notes/` folder in the study repository) |
 
-**Пятница** — последний час на ревью недели: что сделано, что переносится, коммит на GitHub.
-**Выходные** — отдых. Без них через месяц выгорание. Долгие прогоны на DeepSeek удобно ставить на выходные — это вне пика, дешевле.
+**Friday** — the last hour goes to the weekly review: what is done, what moves on, a commit to GitHub.
+**Weekends** — rest. Without them, burnout comes within a month. Long DeepSeek runs fit well on weekends — that is off-peak and cheaper.
 
-### План по неделям
-| Неделя | Главы | Задачи недели | Результат |
+### Plan by week
+| Week | Chapters | Tasks of the week | Result |
 |---|---|---|---|
-| 1 | 1.1–1.7 | Пн–Ср: Python на уровне уверенного чтения (отличия от привычного языка, `uv`, Pydantic, async), видео Карпатого, **ключ DeepSeek, установка Ollama** (с проверкой подписи). Чт–Пт: сырой API DeepSeek и Ollama, токены, режим размышления, стоимость | Скрипт сравнения ответов и цены запроса |
-| 2 | 2.1–2.7 | Промптинг, structured output (JSON mode DeepSeek vs `format` Ollama), обзор моделей, **OpenRouter**, tool calling, ретраи и кэш | Извлечение JSON из 20 текстов; модель вызывает 3 функции |
-| 3 | 3.1–3.4 | **Проект 1**: Telegram-бот «аналитик магазина» для владельца на **Ollama** (только чтение, снимок базы); DeepSeek — только на демо-базе; логирование токенов и стоимости | Проект 1 на GitHub |
-| 4 | 4.1–4.4 | Эмбеддинги руками (numpy) на **локальной модели `bge-m3`**, chunking, sqlite-vec, загрузка базы знаний магазина `kb/` | Поиск по базе знаний работает |
-| 5 | 5.1–5.5 | Переформулировка запроса, гибридный поиск + BM25, локальный реранкер, ассистент поддержки с ответами со ссылками на раздел базы знаний (генерация — DeepSeek); версия на LlamaIndex | **Проект 2** на GitHub |
-| 6 | 6.1–6.5 | Статьи про evals, синтетические вопросы, набор из 50–100 вопросов, скрипт оценки (судья — `deepseek-v4-pro`), Langfuse Cloud / promptfoo | Evals выдают первую цифру |
-| 7 | 7.1–7.5 | Статистика evals, эксперименты: chunking A/B, **`qwen3:4b` vs `deepseek-flash`**, с реранкером и без; ручной разбор ошибок | **Проект 3** (таблица экспериментов) |
-| 8 | 8.1–8.5 | «Building effective agents», workflow-паттерны, цикл агента руками, prompt injection, свой MCP-сервер (только чтение, хост — Ollama) | MCP-сервер к базе магазина (только чтение) |
-| 9 | 9.1–9.4 | Память агента, агент-разборщик заказов (Ollama на снимке базы с данными клиентов, DeepSeek — только на демо-базе), фреймворки, evals на 20 случаях | **Проект 4** на GitHub |
-| 10 | 10.1–10.5 | Docker, кэш DeepSeek vs Claude, бюджеты (баланс DeepSeek), фолбэк DeepSeek → OpenRouter → Ollama, трейсинг и стоимость ответа, свои evals на локальной модели, LoRA-пример | Сравнение облачной и локальной модели в цифрах |
+| 1 | 1.1–1.7 | Mon–Wed: Python to the level of confident reading (differences from a familiar language, `uv`, Pydantic, async), Karpathy's video, **a DeepSeek key, installing Ollama** (with a signature check). Thu–Fri: the raw DeepSeek and Ollama API, tokens, thinking mode, cost | A script that compares answers and the price of a request |
+| 2 | 2.1–2.7 | Prompting, structured output (DeepSeek JSON mode vs Ollama `format`), a model overview, **OpenRouter**, tool calling, retries and caching | JSON extraction from 20 texts; the model calls 3 functions |
+| 3 | 3.1–3.4 | **Project 1**: a "shop analyst" Telegram bot for the owner on **Ollama** (read-only, a database snapshot); DeepSeek only on the demo database; logging tokens and cost | Project 1 on GitHub |
+| 4 | 4.1–4.4 | Embeddings by hand (numpy) with the **local model `bge-m3`**, chunking, sqlite-vec, loading the shop's knowledge base `kb/` | Search over the knowledge base works |
+| 5 | 5.1–5.5 | Query rewriting, hybrid search + BM25, a local reranker, a support assistant whose answers link to the knowledge base section (generation by DeepSeek); a LlamaIndex version | **Project 2** on GitHub |
+| 6 | 6.1–6.5 | Articles on evals, synthetic questions, a set of 50–100 questions, an evaluation script (the judge is `deepseek-v4-pro`), Langfuse Cloud / promptfoo | Evals give the first number |
+| 7 | 7.1–7.5 | Eval statistics, experiments: chunking A/B, **`qwen3:4b` vs `deepseek-flash`**, with and without a reranker; manual error analysis | **Project 3** (an experiments table) |
+| 8 | 8.1–8.5 | "Building effective agents", workflow patterns, an agent loop by hand, prompt injection, our own MCP server (read-only, Ollama as the host) | An MCP server for the shop database (read-only) |
+| 9 | 9.1–9.4 | Agent memory, an agent that investigates orders (Ollama on the database snapshot with customer data, DeepSeek only on the demo database), frameworks, evals on 20 cases | **Project 4** on GitHub |
+| 10 | 10.1–10.5 | Docker, DeepSeek vs Claude caching, budgets (the DeepSeek balance), a DeepSeek → OpenRouter → Ollama fallback, tracing and the cost of an answer, our own evals on a local model, a LoRA example | A cloud and a local model compared in numbers |
 
-### Контрольные точки
-- **Конец недели 3** — первый проект работает и лежит на GitHub. Если нет — сократить теорию, но не пропускать проект.
-- **Конец недели 7** — есть цифры из evals. Это главный артефакт для собеседований.
-- **Конец недели 10** — 4 проекта и сравнение облачной и локальной модели в цифрах.
+### Checkpoints
+- **End of week 3** — the first project works and is on GitHub. If not, cut theory, but don't skip the project.
+- **End of week 7** — there are numbers from evals. This is the main artifact for job interviews.
+- **End of week 10** — 4 projects and a cloud vs local model comparison in numbers.
 
-### Бюджет
-- DeepSeek: весь курс — порядка нескольких долларов (оценка; прогон 60 вопросов evals ≈ $0,30–0,60). Баланс стоит пополнять маленькими суммами — при нуле API отвечает 402, это и есть потолок расходов.
-- Ollama, sentence-transformers, sqlite-vec, promptfoo: бесплатно.
-- Claude / OpenAI: по желанию, $5–10 на сравнения в конце курса.
-
----
-
-## Кто такой AI-инженер (коротко)
-
-Разработчик, который строит продукты **поверх готовых моделей** (GPT, Claude, Gemini, DeepSeek, Qwen, Llama): интегрирует LLM в приложения, делает RAG, агентов, измеряет качество (evals) и доводит всё до продакшена — с контролем стоимости, латентности, приватности и безопасности. Это в первую очередь софтверная инженерия, а не математика. Умение работать с разными провайдерами и сравнивать их на своих evals — отдельный плюс.
-
-- Статья, которая дала имя профессии: [The Rise of the AI Engineer — swyx, Latent Space](https://www.latent.space/p/ai-engineer)
+### Budget
+- DeepSeek: the whole course costs a few dollars (an estimate; a run of 60 eval questions ≈ $0.30–0.60). It is worth topping up the balance in small amounts — at zero the API returns 402, and that is the spending cap.
+- Ollama, sentence-transformers, sqlite-vec, promptfoo: free.
+- Claude / OpenAI: optional, $5–10 for comparisons at the end of the course.
 
 ---
 
-## Этап 0. Подготовка (1–2 недели)
+## Who an AI engineer is (in short)
 
-### Что сделать
-- [ ] Подтянуть **Python** до уверенного чтения: типы, `async/await`, виртуальные окружения, `uv`, `pydantic`.
-- [ ] Завести ключ [DeepSeek](https://platform.deepseek.com), пополнить на $2–5.
-- [ ] Установить [Ollama](https://ollama.com) только с официального сайта (на macOS перед первым запуском проверить подпись: `codesign -dv` и `spctl -a -vv`; для других систем — официальная инструкция). Скачать `qwen3:4b` и `bge-m3`.
-- [ ] (Для сравнения, по желанию) ключи [Anthropic Console](https://console.anthropic.com) и [OpenAI Platform](https://platform.openai.com).
-- [ ] Посмотреть [Intro to Large Language Models — Андрей Карпатый](https://www.youtube.com/watch?v=zjkBMFhNj_g) (1 час).
-- [ ] (Опционально) [Neural Networks — 3Blue1Brown](https://www.youtube.com/playlist?list=PLZHQObOWTQDNU6R1_67000Dx_ZCJB-3pi) — визуальная интуиция, как работают нейросети и трансформеры.
+A developer who builds products **on top of ready-made models** (GPT, Claude, Gemini, DeepSeek, Qwen, Llama): integrates LLMs into applications, builds RAG and agents, measures quality (evals) and takes it all to production — keeping cost, latency, privacy and security under control. This is software engineering first, not math. Working with different providers and comparing them on our own evals is a plus of its own.
 
-### Ресурсы
-- [Официальный туториал Python](https://docs.python.org/3/tutorial/)
-- [uv — быстрый менеджер пакетов Python](https://docs.astral.sh/uv/)
-- [Pydantic](https://docs.pydantic.dev) — валидация данных, нужен почти везде в LLM-коде
-- [DeepSeek API docs](https://api-docs.deepseek.com) — quick start, цены, режим размышления
-- [Ollama docs](https://docs.ollama.com) — установка на macOS, OpenAI-совместимость
+- The article that gave the profession its name: [The Rise of the AI Engineer — swyx, Latent Space](https://www.latent.space/p/ai-engineer)
 
 ---
 
-## Этап 1. Основы работы с LLM (3–4 недели)
+## Stage 0. Preparation (1–2 weeks)
 
-### Что изучить
-- Токены, контекстное окно, `temperature`, `top_p`, системный промпт; режим размышления (reasoning) и как он меняет параметры.
-- Промптинг: роли, few-shot примеры, XML/Markdown-структура, chain-of-thought.
-- **Structured output** — модель возвращает валидный JSON по схеме (DeepSeek: JSON mode; Ollama: `format` со схемой; Claude/OpenAI: строгие схемы).
-- **Tool calling** — модель вызывает наши функции.
-- Стриминг ответов, ретраи, rate limits (у DeepSeek — лимит одновременных запросов), расчёт стоимости запроса с учётом кэша и часа пик.
-- **Кэширование промптов** — автоматическое у DeepSeek, явное у Claude.
-- **OpenRouter** — один API ко многим моделям, сравнение моделей.
+### What to do
+- [ ] Bring **Python** up to confident reading: types, `async/await`, virtual environments, `uv`, `pydantic`.
+- [ ] Get a [DeepSeek](https://platform.deepseek.com) key and top it up with $2–5.
+- [ ] Install [Ollama](https://ollama.com) only from the official site (on macOS, check the signature before the first launch: `codesign -dv` and `spctl -a -vv`; for other systems, follow the official instructions). Download `qwen3:4b` and `bge-m3`.
+- [ ] (For comparison, optional) keys for the [Anthropic Console](https://console.anthropic.com) and the [OpenAI Platform](https://platform.openai.com).
+- [ ] Watch [Intro to Large Language Models — Andrej Karpathy](https://www.youtube.com/watch?v=zjkBMFhNj_g) (1 hour).
+- [ ] (Optional) [Neural Networks — 3Blue1Brown](https://www.youtube.com/playlist?list=PLZHQObOWTQDNU6R1_67000Dx_ZCJB-3pi) — visual intuition for how neural networks and transformers work.
 
-### План по неделям
-| Неделя | Тема | Упражнение |
+### Resources
+- [The official Python tutorial](https://docs.python.org/3/tutorial/)
+- [uv — a fast Python package manager](https://docs.astral.sh/uv/)
+- [Pydantic](https://docs.pydantic.dev) — data validation, needed almost everywhere in LLM code
+- [DeepSeek API docs](https://api-docs.deepseek.com) — quick start, pricing, thinking mode
+- [Ollama docs](https://docs.ollama.com) — installing on macOS, OpenAI compatibility
+
+---
+
+## Stage 1. LLM basics (3–4 weeks)
+
+### What to learn
+- Tokens, the context window, `temperature`, `top_p`, the system prompt; thinking mode (reasoning) and how it changes the parameters.
+- Prompting: roles, few-shot examples, XML/Markdown structure, chain-of-thought.
+- **Structured output** — the model returns valid JSON that matches a schema (DeepSeek: JSON mode; Ollama: `format` with a schema; Claude/OpenAI: strict schemas).
+- **Tool calling** — the model calls our functions.
+- Streaming responses, retries, rate limits (DeepSeek limits concurrent requests), calculating the cost of a request with caching and peak hours taken into account.
+- **Prompt caching** — automatic in DeepSeek, explicit in Claude.
+- **OpenRouter** — one API for many models, comparing models.
+
+### Plan by week
+| Week | Topic | Exercise |
 |---|---|---|
-| 1 | Сырой API DeepSeek и Ollama, параметры, стоимость | Скрипт: один вопрос с разными настройками, посчитать токены и цену (с кэшем и без) |
-| 2 | Промптинг, structured output, OpenRouter | Извлечь из 20 неструктурированных текстов JSON по Pydantic-схеме; одна задача через 4–5 моделей OpenRouter |
-| 3 | Tool calling | Модель вызывает 2–3 функции (курс валют, калькулятор, время) |
-| 4 | Проект этапа | См. ниже |
+| 1 | The raw DeepSeek and Ollama API, parameters, cost | A script: one question with different settings, counting tokens and price (with and without caching) |
+| 2 | Prompting, structured output, OpenRouter | Extract JSON matching a Pydantic schema from 20 unstructured texts; one task through 4–5 OpenRouter models |
+| 3 | Tool calling | The model calls 2–3 functions (exchange rate, calculator, time) |
+| 4 | The stage project | See below |
 
-### Ресурсы
+### Resources
 - [DeepSeek API docs](https://api-docs.deepseek.com) — JSON mode, function calling, thinking mode, context caching
 - [Ollama docs](https://docs.ollama.com) — structured outputs, tool calling
-- [OpenRouter docs](https://openrouter.ai/docs) — quickstart, бесплатные модели, фолбэки
-- [Anthropic: Prompt engineering overview](https://docs.anthropic.com/en/docs/build-with-claude/prompt-engineering/overview) — лучший гайд по промптингу, работает для любой модели
-- [Anthropic Courses на GitHub](https://github.com/anthropics/courses) — интерактивные ноутбуки по промптингу и tool use
+- [OpenRouter docs](https://openrouter.ai/docs) — quickstart, free models, fallbacks
+- [Anthropic: Prompt engineering overview](https://docs.anthropic.com/en/docs/build-with-claude/prompt-engineering/overview) — the best prompting guide, works for any model
+- [Anthropic Courses on GitHub](https://github.com/anthropics/courses) — interactive notebooks on prompting and tool use
 - [OpenAI Cookbook](https://cookbook.openai.com)
-- [DeepLearning.AI Short Courses](https://www.deeplearning.ai/short-courses/) — бесплатные курсы по 1–2 часа
-- [Instructor](https://python.useinstructor.com) — structured output поверх Pydantic (у DeepSeek — режим `MD_JSON`)
-- [Vercel AI SDK](https://ai-sdk.dev) — то же самое на TypeScript
+- [DeepLearning.AI Short Courses](https://www.deeplearning.ai/short-courses/) — free courses of 1–2 hours each
+- [Instructor](https://python.useinstructor.com) — structured output on top of Pydantic (for DeepSeek, the `MD_JSON` mode)
+- [Vercel AI SDK](https://ai-sdk.dev) — the same in TypeScript
 
-### Проект 1: Telegram-бот «аналитик магазина»
-- Бот для владельца интернет-магазина Shelf отвечает на вопросы о заказах и продажах («какая выручка за неделю», «какие заказы ещё не отправлены», «как смотрят лампу Light»).
-- Модель через tool calling вызывает **только читающие** функции: `get_open_orders`, `get_sales`, `get_product_interest`, `get_recent_orders`.
-- ⚠️ Никаких функций, которые меняют заказ, оформляют возврат или выдают промокод. Работать со снимком базы (`VACUUM INTO`).
-- 🔒 **В снимке базы есть персональные данные клиентов — только локальная модель Ollama** (`qwen3:4b`). DeepSeek и другие облачные модели — только на демо-базе без персональных данных. Проверка политики данных — прямо в коде.
-- Логировать каждый запрос: токены, стоимость, время ответа.
+### Project 1: a "shop analyst" Telegram bot
+- A bot for the owner of the online shop Shelf answers questions about orders and sales ("what's the revenue for the week", "which orders haven't shipped yet", "how much interest is there in the Light Lamp").
+- Through tool calling the model calls **read-only** functions only: `get_open_orders`, `get_sales`, `get_product_interest`, `get_recent_orders`.
+- ⚠️ No functions that change an order, issue a refund or hand out a promo code. Work on a database snapshot (`VACUUM INTO`).
+- 🔒 **The database snapshot holds customers' personal data — only the local Ollama model** (`qwen3:4b`). DeepSeek and other cloud models work only on the demo database without personal data. The data policy check lives right in the code.
+- Log every request: tokens, cost, response time.
 
 ---
 
-## Этап 2. RAG и эмбеддинги (3–4 недели)
+## Stage 2. RAG and embeddings (3–4 weeks)
 
-### Что изучить
-- Эмбеддинги, косинусное сходство. **Эмбеддинги — локально** (Ollama `bge-m3` или sentence-transformers): у DeepSeek их нет.
-- Chunking: по размеру, по структуре документа, с перекрытием.
-- Векторные БД: начать с [sqlite-vec](https://github.com/asg017/sqlite-vec) (знакомый SQLite) или [pgvector](https://github.com/pgvector/pgvector); посмотреть [Qdrant](https://qdrant.tech).
-- Переформулировка запроса, гибридный поиск (вектор + BM25), **реранкинг** (локальный cross-encoder — rerank-эндпоинта нет ни у DeepSeek, ни у Ollama).
-- Генерация ответа — DeepSeek (база знаний магазина публичная, её можно отправлять; сообщения реальных клиентов — только локально).
-- Типичные причины, почему RAG ошибается, и как их чинить.
+### What to learn
+- Embeddings, cosine similarity. **Embeddings run locally** (Ollama `bge-m3` or sentence-transformers): DeepSeek has none.
+- Chunking: by size, by document structure, with overlap.
+- Vector databases: start with [sqlite-vec](https://github.com/asg017/sqlite-vec) (the familiar SQLite) or [pgvector](https://github.com/pgvector/pgvector); take a look at [Qdrant](https://qdrant.tech).
+- Query rewriting, hybrid search (vector + BM25), **reranking** (a local cross-encoder — neither DeepSeek nor Ollama has a rerank endpoint).
+- Answer generation by DeepSeek (the shop's knowledge base is public and can be sent; real customers' messages stay local only).
+- Typical reasons why RAG goes wrong and how to fix them.
 
-### План по неделям
-| Неделя | Тема | Упражнение |
+### Plan by week
+| Week | Topic | Exercise |
 |---|---|---|
-| 1 | Эмбеддинги | Посчитать эмбеддинги 100 фраз локальной моделью, найти ближайшие руками (numpy) |
-| 2 | Chunking + векторная БД | Загрузить базу знаний магазина, сравнить 3 стратегии chunking |
-| 3 | Гибридный поиск, реранкинг | Добавить BM25 и локальный реранкер, сравнить выдачу |
-| 4 | Проект этапа | См. ниже |
+| 1 | Embeddings | Compute embeddings of 100 phrases with a local model, find the nearest ones by hand (numpy) |
+| 2 | Chunking + a vector database | Load the shop's knowledge base, compare 3 chunking strategies |
+| 3 | Hybrid search, reranking | Add BM25 and a local reranker, compare the results |
+| 4 | The stage project | See below |
 
-### Ресурсы
-- [Anthropic: Contextual Retrieval](https://www.anthropic.com/news/contextual-retrieval) — отличная статья о том, как улучшить RAG (на DeepSeek работает за счёт автоматического кэша)
-- [Sentence Transformers](https://sbert.net) — локальные эмбеддинги и реранкеры
-- [Ollama: embeddings](https://docs.ollama.com) — `/api/embed`, следить за `truncate`
-- [LlamaIndex docs](https://docs.llamaindex.ai) — фреймворк для RAG (после ручной версии)
-- [Hugging Face Learn](https://huggingface.co/learn) — курсы по NLP и моделям
+### Resources
+- [Anthropic: Contextual Retrieval](https://www.anthropic.com/news/contextual-retrieval) — an excellent article on improving RAG (works on DeepSeek thanks to the automatic cache)
+- [Sentence Transformers](https://sbert.net) — local embeddings and rerankers
+- [Ollama: embeddings](https://docs.ollama.com) — `/api/embed`, watch out for `truncate`
+- [LlamaIndex docs](https://docs.llamaindex.ai) — a RAG framework (after the hand-built version)
+- [Hugging Face Learn](https://huggingface.co/learn) — courses on NLP and models
 
-### Проект 2: ассистент поддержки по базе знаний магазина
-- Собрать базу знаний магазина `kb/` (доставка, оплата, возвраты, гарантия, промокоды, товары) — Markdown-страницы, источник правды.
-- Ассистент отвечает на вопросы клиентов («можно ли вернуть вскрытый чай?», «какая гарантия на LAMP-LIGHT-MINI?») **со ссылкой на раздел базы знаний**; если ответа в базе нет — честно говорит об этом и передаёт вопрос человеку.
-- Эмбеддинги и реранкер — локально, генерация — DeepSeek; работает и полностью офлайн на Ollama.
-- Версия 1 — без фреймворков, руками. Версия 2 — на LlamaIndex. Сравнить.
-
----
-
-## Этап 3. Evals — оценка качества (2–3 недели) ⭐ самый важный
-
-### Что изучить
-- Как собрать тестовый набор: вопрос → эталонный ответ / критерии.
-- Метрики RAG: retrieval (нашёлся ли нужный кусок), faithfulness (не выдумал ли), answer relevance.
-- **LLM-as-judge** и его ограничения (bias, нестабильность, предпочтение «своих»). Судья — модель сильнее проверяемой: `deepseek-v4-pro` без режима размышления; локальная 4B-модель судьёй не годится.
-- Статистика: шум, размер выборки, когда улучшение настоящее.
-- Регрессионное тестирование: поменяли промпт/модель → прогнали → сравнили.
-- Анализ ошибок вручную: читать реальные ответы, а не только смотреть на цифры.
-
-### Ресурсы
-- [Hamel Husain: Your AI Product Needs Evals](https://hamel.dev/blog/posts/evals/) — обязательно
-- [Hamel Husain — блог](https://hamel.dev) — много практики по evals
-- [Eugene Yan — блог](https://eugeneyan.com) — паттерны LLM-систем, evals
-- [Langfuse](https://langfuse.com) — трейсинг и evals; при 8 ГБ памяти проще Langfuse Cloud (только для публичных данных: база знаний и набор вопросов), self-hosted требует больше ресурсов
-- [promptfoo](https://www.promptfoo.dev) — тестирование промптов из командной строки, есть провайдеры `deepseek:` и `ollama:`
-
-### Проект 3: evals и эксперименты для ассистента поддержки
-- [ ] Набор из 50–100 вопросов клиентов с эталонами (включая ловушки: архивные правила возврата, похожие товары, вопросы без ответа в базе).
-- [ ] Скрипт, который выдаёт оценку (retrieval + качество ответа) и стоимость прогона.
-- [ ] Таблица экспериментов: «chunking A vs B», «`qwen3:4b` vs `deepseek-flash`», «с реранкером / без» — с цифрами качества, стоимости и латентности.
-- Это главный материал для портфолио и собеседований.
+### Project 2: a support assistant over the shop's knowledge base
+- Build the shop's knowledge base `kb/` (delivery, payment, returns, warranty, promo codes, products) — Markdown pages, the source of truth.
+- The assistant answers customers' questions ("can I return opened tea?", "what's the warranty on LAMP-LIGHT-MINI?") **with a link to the knowledge base section**; if the base has no answer, it says so honestly and hands the question to a human.
+- Embeddings and the reranker run locally, generation on DeepSeek; it also works fully offline on Ollama.
+- Version 1 — no frameworks, by hand. Version 2 — on LlamaIndex. Compare them.
 
 ---
 
-## Этап 4. Агенты (4 недели)
+## Stage 3. Evals — measuring quality (2–3 weeks) ⭐ the most important
 
-### Что изучить
-- Цикл агента: думает → вызывает инструмент → смотрит результат → повторяет.
-- Workflow vs агент: когда хватает простого пайплайна (чаще всего).
-- **MCP (Model Context Protocol)** — написать свой MCP-сервер; хост для снимка базы с данными клиентов — мост к Ollama.
-- Фреймворки: LangGraph, OpenAI Agents SDK, Claude Agent SDK — и как они работают с DeepSeek и Ollama.
-- Слабые места маленьких локальных моделей в агентах: 3–5 простых инструментов, плоские схемы, лимит шагов, проверки в коде.
-- Безопасность: prompt injection, минимальные права инструментов, подтверждение человеком опасных действий; облачный провайдер — тоже канал утечки данных.
+### What to learn
+- How to build a test set: question → reference answer / criteria.
+- RAG metrics: retrieval (was the right chunk found), faithfulness (did it make anything up), answer relevance.
+- **LLM-as-judge** and its limits (bias, instability, a preference for "its own"). The judge is a model stronger than the one under test: `deepseek-v4-pro` without thinking mode; a local 4B model is no good as a judge.
+- Statistics: noise, sample size, when an improvement is real.
+- Regression testing: changed the prompt/model → ran it → compared.
+- Manual error analysis: read the real answers, don't just look at the numbers.
 
-### Ресурсы
-- [Anthropic: Building effective agents](https://www.anthropic.com/engineering/building-effective-agents) — обязательно
-- [Model Context Protocol — документация](https://modelcontextprotocol.io)
-- [MCP серверы — примеры на GitHub](https://github.com/modelcontextprotocol/servers)
+### Resources
+- [Hamel Husain: Your AI Product Needs Evals](https://hamel.dev/blog/posts/evals/) — a must-read
+- [Hamel Husain — blog](https://hamel.dev) — lots of practice on evals
+- [Eugene Yan — blog](https://eugeneyan.com) — LLM system patterns, evals
+- [Langfuse](https://langfuse.com) — tracing and evals; with 8 GB of memory Langfuse Cloud is simpler (only for public data: the knowledge base and the question set), self-hosting needs more resources
+- [promptfoo](https://www.promptfoo.dev) — testing prompts from the command line, with `deepseek:` and `ollama:` providers
+
+### Project 3: evals and experiments for the support assistant
+- [ ] A set of 50–100 customer questions with reference answers (including traps: archived return rules, similar products, questions the base has no answer to).
+- [ ] A script that outputs a score (retrieval + answer quality) and the cost of the run.
+- [ ] An experiments table: "chunking A vs B", "`qwen3:4b` vs `deepseek-flash`", "with / without a reranker" — with numbers for quality, cost and latency.
+- This is the main material for the portfolio and job interviews.
+
+---
+
+## Stage 4. Agents (4 weeks)
+
+### What to learn
+- The agent loop: think → call a tool → look at the result → repeat.
+- Workflow vs agent: when a simple pipeline is enough (most of the time).
+- **MCP (Model Context Protocol)** — write our own MCP server; the host for the database snapshot with customer data is a bridge to Ollama.
+- Frameworks: LangGraph, OpenAI Agents SDK, Claude Agent SDK — and how they work with DeepSeek and Ollama.
+- The weak spots of small local models in agents: 3–5 simple tools, flat schemas, a step limit, checks in code.
+- Security: prompt injection, least-privilege tools, human confirmation of dangerous actions; a cloud provider is a data leak channel too.
+
+### Resources
+- [Anthropic: Building effective agents](https://www.anthropic.com/engineering/building-effective-agents) — a must-read
+- [Model Context Protocol — documentation](https://modelcontextprotocol.io)
+- [MCP servers — examples on GitHub](https://github.com/modelcontextprotocol/servers)
 - [LangGraph](https://langchain-ai.github.io/langgraph/)
-- [OpenAI Agents SDK](https://openai.github.io/openai-agents-python/) — работает с любым OpenAI-совместимым API, включая DeepSeek и Ollama
-- [OWASP Top 10 for LLM Applications](https://genai.owasp.org/llm-top-10/) — главные уязвимости LLM-приложений
+- [OpenAI Agents SDK](https://openai.github.io/openai-agents-python/) — works with any OpenAI-compatible API, including DeepSeek and Ollama
+- [OWASP Top 10 for LLM Applications](https://genai.owasp.org/llm-top-10/) — the main vulnerabilities of LLM applications
 
-### Проект 4: агент-разборщик заказов
-- MCP-сервер к базе магазина: **только чтение** (заказы, оплаты, доставки, товары, журнал событий заказа).
-- Агент по запросу «что случилось с заказом 1042?» сам смотрит оплаты, доставку и журнал событий и пишет разбор с доказательствами: двойное списание, застрявшая доставка, не применённый промокод, не дошедший возврат.
-- 🔒 Снимок базы с данными клиентов — только Ollama; DeepSeek — только на сгенерированной демо-базе.
-- Evals для агента: 20 случаев с известной причиной (судья — код + ручная проверка + локальная модель: облачный судья увидел бы персональные данные клиентов).
+### Project 4: an agent that investigates orders
+- An MCP server for the shop database: **read-only** (orders, payments, deliveries, products, the order event log).
+- Asked "what happened to order 1042?", the agent itself checks payments, delivery and the event log and writes an analysis with evidence: a double charge, a stuck delivery, a promo code that wasn't applied, a refund that never arrived.
+- 🔒 The database snapshot with customer data goes only to Ollama; DeepSeek works only on the generated demo database.
+- Evals for the agent: 20 cases with a known cause (the judge is code + a manual check + a local model: a cloud judge would see customers' personal data).
 
 ---
 
-## Этап 5. Продакшен (3–4 недели)
+## Stage 5. Production (3–4 weeks)
 
-### Что изучить
-- Кэширование: автоматический кэш DeepSeek (поля `prompt_cache_hit_tokens` / `prompt_cache_miss_tokens`) vs явный `cache_control` у Claude; контроль стоимости, бюджеты (баланс DeepSeek, `402` при нуле).
-- Observability: трейсинг каждого вызова, дашборд качества и затрат.
-- Фолбэки: DeepSeek → OpenRouter → Ollama (приватные запросы — никогда в облако), через свою обёртку, LiteLLM или OpenRouter; таймауты, деградация.
-- Локальные модели: [Ollama](https://ollama.com), [vLLM](https://docs.vllm.ai), квантизация; Ollama на macOS — нативно, контейнеры ходят к ней через `host.docker.internal`.
-- Файнтюнинг и LoRA — понимать, **когда** он нужен (редко), уметь запустить базовый пример. У DeepSeek файнтюнинга нет.
+### What to learn
+- Caching: DeepSeek's automatic cache (the `prompt_cache_hit_tokens` / `prompt_cache_miss_tokens` fields) vs Claude's explicit `cache_control`; cost control, budgets (the DeepSeek balance, `402` at zero).
+- Observability: tracing every call, a quality and cost dashboard.
+- Fallbacks: DeepSeek → OpenRouter → Ollama (private requests never go to the cloud), through our own wrapper, LiteLLM or OpenRouter; timeouts, degradation.
+- Local models: [Ollama](https://ollama.com), [vLLM](https://docs.vllm.ai), quantization; Ollama on macOS runs natively, and containers reach it through `host.docker.internal`.
+- Fine-tuning and LoRA — understand **when** it is needed (rarely), be able to run a basic example. DeepSeek has no fine-tuning.
 
-### Ресурсы
+### Resources
 - [Hugging Face: PEFT / LoRA](https://huggingface.co/docs/peft)
-- [LiteLLM](https://docs.litellm.ai) — единый интерфейс и фолбэки (пиннить версию, проверять пакет)
-- [Simon Willison — блог](https://simonwillison.net) — практика, новости, инструменты, безопасность LLM
-- [LLM CLI от Simon Willison](https://llm.datasette.io) — удобный инструмент для экспериментов
+- [LiteLLM](https://docs.litellm.ai) — a single interface and fallbacks (pin the version, check the package)
+- [Simon Willison — blog](https://simonwillison.net) — practice, news, tools, LLM security
+- [LLM CLI by Simon Willison](https://llm.datasette.io) — a handy tool for experiments
 
-### Что сделать
-- [ ] Прогнать свои evals на локальной модели и на DeepSeek, сравнить качество, скорость и цену.
-- [ ] Фолбэк DeepSeek → OpenRouter → Ollama с флагом приватности.
-- [ ] Добавить трейсинг (Langfuse) и посчитать стоимость одного ответа с учётом кэша и часа пик.
+### What to do
+- [ ] Run our own evals on a local model and on DeepSeek, compare quality, speed and price.
+- [ ] A DeepSeek → OpenRouter → Ollama fallback with a privacy flag.
+- [ ] Add tracing (Langfuse) and calculate the cost of one answer with caching and peak hours taken into account.
 
 ---
 
-## Постоянное чтение
+## Ongoing reading
 
-### Книги
-- [Chip Huyen — AI Engineering (O'Reilly, 2025)](https://www.oreilly.com/library/view/ai-engineering/9781098166298/) — лучшая обзорная книга по профессии
+### Books
+- [Chip Huyen — AI Engineering (O'Reilly, 2025)](https://www.oreilly.com/library/view/ai-engineering/9781098166298/) — the best overview book on the profession
 
-### Блоги и рассылки
+### Blogs and newsletters
 - [Anthropic Engineering](https://www.anthropic.com/engineering)
-- [DeepSeek API News / Changelog](https://api-docs.deepseek.com) — смена моделей и цен
+- [DeepSeek API News / Changelog](https://api-docs.deepseek.com) — model and price changes
 - [Simon Willison](https://simonwillison.net)
 - [Hamel Husain](https://hamel.dev)
 - [Eugene Yan](https://eugeneyan.com)
 
-### Подкасты
-- [Latent Space](https://www.latent.space) — главный подкаст про AI Engineering
+### Podcasts
+- [Latent Space](https://www.latent.space) — the main podcast about AI Engineering
 
-### Для углубления (по желанию)
-- [Karpathy — Neural Networks: Zero to Hero](https://karpathy.ai/zero-to-hero.html) — строим GPT с нуля
-- [fast.ai — Practical Deep Learning](https://course.fast.ai) — практический курс глубокого обучения
-
----
-
-## Главные правила
-
-1. **Строить, а не только смотреть курсы.** 20% теории, 80% проектов.
-2. **Сначала без фреймворков.** Сырой API → потом LangChain/LlamaIndex.
-3. **Всегда измерять.** Проект с evals ценится намного выше, чем «работает, я проверил руками».
-4. **Опираться на свою предметную область.** Знание области + AI — сильная ниша.
-5. **Безопасность по умолчанию.** Агентам — только чтение, пока нет подтверждения человеком. Никаких изменений заказов, возвратов и промокодов без человека.
-6. **Приватность по умолчанию.** Персональные данные клиентов, рабочий код и всё приватное — только локально (Ollama). В облако (DeepSeek и любые бесплатные тарифы) — только публичные тексты, база знаний и демо-база.
-7. **Не привязываться к провайдеру.** Один OpenAI-совместимый клиент, модель и `base_url` — в настройках; модели сравнивать на своих evals.
+### Going deeper (optional)
+- [Karpathy — Neural Networks: Zero to Hero](https://karpathy.ai/zero-to-hero.html) — building GPT from scratch
+- [fast.ai — Practical Deep Learning](https://course.fast.ai) — a practical deep learning course
 
 ---
 
-## Трекер прогресса
+## Key rules
 
-| Этап | Начал | Закончил | Проект на GitHub |
+1. **Build, don't just watch courses.** 20% theory, 80% projects.
+2. **Frameworks come later.** The raw API first → then LangChain/LlamaIndex.
+3. **Always measure.** A project with evals is worth far more than "it works, I checked by hand".
+4. **Build on our own domain.** Domain knowledge + AI is a strong niche.
+5. **Safe by default.** Agents get read-only access until there is human confirmation. No changes to orders, refunds or promo codes without a human.
+6. **Private by default.** Customers' personal data, work code and everything private stay local only (Ollama). The cloud (DeepSeek and any free tiers) gets only public texts, the knowledge base and the demo database.
+7. **Don't get locked into a provider.** One OpenAI-compatible client, the model and `base_url` in settings; compare models on our own evals.
+
+---
+
+## Progress tracker
+
+| Stage | Started | Finished | Project on GitHub |
 |---|---|---|---|
-| 0. Подготовка | | | — |
-| 1. Основы LLM | | | |
+| 0. Preparation | | | — |
+| 1. LLM basics | | | |
 | 2. RAG | | | |
 | 3. Evals | | | |
-| 4. Агенты | | | |
-| 5. Продакшен | | | |
+| 4. Agents | | | |
+| 5. Production | | | |
 
 ---
 
-## Лицензия
+## License
 
-- **Текст курса** — главы в `book/`, этот план, тесты и задания — распространяется по лицензии [CC BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/deed.ru): материалы можно читать, копировать, переводить и переделывать с указанием источника и ссылкой на лицензию, переделки — под той же лицензией, коммерческое использование (платные курсы, продажа материалов) — только с разрешения авторов. Полный текст условий — в файле `LICENSE-CONTENT` репозитория.
-- **Код** — сайт в `site/` и примеры кода в главах — по лицензии [MIT](https://opensource.org/license/mit) (файл `LICENSE`): примеры можно свободно переносить в свои и рабочие проекты, в том числе коммерческие, сохранив уведомление об авторских правах.
+- **The course text** — the chapters in `book/`, this plan, the quizzes and the assignments — is distributed under the [CC BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/) license: the materials may be read, copied, translated and adapted with attribution and a link to the license, adaptations go under the same license, and commercial use (paid courses, selling the materials) needs the authors' permission. The full terms are in the repository's `LICENSE-CONTENT` file.
+- **The code** — the site in `site/` and the code examples in the chapters — is under the [MIT](https://opensource.org/license/mit) license (the `LICENSE` file): the examples may be freely moved into personal and work projects, including commercial ones, as long as the copyright notice is kept.

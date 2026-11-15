@@ -33,7 +33,7 @@ describe('book', () => {
   test('every chapter converts without warnings and every multiple-choice question has a key', () => {
     const r = createRenderer(weeks);
     chapters.forEach((it, i) => r.renderChapter(read(chapterFile(it.ail)), it, chapters[i - 1], chapters[i + 1]));
-    r.renderPlan(fs.readFileSync(path.join(ROOT, 'README.md'), 'utf8'));
+    r.renderPlan(fs.readFileSync(path.join(ROOT, DEFAULT_LOCALE.planFile), 'utf8'));
     assert.deepEqual(r.warnings, []);
     assert.equal(r.stats.chapters, chapters.length);
     assert.equal(r.stats.choice, r.stats.choiceWithKey);
@@ -54,6 +54,21 @@ describe('book', () => {
       assert.equal(badge(book.readmeChaptersBadge), chapters.length, locale.planFile);
       assert.equal(badge(book.readmeWeeksBadge), weeks.length, locale.planFile);
     }
+  });
+
+  test('GitHub opens a plan; every plan links to the others and shows its own banner', () => {
+    const plans = LOCALES.filter((l) => fs.existsSync(path.join(ROOT, l.planFile)));
+    assert.ok(plans.some((l) => l.planFile === 'README.md'), 'README.md (the page GitHub shows) is one of the plans');
+    const banners = plans.map((locale) => {
+      const readme = fs.readFileSync(path.join(ROOT, locale.planFile), 'utf8');
+      for (const other of plans) {
+        if (other !== locale) assert.ok(readme.includes(`](${other.planFile})`), `${locale.planFile} links to ${other.planFile}`);
+      }
+      const banner = readme.match(/<img src="([^"]+)"/)?.[1];
+      assert.ok(banner && fs.existsSync(path.join(ROOT, banner)), `${locale.planFile}: banner ${banner} exists`);
+      return banner;
+    });
+    assert.equal(new Set(banners).size, plans.length, 'each language has its own banner');
   });
 
   test('each chapter starts with "# N.N · Title  (AIL-N)" matching the table of contents', () => {
