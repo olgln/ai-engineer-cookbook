@@ -39,8 +39,10 @@ export function reviewItems(progress, chapters, quizIndex) {
   for (const chapter of chapters) {
     const answers = progress.chapters[chapter.id]?.quiz ?? {};
     const questions = (quizIndex[chapter.id] ?? [])
-      .map((q) => ({ ...q, reason: reviewReason(answers[q.n], q.correct) }))
-      .filter((q) => q.reason !== null);
+      .flatMap((q) => {
+        const reason = reviewReason(answers[q.n], q.correct);
+        return reason ? [{ ...q, reason }] : [];
+      });
     if (questions.length) groups.push({ chapter, questions });
   }
   return groups;

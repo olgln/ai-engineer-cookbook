@@ -39,7 +39,8 @@ const privacyBlock = (block, vars) =>
  * Cloudflare Web Analytics beacon; an empty contact shows a placeholder (fill it in before going live).
  * @param {{ analytics?: boolean, contact?: string, date?: string }} [options]
  */
-export function renderPrivacy(ctx, { analytics = false, contact = PRIVACY_CONTACT, date = PRIVACY_POLICY_DATE } = {}) {
+export function renderPrivacy(ctx, options = {}) {
+  const { analytics = false, contact = PRIVACY_CONTACT, date = PRIVACY_POLICY_DATE } = options;
   const { privacy } = strings;
   const updated = longDate(date);
   if (!updated) ctx.warnings.push(`privacy policy date "${date}" is not a YYYY-MM-DD date`);

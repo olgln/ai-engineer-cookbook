@@ -33,31 +33,36 @@ export const yamlStr = (s) => JSON.stringify(s);
 
 /** Split markdown into top-level "## " sections (fence-aware). */
 export function splitSections(text) {
+  /** @type {{ heading: string | null, lines: string[] }[]} */
   const sections = [{ heading: null, lines: [] }];
   for (const t of tagLines(text)) {
     const m = !t.code && t.line.match(/^## (.+)$/);
     if (m) sections.push({ heading: m[1].trim(), lines: [] });
-    else sections.at(-1).lines.push(t.line);
+    else sections.at(-1)?.lines.push(t.line);
   }
   return sections;
 }
 
+const indentOf = (line) => /^ */.exec(line)?.[0].length ?? 0;
+
 /** Split a numbered list section into items {n, lines} (fence-aware, top-level numbers only). */
 export function splitNumbered(lines) {
+  /** @type {{ n: number, lines: string[] }[]} */
   const items = [];
+  /** @type {string[]} */
   const pre = [];
   for (const t of tagLines(lines.join('\n'))) {
     const m = !t.code && t.line.match(/^(\d+)\.\s+(.*)$/);
     if (m) items.push({ n: +m[1], lines: [m[2]] });
-    else if (items.length) items.at(-1).lines.push(t.line);
+    else if (items.length) items.at(-1)?.lines.push(t.line);
     else pre.push(t.line);
   }
   for (const it of items) {
     const rest = it.lines.slice(1);
-    const indents = rest.filter((l) => l.trim()).map((l) => l.match(/^ */)[0].length);
+    const indents = rest.filter((l) => l.trim()).map(indentOf);
     const cut = indents.length ? Math.min(...indents) : 0;
-    it.lines = [it.lines[0], ...rest.map((l) => l.slice(Math.min(cut, l.match(/^ */)[0].length)))];
-    while (it.lines.length && !it.lines.at(-1).trim()) it.lines.pop();
+    it.lines = [it.lines[0], ...rest.map((l) => l.slice(Math.min(cut, indentOf(l))))];
+    while (it.lines.length && !it.lines.at(-1)?.trim()) it.lines.pop();
   }
   return { pre, items };
 }

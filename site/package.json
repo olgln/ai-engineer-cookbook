@@ -13,7 +13,8 @@
     "build": "npm run convert && ASTRO_TELEMETRY_DISABLED=1 astro build",
     "dev:worker": "wrangler d1 migrations apply DB --local && wrangler dev",
     "deploy": "wrangler d1 migrations apply DB --remote && wrangler deploy",
-    "test": "node --test \"tests/**/*.test.mjs\""
+    "typecheck": "tsc -p tsconfig.json && tsc -p tsconfig.mjs.json",
+    "test": "npm run typecheck && node --test \"tests/**/*.test.mjs\""
   },
   "dependencies": {
     "@astrojs/sitemap": "3.7.4",
@@ -24,6 +25,7 @@
     "mermaid": "12.2.0"
   },
   "devDependencies": {
+    "typescript": "6.0.3",
     "wrangler": "4.158.0"
   }
 }

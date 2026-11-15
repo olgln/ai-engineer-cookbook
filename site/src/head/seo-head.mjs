@@ -3,14 +3,19 @@
 // (tests/site/seo-head.test.mjs).
 import { APPLE_TOUCH_ICON, OG_IMAGE } from '../config/app.mjs';
 
+/** @typedef {NonNullable<import('@astrojs/starlight/types').StarlightUserConfig['head']>} HeadEntries */
+
+/** @type {(attrs: Record<string, string>) => HeadEntries[number]} */
 const meta = (attrs) => ({ tag: 'meta', attrs });
 
 /**
  * Starlight `head` entries: the preview image (needs the public address, since og:image must be an
  * absolute URL) and the search-console ownership tokens that are set.
  * @param {{ site?: string, imageAlt: string, googleSiteVerification?: string, yandexVerification?: string }} options
+ * @returns {HeadEntries}
  */
 export function seoHead({ site, imageAlt, googleSiteVerification, yandexVerification }) {
+  /** @type {HeadEntries} */
   const head = [];
   if (site) {
     const image = new URL(OG_IMAGE.path, site).href;
@@ -29,7 +34,10 @@ export function seoHead({ site, imageAlt, googleSiteVerification, yandexVerifica
   return head;
 }
 
-/** Starlight `head` entries for the icons Starlight does not link itself (it links only favicon.svg). */
+/**
+ * Starlight `head` entries for the icons Starlight does not link itself (it links only favicon.svg).
+ * @returns {HeadEntries}
+ */
 export const iconHead = () => [
   { tag: 'link', attrs: { rel: 'apple-touch-icon', href: APPLE_TOUCH_ICON.path } },
 ];

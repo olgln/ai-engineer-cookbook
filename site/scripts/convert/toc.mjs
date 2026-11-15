@@ -7,17 +7,23 @@ const { site } = strings;
 export const weekLabel = (n, title) => format(site.week, { n, title });
 export const chapterFile = (n) => `${CHAPTER_PREFIX}${n}.md`;
 
+/**
+ * @typedef {{ num: string, title: string, ail?: number, noPage?: boolean, week?: number, id?: string, slug?: string, href?: string }} TocItem
+ * @typedef {{ n: number, title: string, items: TocItem[] }} Week
+ */
+
 /** Parse book/README.md into weeks; chapters with a page get id, slug and href. */
 export function parseToc(text) {
+  /** @type {Week[]} */
   const weeks = [];
   for (const line of text.split('\n')) {
     let m;
     if ((m = line.match(RE.tocWeek))) {
       weeks.push({ n: +m[1], title: m[2].trim(), items: [] });
     } else if ((m = line.match(RE.tocChapter))) {
-      weeks.at(-1).items.push({ num: `${m[1]}.${m[2]}`, title: m[3], ail: +m[4] });
+      weeks.at(-1)?.items.push({ num: `${m[1]}.${m[2]}`, title: m[3], ail: +m[4] });
     } else if ((m = line.match(RE.tocNoPage))) {
-      weeks.at(-1).items.push({ num: `${m[1]}.${m[2]}`, title: m[3], noPage: true });
+      weeks.at(-1)?.items.push({ num: `${m[1]}.${m[2]}`, title: m[3], noPage: true });
     }
   }
   for (const w of weeks) {

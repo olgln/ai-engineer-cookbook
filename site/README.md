@@ -132,8 +132,11 @@ cd site
 
 ```bash
 cd site
-npm test         # unit tests of the converter, the progress API and the account Worker + checks of the book itself
+npm test         # type check + unit tests of the converter, the progress API and the account Worker + checks of the book itself
+npm run typecheck  # the type check alone
 ```
+
+`npm test` starts with `npm run typecheck`, which runs `tsc` twice: `tsconfig.json` checks the TypeScript files (`src/scripts/**/*.ts`, `content.config.ts`) in strict mode, and `tsconfig.mjs.json` checks the `.mjs` modules outside `tests/` by their JSDoc types, without requiring a type on every parameter (`noImplicitAny: false`). Nothing is emitted; Vite and Node still strip the types themselves. `.astro` files are not type-checked.
 
 Tests use the built-in `node:test`, no extra dependencies; the Python syntax check of the book's examples needs `python3` and is skipped without it. `npm run build` also fails when the converter reports a warning.
 
@@ -148,6 +151,7 @@ Code, comments, logs and docs are in English. Russian is used only for what the 
 ```text
 site/
 ├── astro.config.mjs, ec.config.mjs   Astro + Starlight setup, code highlighting
+├── tsconfig.json, tsconfig.mjs.json  type check of the .ts files (strict) and of the .mjs modules (`npm run typecheck`)
 ├── wrangler.jsonc                    Cloudflare Workers deployment (static assets + /api/* Worker, D1, cron)
 ├── .env.example, .dev.vars.example   settings of the build and the local server; Worker secrets for local runs
 ├── assets/                           SVG sources of the rendered icons and the preview image
@@ -203,4 +207,4 @@ Conventions:
 
 ## Dependencies
 
-Astro 7.4.7, Starlight 0.42.7, @astrojs/sitemap 3.7.4 (Starlight's own sitemap, listed directly to add page dates), mermaid 12.2.0, the expressive-code plugins 0.44.3 and the deploy tool wrangler 4.158.0 (dev only) were reviewed before installation: versions are exact (`save-exact`), the whole tree is frozen at 2026-11-07 (`before=` in `.npmrc`), install scripts are disabled (`ignore-scripts=true`), Astro telemetry is off. Update only deliberately, with the same review.
+Astro 7.4.7, Starlight 0.42.7, @astrojs/sitemap 3.7.4 (Starlight's own sitemap, listed directly to add page dates), mermaid 12.2.0, the expressive-code plugins 0.44.3 the deploy tool wrangler 4.158.0 (dev only) and the type checker typescript 6.0.3 (dev only; the last JavaScript release, one package without dependencies, chosen over the native 7.x builds) were reviewed before installation: versions are exact (`save-exact`), the whole tree is frozen at 2026-11-07 (`before=` in `.npmrc`), install scripts are disabled (`ignore-scripts=true`), Astro telemetry is off. Update only deliberately, with the same review.

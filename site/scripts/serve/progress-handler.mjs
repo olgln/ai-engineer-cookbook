@@ -71,7 +71,7 @@ export function progressHandler(file = config.progressFile, maxBytes = config.pr
         fs.renameSync(tmp, file);
         send(200, '{"ok":true}');
       } catch (e) {
-        send(400, JSON.stringify({ error: String(e.message || e) }));
+        send(400, JSON.stringify({ error: String((e instanceof Error && e.message) || e) }));
       }
     });
   };

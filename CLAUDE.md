@@ -18,8 +18,9 @@ A Russian-language course for developers who want to become AI engineers, plus a
   `site/scripts/convert.mjs`.
 - No hardcoded settings: machine-level values go through `.env` (`site/.env.example`,
   `site/src/config/server.mjs`), shared constants into `site/src/config/app.mjs`.
-- Verify a change with `cd site && npm test` and `cd site && npm run build`. The build fails on any
-  converter warning; the `convert:` line must report 51 chapters, and the question count changes
+- Verify a change with `cd site && npm test` (type check first, then the tests) and
+  `cd site && npm run build`. The build fails on any converter warning; the `convert:` line must
+  report 51 chapters, and the question count changes
   only when a quiz does.
 - Pages run under a Content Security Policy (`CSP` and `SECURITY_HEADERS` in `site/src/config/app.mjs`):
   no inline event handlers, `eval` or third-party origins (CDNs, analytics, fonts). A new origin goes into

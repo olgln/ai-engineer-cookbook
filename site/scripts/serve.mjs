@@ -41,7 +41,7 @@ const notifyReload = () => { for (const res of clients) res.write('data: reload\
 
 http
   .createServer((req, res) => {
-    const { pathname } = new URL(req.url, 'http://localhost');
+    const { pathname } = new URL(req.url ?? '/', 'http://localhost');
     if (pathname === PROGRESS_API_PATH) return api(req, res);
     if (WATCH && pathname === RELOAD_EVENTS_PATH) return reloadEvents(req, res);
     if (WATCH && pathname === RELOAD_SCRIPT_PATH) return reloadScript(res);

@@ -3,9 +3,12 @@
 // Pure, so it is tested without a build (tests/site/web-analytics.test.mjs).
 import { WEB_ANALYTICS } from '../config/app.mjs';
 
+/** @typedef {NonNullable<import('@astrojs/starlight/types').StarlightUserConfig['head']>} HeadEntries */
+
 /**
  * Starlight `head` entries: the beacon script with the site token, or nothing without a token.
  * @param {string | undefined} token
+ * @returns {HeadEntries}
  */
 export function webAnalyticsHead(token) {
   if (!token) return [];

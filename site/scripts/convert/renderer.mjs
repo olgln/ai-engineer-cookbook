@@ -21,6 +21,7 @@ export function createRenderer(weeks) {
     byAil: new Map(pagedChapters(weeks).map((it) => [it.ail, it])),
     /** @type {Record<string, { n: number, text: string, correct?: string[] }[]>} */
     quizzes: {},
+    /** @type {string[]} */
     warnings: [],
     stats: { chapters: 0, questions: 0, choice: 0, choiceWithKey: 0, checks: 0, mermaid: 0 },
   };

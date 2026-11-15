@@ -19,7 +19,7 @@ export function hasProgress(progress) {
  *   storage: 'file' | 'account' | 'browser',
  *   account: { state: string },
  *   startedWithProgress: boolean,
- *   progress: unknown,
+ *   progress: Parameters<typeof hasProgress>[0],
  *   shown: boolean,
  * }} facts storage and account state now, whether the page loaded with progress, the progress now, and
  *   whether the hint was shown before in this browser

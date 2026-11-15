@@ -18,8 +18,9 @@ function mergeChapter(older = {}, newer = {}) {
   const done = earliest(older.done, newer.done);
   if (done) out.done = done;
   if (older.checks || newer.checks) {
-    out.checks = { ...older.checks };
-    for (const [k, v] of Object.entries(newer.checks ?? {})) out.checks[k] = out.checks[k] || v;
+    const checks = { ...older.checks };
+    for (const [k, v] of Object.entries(newer.checks ?? {})) checks[k] = checks[k] || v;
+    out.checks = checks;
   }
   if (older.quiz || newer.quiz) out.quiz = { ...older.quiz, ...newer.quiz };
   return out;

@@ -15,7 +15,8 @@ const known = (list) => (Array.isArray(list) ? AUTH_PROVIDERS.filter((p) => list
  * Provider names the site does not know are dropped; the order is AUTH_PROVIDERS.
  * @param {number} status
  * @param {string | null} contentType
- * @param {unknown} body
+ * @param {{ providers?: unknown, available?: unknown } | null} body
+ * @returns {{ state: 'hidden' } | { state: 'in', providers: string[] } | { state: 'out', available: string[] }}
  */
 export function accountState(status, contentType, body) {
   if (![200, 401].includes(status) || !(contentType ?? '').includes('json') || !body || typeof body !== 'object') {
