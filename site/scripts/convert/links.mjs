@@ -1,10 +1,6 @@
 import { CHAPTER_PREFIX, PLAN_PATH } from '../../src/config/app.mjs';
 import { format } from '../../src/locales/format.mjs';
-import strings from '../../src/locales/ru.json' with { type: 'json' };
 import { escapeHtml, outsideInlineCode, tagLines } from './markdown.mjs';
-import { RE } from './patterns.mjs';
-
-const { site } = strings;
 
 function chapterLink(ctx, ail) {
   const it = ctx.byAil.get(+ail);
@@ -14,14 +10,15 @@ function chapterLink(ctx, ail) {
 
 /** Rewrite chapter references and README links in one line, outside inline code. */
 export function rewriteLinks(ctx, line) {
+  const { re: RE, strings: { site } } = ctx;
   return outsideInlineCode(line, (s) =>
     s
       .replace(RE.fileLink, (all, n, hash = '') => {
         const it = chapterLink(ctx, n);
         return it ? `](${it.href}${hash})` : all;
       })
-      .replace(RE.bookReadmeLink, '](/)')
-      .replace(/\]\((?:\.\/)?README\.md\)/g, `](${PLAN_PATH})`)
+      .replace(RE.bookReadmeLink, `](${ctx.path('/')})`)
+      .replace(/\]\((?:\.\/)?README\.md\)/g, `](${ctx.path(PLAN_PATH)})`)
       // "1.2 · Title (AIL-56)" -> link on the title
       .replace(RE.titledRef, (all, label, n) => {
         const it = chapterLink(ctx, n);

@@ -1,6 +1,6 @@
 import * as P from '../progress/store';
-import chapters from '../../generated/chapters.json';
 import { $$, el } from '../dom';
+import { chapters } from '../page-locale';
 
 export function markLinks() {
   const done = (id: string) => !!P.get().chapters[id]?.done;

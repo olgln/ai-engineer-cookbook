@@ -1,7 +1,7 @@
 import * as P from '../progress/store';
-import strings from '../../locales/ru.json';
 import { format, plural } from '../../locales/format.mjs';
 import { $$, el } from '../dom';
+import { strings } from '../page-locale';
 
 const ui = strings.ui;
 

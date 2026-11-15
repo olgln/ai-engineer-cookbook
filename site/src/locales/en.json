@@ -1,0 +1,155 @@
+{
+  "lang": "en",
+  "dateLocale": "en-US",
+  "languageLabel": "English",
+  "site": {
+    "title": "AI Engineer Cookbook",
+    "indexTitle": "AI Engineer Cookbook",
+    "indexDescription": "A course for developers who want to become AI engineers: from the first API call to RAG, evals and agents. Weekly chapters, practice and quizzes.",
+    "planDescription": "AI engineer course plan for developers: what to learn each week, four portfolio projects, DeepSeek and Ollama models, 8–10 hours a week for 4–5 months.",
+    "ogImageAlt": "AI Engineer Cookbook: LLM APIs, RAG, evals, agents",
+    "indexIntro": "Chapters in reading order: number = week.order. The overall plan and schedule are on the [{planLabel}]({planPath}) page.",
+    "tocLabel": "Contents",
+    "planLabel": "Course plan",
+    "reviewLabel": "Review mistakes",
+    "reviewTitle": "Review mistakes",
+    "reviewDescription": "Quiz questions from every chapter that you answered wrong, revealed without trying, or marked “Didn't know”.",
+    "reviewIntro": "This page collects the quiz questions from every chapter where the answer was wrong, revealed without an attempt, or marked “Didn't know”. Open a question, reread the theory next to it and press “Try again”: once you answer it right, the question leaves the list.",
+    "week": "Week {n} · {title}",
+    "chapterRef": "ch. {num}",
+    "questionLabel": "Question {n}",
+    "noAnswer": "_The source has no answer._",
+    "untranslatedDescription": "{title}: this page is not translated into English yet; the original is in Russian.",
+    "untranslatedNote": "This page has not been translated into English yet. [Read the original in Russian]({href})."
+  },
+  "book": {
+    "weekHeading": "Week",
+    "noChapterNote": "no separate chapter",
+    "testHeading": "Self-check quiz",
+    "answersHeading": "Answers",
+    "doneHeading": "Done when",
+    "and": "and",
+    "readmeChaptersBadge": "Chapters",
+    "readmeWeeksBadge": "Weeks"
+  },
+  "ui": {
+    "showAllAnswers": "Show all answers",
+    "restartQuiz": "Restart the quiz",
+    "quizSummary": "Answered {answered} of {total} · correct {correct}",
+    "quizIntro": "{total} {questions}. Answer on your own first, then check.",
+    "questions": { "one": "question", "other": "questions" },
+    "confirmShowAll": "Reveal the answers to all questions? Unanswered questions will count as revealed without an answer.",
+    "confirmResetQuiz": "Reset all answers of this quiz?",
+    "answerLabel": "Answer",
+    "check": "Check",
+    "showAnswer": "Show answer",
+    "knew": "✓ Knew it",
+    "didntKnow": "✗ Didn't know",
+    "again": "Try again",
+    "multipleCorrect": "More than one correct option",
+    "revealedWithoutAttempt": "Answer revealed without an attempt",
+    "correct": "Correct",
+    "wrong": "Wrong",
+    "answerYourselfFirst": "Answer on your own first: out loud or in your notes",
+    "verdictKnew": "Knew it",
+    "verdictDidntKnow": "Didn't know: back to the theory",
+    "compareWithYours": "Compare with your answer:",
+    "checklistCount": "Done {done} of {total}",
+    "doneFactChecklist": "“{heading}”: {done} of {total}",
+    "doneFactQuiz": "Quiz: {answered} of {total} answered, {correct} correct",
+    "markChapterDone": "Mark the chapter as done",
+    "unmarkChapter": "Remove the mark",
+    "chapterDoneOn": "✓ Chapter done on {date}",
+    "chapterDonePrompt": "Finished the chapter?",
+    "courseProgress": "Done {done} of {total} {chapters}",
+    "chaptersOf": { "one": "chapter", "other": "chapters" },
+    "savedTo": "Saved to {path}",
+    "progressFileFallback": "the progress file",
+    "savedInAccount": "Saved in your account and available on every device",
+    "signInToSave": "Sign in to keep your progress and follow it on any device",
+    "saveHintTitle": "For now your progress is stored only in this browser",
+    "saveHintText": "To keep it for good and have it on any device, sign in with Google or GitHub.",
+    "notNow": "Not now",
+    "close": "Close",
+    "signIn": "Sign in",
+    "signInTitle": "Progress on every device",
+    "signInText": "Sign in, and your finished chapters, checkmarks and quiz answers will be on your phone and on any computer. Without signing in everything works the same, only the progress stays in this browser.",
+    "signInFinePrint": "From Google or GitHub we get only the account ID: no e-mail, name or photo.",
+    "signInWith": "Sign in with {provider}",
+    "signedInWith": "Signed in with {provider}",
+    "signOut": "Sign out",
+    "deleteAccount": "Delete account",
+    "confirmDeleteAccount": "Delete the account? The account and the progress on the server will be deleted for good, on every device. The copy of the progress in this browser stays.",
+    "deleteAccountFailed": "Could not delete the account. Check your internet connection and try again.",
+    "deleteAccountForever": "Delete for good",
+    "cancel": "Cancel",
+    "accountMenu": "Account",
+    "accountMenuSignedIn": "Account, signed in with {provider}",
+    "privacyLink": "What we store",
+    "signInFailed": "Sign-in was not completed. Try again or choose another way.",
+    "providerNames": { "google": "Google", "github": "GitHub" },
+    "continueFrom": "Continue: {chapter}",
+    "startFrom": "Start: {chapter}",
+    "allDone": "All chapters done 🎉",
+    "reviewCount": "To review: {count} {questions} from {chapterCount} {chapters}",
+    "reviewEmpty": "Nothing to review yet. Questions you answer wrong or mark “Didn't know” will show up here.",
+    "reviewReasonWrong": "Wrong",
+    "reviewReasonRevealed": "Answer revealed without an attempt",
+    "reviewReasonDidntKnow": "Didn't know"
+  },
+  "footer": {
+    "copyright": "© {year} {title}",
+    "privacy": "Privacy"
+  },
+  "privacy": {
+    "title": "Your data",
+    "description": "What data the AI Engineer Cookbook keeps: progress in your browser, and after signing in with Google or GitHub only the account ID and the progress. No ads.",
+    "updated": "Updated: {date}",
+    "intro": "In short: we keep only your progress, show no ads and share no data with third parties.",
+    "contactPlaceholder": "the contact will appear here before sign-in goes live",
+    "sections": {
+      "withoutAccount": {
+        "heading": "Without signing in",
+        "blocks": [
+          "Your progress is stored only in your browser and is not sent anywhere."
+        ]
+      },
+      "signIn": {
+        "heading": "Signing in with Google or GitHub",
+        "blocks": [
+          "Signing in is optional: it only makes your progress available on all your devices. From Google or GitHub we get only the account ID, with no e-mail, name or photo, and keep it together with your progress. This data is used only for signing in and is not shared with third parties."
+        ]
+      },
+      "cookies": {
+        "heading": "Cookies",
+        "blocks": [
+          "Cookies appear only when you sign in, to keep you signed in. There are no advertising or tracking cookies."
+        ]
+      },
+      "analytics": {
+        "heading": "Statistics",
+        "blocks": [
+          "We count visits anonymously and without cookies, to see which chapters people read."
+        ]
+      },
+      "rights": {
+        "heading": "Deleting your data",
+        "blocks": [
+          "You can delete the account at any time: open the account menu at the top right (on a phone it is at the bottom of the main menu) and press “{deleteLabel}”. The account and the progress on the server are deleted right away."
+        ]
+      },
+      "contact": {
+        "heading": "Contact",
+        "blocks": [
+          "Questions about your data: {contact}."
+        ]
+      }
+    }
+  },
+  "notFound": {
+    "lang": "en",
+    "title": "Page not found",
+    "tagline": "This page does not exist or has moved. Pick a chapter from the table of contents.",
+    "homeLink": "Go to the table of contents"
+  }
+}

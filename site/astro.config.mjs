@@ -4,15 +4,19 @@ import starlight from '@astrojs/starlight';
 import sitemap from '@astrojs/sitemap';
 import sidebar from './src/generated/sidebar.json' with { type: 'json' };
 import lastmod from './src/generated/lastmod.json' with { type: 'json' };
-import strings from './src/locales/ru.json' with { type: 'json' };
+import i18n from './src/generated/i18n.json' with { type: 'json' };
+import { starlightLocales } from './src/locales/locales.mjs';
+import { stringsFor } from './src/locales/strings.mjs';
 import progressApi from './src/integrations/progress-api.mjs';
 import deployFiles from './src/integrations/deploy-files.mjs';
 import cspInlineHashes from './src/integrations/csp-inline-hashes.mjs';
 import { iconHead, seoHead } from './src/head/seo-head.mjs';
-import { inSitemap, withLastmod } from './scripts/convert/lastmod.mjs';
+import { inSitemap, sitemapExcluded, withLastmod } from './scripts/convert/lastmod.mjs';
 import { webAnalyticsHead, withWebAnalytics } from './src/head/web-analytics.mjs';
 import { CSP, SITEMAP_EXCLUDED_PATHS } from './src/config/app.mjs';
 import { config } from './src/config/server.mjs';
+
+const strings = stringsFor(undefined);
 
 // Cloudflare Web Analytics only in builds with CLOUDFLARE_WEB_ANALYTICS_TOKEN; its origins join the CSP there.
 const csp = withWebAnalytics(CSP, config.webAnalyticsToken);
@@ -34,7 +38,9 @@ export default defineConfig({
     starlight({
       title: strings.site.title,
       defaultLocale: 'root',
-      locales: { root: { label: strings.languageLabel, lang: strings.lang } },
+      locales: starlightLocales((lang) => stringsFor(lang).languageLabel),
+      // per-page language fixes of the head: hreflang links and the preview image text (src/route-data.ts)
+      routeMiddleware: './src/route-data.ts',
       sidebar,
       head: [
         ...iconHead(),
@@ -71,7 +77,7 @@ export default defineConfig({
     }),
     // Starlight adds this integration itself unless it is listed; listed here to give pages a <lastmod>.
     sitemap({
-      filter: (page) => inSitemap(page, SITEMAP_EXCLUDED_PATHS),
+      filter: (page) => inSitemap(page, sitemapExcluded(SITEMAP_EXCLUDED_PATHS, i18n.placeholders)),
       serialize: (item) => withLastmod(item, lastmod),
     }),
     progressApi(),

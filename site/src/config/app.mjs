@@ -215,7 +215,10 @@ export const PRIVACY_CONTACT = 'https://t.me/oool_g';
 /** Date of the current privacy policy text (YYYY-MM-DD), shown on the page. Change it with the text. */
 export const PRIVACY_POLICY_DATE = '2026-11-15';
 
-/** Pages left out of the sitemap: personal pages marked noindex (a noindex page in the sitemap is a Search Console error). */
+/**
+ * Pages left out of the sitemap, in every language: personal pages marked noindex (a noindex page in the
+ * sitemap is a Search Console error). Placeholders of untranslated chapters are left out too (I18N_FILE).
+ */
 export const SITEMAP_EXCLUDED_PATHS = [REVIEW_PATH];
 
 /** Each quiz question is a link target: <chapter>#<QUESTION_ANCHOR_PREFIX><n>. */
@@ -228,6 +231,32 @@ export const QUESTION_PREVIEW_MAX_LENGTH = 160;
 export const BOOK_DIR = 'book';
 export const CHAPTER_PREFIX = 'AIL-';
 
+/**
+ * @typedef {{ lang: string, prefix: string, bookDir: string, planFile: string }} Locale
+ */
+
+/**
+ * Site languages. The first one is the original: its pages are served at the root (`/`), every other
+ * language under its `prefix`. Each language has its own book folder (chapters and table of contents,
+ * relative to the repo root) and plan file. A chapter or plan a translation does not have yet gets a short
+ * page in that language pointing to the original. Reading progress is shared: a chapter keeps its id in
+ * every language.
+ * @type {Locale[]}
+ */
+export const LOCALES = [
+  { lang: 'ru', prefix: '', bookDir: BOOK_DIR, planFile: 'README.md' },
+  { lang: 'en', prefix: '/en', bookDir: `${BOOK_DIR}/en`, planFile: 'README.en.md' },
+];
+export const DEFAULT_LOCALE = LOCALES[0];
+
+/**
+ * A translated chapter records the version of the original it was translated from: one hidden line
+ * `<!-- source-sha256: <first SOURCE_HASH_LENGTH hex digits of the SHA-256 of the original file> -->`.
+ * The build lists translations whose original has changed since.
+ */
+export const SOURCE_HASH_MARKER = 'source-sha256:';
+export const SOURCE_HASH_LENGTH = 12;
+
 /** Generated output, relative to site/. */
 export const DOCS_DIR = 'src/content/docs';
 export const GENERATED_DIR = 'src/generated';
@@ -237,6 +266,11 @@ export const CHAPTERS_FILE = `${GENERATED_DIR}/chapters.json`;
 export const LASTMOD_FILE = `${GENERATED_DIR}/lastmod.json`;
 /** Every quiz question by chapter (number, short text, answer key); loaded by the review page only. */
 export const QUIZ_INDEX_FILE = `${GENERATED_DIR}/quiz-index.json`;
+/**
+ * Languages of the pages: the page paths (without a language prefix) that exist in every language, for the
+ * hreflang links, and the placeholder pages of untranslated chapters, kept out of the sitemap.
+ */
+export const I18N_FILE = `${GENERATED_DIR}/i18n.json`;
 /** Everything scripts/convert.mjs writes under site/: ignored by git and by the `npm start` watcher (no rebuild loop). */
 export const GENERATED_PATHS = [DOCS_DIR, GENERATED_DIR];
 

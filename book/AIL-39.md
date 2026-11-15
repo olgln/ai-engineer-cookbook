@@ -112,7 +112,7 @@ sqlite3 ../shop-live/shop.db "VACUUM INTO '/abs/path/ai-engineering-journey/proj
 
 Если копия открывается с ошибкой в режиме `mode=ro` (копия может сохранить WAL-режим в заголовке), один раз выполняем на **копии** `sqlite3 data/shop.db "PRAGMA journal_mode=DELETE"`. Живую базу MCP-сервер не открывает никогда.
 
-Последнее про данные — то, на чём модель ошибается чаще всего. Помним о фактах базы из главы 3.1: **один заказ = несколько строк `order_items`**; для `unit = 'g'` (чай и кофе на вес) `quantity` — граммы, а `unit_price` и `unit_cost` — за 100 г; **сумма и прибыль заказа не хранятся**, их считают `item_amount`, `order_total`, `order_profit` из `bot/domain.py` проекта 1. Переносим эту логику в `domain.py` сервера вместе с тестами, иначе модель будет уверенно отвечать неверными цифрами: 250 г «Сенчи» по 480 ₽ за 100 г превратятся в 120 000 ₽ вместо 1 200.
+Последнее про данные — то, на чём модель ошибается чаще всего. Помним о фактах базы из главы 3.1: **один заказ = несколько строк `order_items`**; для `unit = 'g'` (чай и кофе на вес) `quantity` — граммы, а `unit_price` и `unit_cost` — за 100 г; **сумма и прибыль заказа не хранятся**, их считают `item_amount`, `order_total`, `order_profit` из `bot/domain.py` проекта 1. Переносим эту логику в `domain.py` сервера вместе с тестами, иначе модель будет уверенно отвечать неверными цифрами: 250 г чая Sencha по $4.80 за 100 г превратятся в $1,200 вместо $12.
 
 ### Набор инструментов
 
@@ -144,7 +144,7 @@ Args:
   since/until: ISO 8601 UTC datetimes like 2026-11-10T00:00:00Z, compared with created_at
   limit: 1..50, default 20
 Returns: id, status, created_at, paid_at, shipped_at, closed_at (UTC), delivery_method,
-promo_code, discount, items_count, total_rub (computed: items - discount + delivery_cost;
+promo_code, discount, items_count, total_usd (computed: items - discount + delivery_cost;
 totals are not stored in the DB). Customer names, emails and phones are never returned.
 The snapshot may lag behind the live shop; snapshot time is in the 'snapshot_at' field.
 ```

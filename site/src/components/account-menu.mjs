@@ -6,6 +6,7 @@
 // tested without rendering Astro components (tests/site/account-menu.test.mjs).
 import { AUTH_API_PREFIX, AUTH_PROVIDERS, PRIVACY_PATH } from '../config/app.mjs';
 import { format } from '../locales/format.mjs';
+import { localizePath } from '../locales/locales.mjs';
 
 const escape = (s) => String(s).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 
@@ -46,7 +47,7 @@ const avatar = (cls) => [
 /**
  * Sign-in buttons, one per provider, hidden: the script shows those the account API lists and points them
  * back to the current page.
- * @param {typeof import('../locales/ru.json')} strings
+ * @param {import('../locales/strings.mjs').Strings} strings
  */
 export function providerButtonsHtml(strings) {
   const { ui } = strings;
@@ -65,7 +66,7 @@ export function providerButtonsHtml(strings) {
 /**
  * The one-time hint for a new signed-out reader at their first piece of progress (src/scripts/account/save-hint.mjs):
  * a card at the bottom of the window, not modal, with the sign-in buttons. Rendered once per page, hidden.
- * @param {typeof import('../locales/ru.json')} strings
+ * @param {import('../locales/strings.mjs').Strings} strings
  */
 export function saveHintHtml(strings) {
   const { ui } = strings;
@@ -86,11 +87,11 @@ export function saveHintHtml(strings) {
 /**
  * Markup of one account menu. Starlight renders the theme switch twice (header and mobile menu), so a page
  * has two menus; the markup has no ids, the script links each button to its panel.
- * @param {typeof import('../locales/ru.json')} strings
+ * @param {import('../locales/strings.mjs').Strings} strings
  */
 export function accountMenuHtml(strings) {
   const ui = strings.ui;
-  const privacy = `<a class="account-privacy" href="${PRIVACY_PATH}">${escape(ui.privacyLink)}</a>`;
+  const privacy = `<a class="account-privacy" href="${localizePath(PRIVACY_PATH, strings.lang)}">${escape(ui.privacyLink)}</a>`;
   return [
     '<div class="account-menu" data-state="out" hidden>',
     '<button type="button" class="account-trigger" data-account-trigger>',

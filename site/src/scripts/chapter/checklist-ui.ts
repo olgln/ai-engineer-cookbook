@@ -1,8 +1,8 @@
 import * as P from '../progress/store';
-import strings from '../../locales/ru.json';
 import { format } from '../../locales/format.mjs';
 import { $$, el } from '../dom';
 import { checkboxLabel, clickTogglesItem } from './checklist.mjs';
+import { strings } from '../page-locale';
 
 const ui = strings.ui;
 

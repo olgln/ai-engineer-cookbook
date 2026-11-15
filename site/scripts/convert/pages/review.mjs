@@ -1,10 +1,8 @@
-import strings from '../../../src/locales/ru.json' with { type: 'json' };
 import { yamlStr } from '../markdown.mjs';
 
-const { site } = strings;
-
 /** Render the review page: a shell that the browser fills from the reader's progress (src/scripts/quiz/review-ui.ts). */
-export function renderReview() {
+export function renderReview(ctx) {
+  const { site } = ctx.strings;
   return [
     '---',
     `title: ${yamlStr(site.reviewTitle)}`,

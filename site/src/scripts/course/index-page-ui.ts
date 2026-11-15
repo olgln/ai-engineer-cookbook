@@ -1,10 +1,9 @@
 import * as P from '../progress/store';
-import chapters from '../../generated/chapters.json';
-import strings from '../../locales/ru.json';
 import { format, plural } from '../../locales/format.mjs';
 import { getAccountState, openAccountMenu, type State as AccountState } from '../account/account-ui';
 import { progressNote } from '../account/account.mjs';
 import { $$, el } from '../dom';
+import { strings, chapters } from '../page-locale';
 
 const ui = strings.ui;
 

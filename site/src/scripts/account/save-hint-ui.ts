@@ -1,10 +1,10 @@
 // The one-time hint "your progress is only in this browser" (saveHintHtml in src/components/account-menu.mjs).
 // Decisions live in ./save-hint.mjs.
 import * as P from '../progress/store';
-import strings from '../../locales/ru.json';
 import { SAVE_HINT_STORAGE_KEY } from '../../config/app.mjs';
 import { getAccountState, showProviderButtons } from './account-ui';
 import { shouldShowSaveHint } from './save-hint.mjs';
+import { strings } from '../page-locale';
 
 const ui = strings.ui;
 

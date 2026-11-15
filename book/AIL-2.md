@@ -145,7 +145,7 @@ class OrderItem(BaseModel):
     def upper_sku(cls, v: str) -> str:
         return v.upper()
 
-raw = '{"sku": "mug-north", "unit": "pcs", "quantity": "2", "unit_price": "890.00", "created_at": "2026-11-16T10:00:00Z"}'
+raw = '{"sku": "mug-north", "unit": "pcs", "quantity": "2", "unit_price": "8.90", "created_at": "2026-11-16T10:00:00Z"}'
 item = OrderItem.model_validate_json(raw)   # parse + validate JSON string
 print(item.sku, item.quantity)              # MUG-NORTH 2
 
@@ -192,7 +192,7 @@ from pydantic import ValidationError
 from models import OrderItem   # models.py in the project root, see pythonpath below
 
 def test_sku_is_uppercased():
-    item = OrderItem.model_validate({"sku": "tea-sencha", "unit": "g", "quantity": "250", "unit_price": "420", "created_at": "2026-11-16T10:00:00Z"})
+    item = OrderItem.model_validate({"sku": "tea-sencha", "unit": "g", "quantity": "250", "unit_price": "4.20", "created_at": "2026-11-16T10:00:00Z"})
     assert item.sku == "TEA-SENCHA"
 
 @pytest.mark.parametrize("bad_unit", ["kg", "", "PCS "])

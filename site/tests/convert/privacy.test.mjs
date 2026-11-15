@@ -78,7 +78,9 @@ describe('privacy page', () => {
 
   test('the converter writes the page and turns the analytics section on from the build settings', () => {
     const convert = read('../../scripts/convert.mjs');
-    assert.match(convert, /PRIVACY_PATH\.replaceAll\('\/', ''\)\}\.md`\), r\.renderPrivacy\(\{ analytics: Boolean\(config\.webAnalyticsToken\) \}\)\)/);
+    assert.match(convert, /const privacyOptions = \{ analytics: Boolean\(config\.webAnalyticsToken\) \};/);
+    assert.match(convert, /write\(docFile\(DEFAULT_LOCALE, pageName\(PRIVACY_PATH\)\), r\.renderPrivacy\(privacyOptions\)\);/);
+    assert.match(convert, /write\(docFile\(locale, pageName\(PRIVACY_PATH\)\), t\.renderPrivacy\(privacyOptions\)\);/, 'every translation too');
   });
 });
 

@@ -1,6 +1,8 @@
 // Last change of each page's source, from `git log`, for <lastmod> in the sitemap: search engines
 // re-crawl a page sooner when its date moves. Pure, so it is tested without git (tests/convert/lastmod.test.mjs);
 // scripts/convert.mjs runs git and writes the result to LASTMOD_FILE.
+import { LOCALES } from '../../src/config/app.mjs';
+import { localizePath } from '../../src/locales/locales.mjs';
 
 /** `git log` arguments: one record per commit (NUL, committer date), then the files it changed; paths follow. */
 export const GIT_LOG_ARGS = ['log', '--format=%x00%cI', '--name-only', '--'];
@@ -30,6 +32,17 @@ export function pageDates(pages, fileDates) {
  * @param {string[]} excluded page paths to leave out
  */
 export const inSitemap = (page, excluded) => !excluded.includes(new URL(page).pathname);
+
+/**
+ * Every page path left out of the sitemap: the excluded paths in every language plus the placeholder pages
+ * of untranslated chapters.
+ * @param {string[]} excluded page paths without a language prefix
+ * @param {string[]} placeholders full page paths
+ */
+export const sitemapExcluded = (excluded, placeholders) => [
+  ...LOCALES.flatMap((l) => excluded.map((p) => localizePath(p, l.lang))),
+  ...placeholders,
+];
 
 /**
  * `serialize` option of @astrojs/sitemap: adds the date of the page, when known, to its sitemap entry.
