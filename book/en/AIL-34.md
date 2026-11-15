@@ -1,9 +1,9 @@
-# 8.4 · Error analysis: reviewing the errors of an LLM system by hand  (AIL-34)
+# 7.4 · Error analysis: reviewing the errors of an LLM system by hand  (AIL-34)
 
-> **Week 8** · Evals · ⏱ ~4 h · Practice
+> **Week 7** · Evals · ⏱ ~4 h · Practice
 
 <!-- description: Error analysis of an LLM system by hand: reading failure traces, open and axial coding of causes, counting frequencies, choosing what to fix first. -->
-<!-- source-sha256: 92be4ecae5e4 -->
+<!-- source-sha256: 38b2e47fd6f8 -->
 
 ## Why an AI engineer needs this
 

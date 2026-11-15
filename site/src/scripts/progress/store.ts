@@ -3,9 +3,10 @@
 // - 'account': the hosting's Worker keeps it in the signed-in reader's account (sync: ./sync.mjs);
 // - 'browser': no API (static hosting, or signed out), localStorage alone.
 import {
-  ACCOUNT_API_PATH, LOGOUT_API_PATH, PROGRESS_API_PATH, PROGRESS_FILE_HEADER, PROGRESS_REV_HEADER, SAVE_DEBOUNCE_MS, STORAGE_KEY,
-  SYNC_STORAGE_KEY,
+  ACCOUNT_API_PATH, LOGOUT_API_PATH, PROGRESS_API_PATH, PROGRESS_FILE_HEADER, PROGRESS_REV_HEADER, PROGRESS_VERSION, SAVE_DEBOUNCE_MS,
+  STORAGE_KEY, SYNC_STORAGE_KEY,
 } from '../../config/app.mjs';
+import { migrateProgress } from './migrate.mjs';
 import { mergeProgress, parseMarker, planLoad } from './sync.mjs';
 
 export interface QuizAnswer {
@@ -19,20 +20,22 @@ export interface ChapterProgress {
   quiz?: Record<string, QuizAnswer>;
 }
 export interface Progress {
-  version: 1;
+  version: number;
   updatedAt?: string;
   chapters: Record<string, ChapterProgress>;
 }
 
-let state: Progress = { version: 1, chapters: {} };
+const empty = (): Progress => ({ version: PROGRESS_VERSION, chapters: {} });
+let state: Progress = empty();
 export let storage: 'file' | 'account' | 'browser' = 'browser';
 export let storagePath = '';
 const listeners = new Set<() => void>();
 
+/** A well-formed document at the current format version, whichever copy (browser, file, account) it came from. */
 function normalize(raw: unknown): Progress {
   const p = raw as Partial<Progress> | null;
-  if (!p || typeof p !== 'object' || typeof p.chapters !== 'object' || !p.chapters) return { version: 1, chapters: {} };
-  return { version: 1, updatedAt: p.updatedAt, chapters: p.chapters };
+  if (!p || typeof p !== 'object' || typeof p.chapters !== 'object' || !p.chapters) return empty();
+  return migrateProgress({ version: p.version, updatedAt: p.updatedAt, chapters: p.chapters });
 }
 
 function readLocal(): Progress | null {
@@ -110,7 +113,7 @@ export async function load(): Promise<Progress> {
     }
   } catch {
     storage = 'browser';
-    state = local ?? { version: 1, chapters: {} };
+    state = local ?? empty();
   }
   writeLocal();
   return state;

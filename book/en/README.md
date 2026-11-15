@@ -54,37 +54,33 @@ Translation in progress: chapters that are not translated yet link to the origin
 - [6.4 · A RAG evaluation script: retrieval and faithfulness](AIL-29.md)
 - [6.5 · LLM observability: Langfuse and promptfoo](AIL-30.md)
 
-## Week 7 · Buffer / holidays
+## Week 7 · Project 3: experiments
 
-- 7.1 · Buffer: catch up or rest _(no separate chapter)_
+- [7.1 · Eval statistics: noise and sample size](AIL-62.md)
+- [7.2 · A chunking experiment in RAG: A vs B](AIL-32.md)
+- [7.3 · An experiment: choosing the model and a reranker for RAG](AIL-33.md)
+- [7.4 · Error analysis: reviewing the errors of an LLM system by hand](AIL-34.md)
+- [7.5 · Project 3: an experiments table in the README](AIL-35.md)
 
-## Week 8 · Project 3: experiments
+## Week 8 · Agents and MCP
 
-- [8.1 · Eval statistics: noise and sample size](AIL-62.md)
-- [8.2 · A chunking experiment in RAG: A vs B](AIL-32.md)
-- [8.3 · An experiment: choosing the model and a reranker for RAG](AIL-33.md)
-- [8.4 · Error analysis: reviewing the errors of an LLM system by hand](AIL-34.md)
-- [8.5 · Project 3: an experiments table in the README](AIL-35.md)
+- [8.1 · AI agents: Building effective agents and the OWASP LLM Top 10](AIL-37.md)
+- [8.2 · Workflow patterns: chaining, routing, parallelization](AIL-63.md)
+- [8.3 · An AI agent loop by hand, without a framework](AIL-38.md)
+- [8.4 · Prompt injection: attacking our own agent](AIL-64.md)
+- [8.5 · An MCP server for the shop database (read-only)](AIL-39.md)
 
-## Week 9 · Agents and MCP
+## Week 9 · Project 4: an agent
 
-- [9.1 · AI agents: Building effective agents and the OWASP LLM Top 10](AIL-37.md)
-- [9.2 · Workflow patterns: chaining, routing, parallelization](AIL-63.md)
-- [9.3 · An AI agent loop by hand, without a framework](AIL-38.md)
-- [9.4 · Prompt injection: attacking our own agent](AIL-64.md)
-- [9.5 · An MCP server for the shop database (read-only)](AIL-39.md)
+- [9.1 · Memory and context of an AI agent](AIL-65.md)
+- [9.2 · Project 4: an AI agent that investigates orders](AIL-41.md)
+- [9.3 · Project 4: agent evals on 20 cases](AIL-42.md)
+- [9.4 · Project 4: a README of the AI agent for GitHub](AIL-43.md)
 
-## Week 10 · Project 4: an agent
+## Week 10 · Production
 
-- [10.1 · Memory and context of an AI agent](AIL-65.md)
-- [10.2 · Project 4: an AI agent that investigates orders](AIL-41.md)
-- [10.3 · Project 4: agent evals on 20 cases](AIL-42.md)
-- [10.4 · Project 4: a README of the AI agent for GitHub](AIL-43.md)
-
-## Week 11 · Production
-
-- [11.1 · Docker: packaging an LLM project](AIL-66.md)
-- [11.2 · Prompt caching, budgets, fallbacks](AIL-45.md)
-- [11.3 · Tracing an LLM application and the cost of an answer](AIL-46.md)
-- [11.4 · A local LLM with Ollama: a comparison on our own evals](AIL-47.md)
-- [11.5 · Fine-tuning: a basic LoRA example](AIL-48.md)
+- [10.1 · Docker: packaging an LLM project](AIL-66.md)
+- [10.2 · Prompt caching, budgets, fallbacks](AIL-45.md)
+- [10.3 · Tracing an LLM application and the cost of an answer](AIL-46.md)
+- [10.4 · A local LLM with Ollama: a comparison on our own evals](AIL-47.md)
+- [10.5 · Fine-tuning: a basic LoRA example](AIL-48.md)

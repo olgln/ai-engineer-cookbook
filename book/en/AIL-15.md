@@ -3,7 +3,7 @@
 > **Week 3** · LLM basics · ⏱ ~8 h (2 days) · Project
 
 <!-- description: Building a Telegram bot with aiogram: the tool calling loop, the trust boundary for function calls, the system prompt, dialog history, error handling. -->
-<!-- source-sha256: b51f91ea7e4e -->
+<!-- source-sha256: 8ed8eaaad4ed -->
 
 ## Why an AI engineer needs this
 
@@ -345,7 +345,7 @@ Takeaways for this bot:
 - **A history with a broken tool_use/tool_result pair** → a 400 error from the API on every next message. The fix is to store only text.
 - **The bot in a group.** If the owner is added to a group with the bot, the `from_user.id` filter lets their messages through and everyone sees the answer. `F.chat.type == "private"` closes this.
 - **Logs are real data.** Questions and answers with the shop's revenue and orders are written to `logs/`, which is in `.gitignore`.
-- **Prompt injection through data** is unlikely here (the data comes from our own database), but the rule is the same: a tool result is data, not instructions. The habit will come in handy in RAG (weeks 4–5) and with agents (week 9).
+- **Prompt injection through data** is unlikely here (the data comes from our own database), but the rule is the same: a tool result is data, not instructions. The habit will come in handy in RAG (weeks 4–5) and with agents (week 8).
 - **Not a single new tool "just in case".** The tool list in this project is the 4 functions from AIL-14. If the thought "let the bot also issue refunds" comes up — no.
 - **Cost.** Every step of the loop resends the whole context: the system prompt + the schemas of 4 tools + the history + the results. An answer in 3 steps costs roughly three times as much as one step. In AIL-16 we will measure it. On Ollama it costs no money, but it costs seconds: every step means processing the whole prompt again on our machine.
 - **Comparing models on the live database snapshot.** The temptation "I'll run DeepSeek on the real questions, to be fair" — no. The comparison is on the demo database; on the snapshot, only Ollama.

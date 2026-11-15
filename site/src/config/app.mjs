@@ -75,6 +75,22 @@ export const OAUTH_PROVIDERS = {
   },
 };
 
+/**
+ * Format version of the progress document ({ version, updatedAt?, chapters: { <chapter id>: … } }). A chapter's
+ * id is its number (`7-1`), so renumbering chapters renames ids: each version lists the renames that lead to
+ * it from the one before, and the browser migrates an older document on load (src/scripts/progress/migrate.mjs).
+ */
+export const PROGRESS_VERSION = 2;
+
+/**
+ * Version 2: the empty buffer week 7 was removed, so weeks 8–11 became weeks 7–10 (8.1 → 7.1 … 11.5 → 10.5).
+ * @type {Record<number, Record<string, string>>}
+ */
+export const CHAPTER_ID_RENAMES = {
+  2: Object.fromEntries([[8, 5], [9, 5], [10, 4], [11, 5]].flatMap(([week, count]) =>
+    Array.from({ length: count }, (_, i) => [`${week}-${i + 1}`, `${week - 1}-${i + 1}`]))),
+};
+
 /** Revision of the reader's progress on the server: sent with GET, required with PUT (optimistic locking). */
 export const PROGRESS_REV_HEADER = 'X-Progress-Rev';
 /** Largest progress document the Worker stores, in bytes. A full course of answers is well under 100 KB. */
@@ -165,6 +181,8 @@ export const IMMUTABLE_CACHE_CONTROL = 'public, max-age=31536000, immutable';
 
 /** Files written next to the built site for the hosting (Netlify / Cloudflare Pages format). */
 export const HEADERS_FILE = '_headers';
+/** Permanent redirects of pages that moved (Netlify / Cloudflare format), e.g. chapters of a renumbered week. */
+export const REDIRECTS_FILE = '_redirects';
 export const ROBOTS_FILE = 'robots.txt';
 export const SITEMAP_FILE = 'sitemap-index.xml';
 

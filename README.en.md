@@ -8,7 +8,7 @@
 <br>
 
 [![Chapters: 51](https://img.shields.io/badge/chapters-51-4f46e5?style=flat-square)](book/en/README.md)
-[![Weeks: 11](https://img.shields.io/badge/weeks-11-4f46e5?style=flat-square)](#plan-by-week)
+[![Weeks: 10](https://img.shields.io/badge/weeks-10-4f46e5?style=flat-square)](#plan-by-week)
 [![Projects: 4](https://img.shields.io/badge/projects-4-4f46e5?style=flat-square)](#-roadmap)
 [![Python 3.12+](https://img.shields.io/badge/Python-3.12%2B-3776AB?style=flat-square&logo=python&logoColor=white)](book/en/AIL-2.md)
 [![Models: DeepSeek + Ollama](https://img.shields.io/badge/models-DeepSeek_%2B_Ollama-0ea5e9?style=flat-square)](#models-for-study-deepseek--ollama)
@@ -38,11 +38,9 @@ Theory, practice and portfolio projects — on cheap cloud and free local models
 |---|---|---|---|
 | 🐍 | Python, API, prompting, tool calling | 1–3 | **Project 1:** a "shop analyst" Telegram bot |
 | 🔎 | RAG and embeddings | 4–5 | **Project 2:** a support assistant over the knowledge base |
-| 📏 | Evals and experiments | 6, 8 | **Project 3:** an experiments table in numbers |
-| 🤖 | Agents and MCP | 9–10 | **Project 4:** an agent that investigates orders |
-| 🚀 | Production | 11 | a cloud and a local model compared: price, quality, latency |
-
-Week 7 is a buffer for holidays, sick days and falling behind.
+| 📏 | Evals and experiments | 6–7 | **Project 3:** an experiments table in numbers |
+| 🤖 | Agents and MCP | 8–9 | **Project 4:** an agent that investigates orders |
+| 🚀 | Production | 10 | a cloud and a local model compared: price, quality, latency |
 
 ## 🚀 Getting started
 
@@ -114,7 +112,7 @@ The course runs on cheap and free models; Claude and OpenAI stay in the chapters
 
 ## Intensive schedule: 4 hours a day, 5 days a week
 
-~20 hours a week, ~200 hours in total, **11 weeks** (including a buffer week for holidays, sick days and falling behind).
+~20 hours a week, ~200 hours in total, **10 weeks**.
 
 ### The structure of one day (4 hours)
 | Time | What to do |
@@ -135,16 +133,15 @@ The course runs on cheap and free models; Claude and OpenAI stay in the chapters
 | 4 | 4.1–4.4 | Embeddings by hand (numpy) with the **local model `bge-m3`**, chunking, sqlite-vec, loading the shop's knowledge base `kb/` | Search over the knowledge base works |
 | 5 | 5.1–5.5 | Query rewriting, hybrid search + BM25, a local reranker, a support assistant whose answers link to the knowledge base section (generation by DeepSeek); a LlamaIndex version | **Project 2** on GitHub |
 | 6 | 6.1–6.5 | Articles on evals, synthetic questions, a set of 50–100 questions, an evaluation script (the judge is `deepseek-v4-pro`), Langfuse Cloud / promptfoo | Evals give the first number |
-| 7 | 7.1 | **Buffer / holidays.** Catch up or rest | — |
-| 8 | 8.1–8.5 | Eval statistics, experiments: chunking A/B, **`qwen3:4b` vs `deepseek-flash`**, with and without a reranker; manual error analysis | **Project 3** (an experiments table) |
-| 9 | 9.1–9.5 | "Building effective agents", workflow patterns, an agent loop by hand, prompt injection, our own MCP server (read-only, Ollama as the host) | An MCP server for the shop database (read-only) |
-| 10 | 10.1–10.4 | Agent memory, an agent that investigates orders (Ollama on the database snapshot with customer data, DeepSeek only on the demo database), frameworks, evals on 20 cases | **Project 4** on GitHub |
-| 11 | 11.1–11.5 | Docker, DeepSeek vs Claude caching, budgets (the DeepSeek balance), a DeepSeek → OpenRouter → Ollama fallback, tracing and the cost of an answer, our own evals on a local model, a LoRA example | A cloud and a local model compared in numbers |
+| 7 | 7.1–7.5 | Eval statistics, experiments: chunking A/B, **`qwen3:4b` vs `deepseek-flash`**, with and without a reranker; manual error analysis | **Project 3** (an experiments table) |
+| 8 | 8.1–8.5 | "Building effective agents", workflow patterns, an agent loop by hand, prompt injection, our own MCP server (read-only, Ollama as the host) | An MCP server for the shop database (read-only) |
+| 9 | 9.1–9.4 | Agent memory, an agent that investigates orders (Ollama on the database snapshot with customer data, DeepSeek only on the demo database), frameworks, evals on 20 cases | **Project 4** on GitHub |
+| 10 | 10.1–10.5 | Docker, DeepSeek vs Claude caching, budgets (the DeepSeek balance), a DeepSeek → OpenRouter → Ollama fallback, tracing and the cost of an answer, our own evals on a local model, a LoRA example | A cloud and a local model compared in numbers |
 
 ### Checkpoints
 - **End of week 3** — the first project works and is on GitHub. If not, cut theory, but don't skip the project.
-- **End of week 8** — there are numbers from evals. This is the main artifact for job interviews.
-- **End of week 11** — 4 projects and a cloud vs local model comparison in numbers.
+- **End of week 7** — there are numbers from evals. This is the main artifact for job interviews.
+- **End of week 10** — 4 projects and a cloud vs local model comparison in numbers.
 
 ### Budget
 - DeepSeek: the whole course costs a few dollars (an estimate; a run of 60 eval questions ≈ $0.30–0.60). It is worth topping up the balance in small amounts — at zero the API returns 402, and that is the spending cap.

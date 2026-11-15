@@ -3,7 +3,7 @@
 > **Week 6** · Evals · ⏱ ~4 h · Theory
 
 <!-- description: Evals for LLM products: three levels of evaluation, the improvement loop, kinds of checks and an LLM-as-judge worth trusting. Project 3 begins. -->
-<!-- source-sha256: 21721aac7bb9 -->
+<!-- source-sha256: 9a052cc24677 -->
 
 ## Why an AI engineer needs this
 
@@ -172,7 +172,7 @@ Self-preference is real here: Flash and Pro are the same family. That is not a r
 
 ### Security
 
-Project 3 evaluates the assistant over the **public** knowledge base `kb/`, and the golden set questions are made up without personal data, so chunks, questions and answers can be sent to DeepSeek. Real customer messages (phones, emails, order numbers), `outputs/handoff.jsonl`, the shop's database snapshot and keys are never sent to DeepSeek or to free cloud tiers (which may train on the input data): for them, only Ollama or made-up data. The rule applies to any cloud provider, not just DeepSeek. This will matter in chapter [10.3 · Project 4: agent evals on 20 cases](AIL-42.md) (AIL-42), where the judge will read investigations of problem orders based on the database snapshot.
+Project 3 evaluates the assistant over the **public** knowledge base `kb/`, and the golden set questions are made up without personal data, so chunks, questions and answers can be sent to DeepSeek. Real customer messages (phones, emails, order numbers), `outputs/handoff.jsonl`, the shop's database snapshot and keys are never sent to DeepSeek or to free cloud tiers (which may train on the input data): for them, only Ollama or made-up data. The rule applies to any cloud provider, not just DeepSeek. This will matter in chapter [9.3 · Project 4: agent evals on 20 cases](AIL-42.md) (AIL-42), where the judge will read investigations of problem orders based on the database snapshot.
 
 ## Learning path
 

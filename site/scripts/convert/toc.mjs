@@ -16,6 +16,12 @@ export const weekLabel = (n, title, strings = stringsFor(DEFAULT_LOCALE.lang)) =
 export const chapterFile = (n) => `${CHAPTER_PREFIX}${n}.md`;
 
 /**
+ * Page path of a chapter id (`7-1` → `week-07/7-1`), without slashes around it or a language prefix.
+ * @param {string} id
+ */
+export const chapterSlug = (id) => `week-${id.split('-')[0].padStart(2, '0')}/${id}`;
+
+/**
  * @typedef {{ num: string, title: string, ail?: number, noPage?: boolean, week?: number, id?: string, slug?: string, href?: string }} TocItem
  * @typedef {{ n: number, title: string, items: TocItem[] }} Week
  */
@@ -45,7 +51,7 @@ export function parseToc(text, locale = DEFAULT_LOCALE) {
       if (it.noPage) continue;
       it.week = w.n;
       it.id = it.num.replace('.', '-');
-      it.slug = `week-${String(w.n).padStart(2, '0')}/${it.id}`;
+      it.slug = chapterSlug(it.id);
       it.href = localizePath(`/${it.slug}/`, locale.lang);
     }
   }

@@ -3,11 +3,11 @@
 > **Week 3** · LLM basics · ⏱ ~4 h · Project
 
 <!-- description: Making an LLM bot portfolio-ready: logging cost and response time, a /stats command, demo mode, a README and a clean public repository. -->
-<!-- source-sha256: 3873456b70eb -->
+<!-- source-sha256: 950768220e06 -->
 
 ## Why an AI engineer needs this
 
-We bring the project to a state where we are not embarrassed to show it. An employer opens the repository for two minutes: the README, the diagram, how to run it, how much an answer costs. A line like "average cost per answer $0.004, 2.1 tools per question" says more about the author than any clever prompt: it means they think about production. And the logs of every request are the foundation for evals and monitoring, which we return to in week 6 (evals) and week 11 (production).
+We bring the project to a state where we are not embarrassed to show it. An employer opens the repository for two minutes: the README, the diagram, how to run it, how much an answer costs. A line like "average cost per answer $0.004, 2.1 tools per question" says more about the author than any clever prompt: it means they think about production. And the logs of every request are the foundation for evals and monitoring, which we return to in week 6 (evals) and week 10 (production).
 
 ⚠️ The public repository gets **only the demo database**. Customers' personal data (names, emails, phones, cities) and figures from the shop's database snapshot must not end up in it — not as a file, a screenshot, a line of the README or a log entry, not now and not in the git history. The data in the snapshot is made up, but we treat it as real — this habit will be needed at work.
 

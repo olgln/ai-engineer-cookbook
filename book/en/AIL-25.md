@@ -3,7 +3,7 @@
 > **Week 5** · RAG · ⏱ ~4 h · Project
 
 <!-- description: A portfolio README for a RAG project: structure, results table, architecture diagram, running from scratch, limitations and public repo hygiene. -->
-<!-- source-sha256: d8a7900e02a4 -->
+<!-- source-sha256: ebf4d0764949 -->
 
 ## Why an AI engineer needs this
 
@@ -255,4 +255,4 @@ In the Results section we state **which models** produced the numbers (the embed
 
 ## What's next
 
-Project 2 is done. The next stage of the plan builds on it: in weeks 6–8 the same assistant in `projects/02-support-kb-rag/` becomes project 3 — the golden set and metric tables we have collected become the basis for systematic evals and an LLM judge, and the knowledge base search itself becomes a tool for the agent in later chapters. We start with how LLM systems are evaluated: [AIL-27 · LLM evals: the key articles and LLM-as-judge](AIL-27.md).
+Project 2 is done. The next stage of the plan builds on it: in weeks 6–7 the same assistant in `projects/02-support-kb-rag/` becomes project 3 — the golden set and metric tables we have collected become the basis for systematic evals and an LLM judge, and the knowledge base search itself becomes a tool for the agent in later chapters. We start with how LLM systems are evaluated: [AIL-27 · LLM evals: the key articles and LLM-as-judge](AIL-27.md).

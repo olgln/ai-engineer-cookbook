@@ -1,13 +1,13 @@
-# 8.1 · Eval statistics: noise and sample size  (AIL-62)
+# 7.1 · Eval statistics: noise and sample size  (AIL-62)
 
-> **Week 8** · Evals · ⏱ ~4 h · Theory
+> **Week 7** · Evals · ⏱ ~4 h · Theory
 
 <!-- description: Statistics for LLM evals: confidence intervals, paired comparison of configurations, bootstrap, model nondeterminism and how many questions a conclusion needs. -->
-<!-- source-sha256: 84e445a75bae -->
+<!-- source-sha256: de60614dae37 -->
 
 ## Why an AI engineer needs this
 
-In week 8 we compare configurations of the support assistant, and the numbers differ by a few percent. A difference of 72% vs 75% on 50 questions is 1–2 questions, and it easily arises from the randomness of the model and the judge alone. Without basic statistics the system "improves" by coin toss, and made-up progress ends up in the README. In interviews, the question "how did you know the improvement was real?" is a test of maturity.
+In week 7 we compare configurations of the support assistant, and the numbers differ by a few percent. A difference of 72% vs 75% on 50 questions is 1–2 questions, and it easily arises from the randomness of the model and the judge alone. Without basic statistics the system "improves" by coin toss, and made-up progress ends up in the README. In interviews, the question "how did you know the improvement was real?" is a test of maturity.
 
 ## Theory
 
@@ -160,7 +160,7 @@ The inverse problem: what set do we need to detect an improvement of d pp? For i
 
 ### A rule for ourselves
 
-Everything above boils down to one rule by which we will accept or reject changes in week 8. We write the rule down in advance, before the experiments. An example:
+Everything above boils down to one rule by which we will accept or reject changes in week 7. We write the rule down in advance, before the experiments. An example:
 
 > A change counts as an improvement if all three conditions hold:
 > 1. The difference is larger than the spread of three repeated runs of the baseline config.

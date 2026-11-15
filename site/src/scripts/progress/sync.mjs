@@ -2,10 +2,11 @@
 // The browser keeps a marker next to its copy, { rev, dirty }: the server revision the copy was last in
 // step with, and whether it has changes the server has not got yet. No marker means the copy has never
 // been synced with this account (first sign-in, or after signing out): then the two are merged.
+import { PROGRESS_VERSION } from '../../config/app.mjs';
 
 /** @typedef {{ picked?: string[], revealed?: boolean, self?: 'yes' | 'no' }} QuizAnswer */
 /** @typedef {{ done?: string, checks?: Record<string, boolean>, quiz?: Record<string, QuizAnswer> }} ChapterProgress */
-/** @typedef {{ version: 1, updatedAt?: string, chapters: Record<string, ChapterProgress> }} Progress */
+/** @typedef {{ version: number, updatedAt?: string, chapters: Record<string, ChapterProgress> }} Progress */
 /** @typedef {{ rev: number, dirty: boolean }} SyncMarker */
 
 const time = (p) => Date.parse(p?.updatedAt ?? '') || 0;
@@ -37,7 +38,7 @@ function mergeChapter(older = {}, newer = {}) {
 export function mergeProgress(a, b) {
   const [older, newer] = time(a) <= time(b) ? [a, b] : [b, a];
   /** @type {Progress} */
-  const out = { version: 1, chapters: {} };
+  const out = { version: PROGRESS_VERSION, chapters: {} };
   const updatedAt = newer.updatedAt ?? older.updatedAt;
   if (updatedAt) out.updatedAt = updatedAt;
   for (const id of new Set([...Object.keys(older.chapters), ...Object.keys(newer.chapters)])) {

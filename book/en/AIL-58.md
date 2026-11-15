@@ -3,7 +3,7 @@
 > **Week 2** · LLM basics · ⏱ ~1.5 h · Theory
 
 <!-- description: How to choose an LLM for a task: price, latency, quality, context window, reasoning and open-weight models, benchmarks and what runs on a laptop. -->
-<!-- source-sha256: af81bcde5e93 -->
+<!-- source-sha256: e404f71454f9 -->
 
 ## Why an AI engineer needs this
 
@@ -69,7 +69,7 @@ That is why RAG (finding the relevant pieces and passing only them) didn't die w
 - **[LMArena](https://lmarena.ai)**: people compare two anonymous answers and pick the better one; the votes produce a rating (Elo-like). It reflects "what people like in a chat" well. It reflects extraction accuracy, format following and work in agents poorly. Long, nicely formatted answers get a bonus.
 - **[Artificial Analysis](https://artificialanalysis.ai)**: independent measurements: a composite quality index, price (a blended price per token), speed and TTFT across different providers of the same model. Handy for a "quality vs price" chart.
 
-The bottom line: leaderboards are for a **shortlist** of 2–4 candidates. The final choice is **our own evals on our own data**: a set of our own examples with correct answers, on which each candidate model is run and the share of correct answers is counted. A prototype of such an eval was in chapter 2.1, we build the first real one in chapter 2.5, and a whole stage of the course (weeks 6–8) is devoted to evals.
+The bottom line: leaderboards are for a **shortlist** of 2–4 candidates. The final choice is **our own evals on our own data**: a set of our own examples with correct answers, on which each candidate model is run and the share of correct answers is counted. A prototype of such an eval was in chapter 2.1, we build the first real one in chapter 2.5, and a whole stage of the course (weeks 6–7) is devoted to evals.
 
 Leaderboards compare models regardless of who released them. But there is one more division, which affects not quality but price, control and data: a closed model or an open-weight one.
 

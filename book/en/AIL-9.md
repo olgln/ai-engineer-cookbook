@@ -3,7 +3,7 @@
 > **Week 2** · LLM basics · ⏱ ~4 h · Practice
 
 <!-- description: A first LLM eval: extracting JSON from 20 texts, labeling a gold set, computing per-field metrics and finding systematic model errors. -->
-<!-- source-sha256: ccf97e28a4d9 -->
+<!-- source-sha256: 157fdd5b4f3a -->
 
 ## Why an AI engineer needs this
 
@@ -184,7 +184,7 @@ The main run is DeepSeek on the public texts (fast and cheap, a good "bar"); the
 - **Fitting to the test.** Few-shot examples must not come from these 20 texts, and the holdout stays untouched until the end.
 - **A single number lies.** "90% exact match" may mean "everything is great", or it may mean "everything is great except for inventions in 2 ad texts with no event at all", which is critical for the product: the shop will take a product off sale or reprice it when the supplier wrote nothing about it. We look at per-field metrics and inventions separately.
 - **Leaking personal data** through customer messages is a real beginner mistake. Only anonymized copies.
-- **The code is worth keeping tidy**: `eval_extract.py` will become the foundation of our evals in weeks 6–8. We don't write it as a throwaway in a notebook.
+- **The code is worth keeping tidy**: `eval_extract.py` will become the foundation of our evals in weeks 6–7. We don't write it as a throwaway in a notebook.
 
 ## Practice
 

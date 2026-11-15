@@ -3,7 +3,7 @@
 > **Week 2** · LLM basics · ⏱ ~3 h · Theory, Practice
 
 <!-- description: OpenRouter: one key and an OpenAI-compatible API for hundreds of models. Free models, fallbacks, provider routing and where the data goes. -->
-<!-- source-sha256: d308fbb51b80 -->
+<!-- source-sha256: 28513d64d883 -->
 
 ## Why an AI engineer needs this
 
@@ -115,7 +115,7 @@ An important subtlety: a request to a DeepSeek model through OpenRouter doesn't 
 | Situation | Choice |
 |---|---|
 | Compare 5 models from different labs on one prompt or eval | **OpenRouter** |
-| Fallback to another model or provider on a failure | **OpenRouter** (`models`, `provider`) or our own logic (chapter 11.2 · Prompt caching, budgets, fallbacks (AIL-45)) |
+| Fallback to another model or provider on a failure | **OpenRouter** (`models`, `provider`) or our own logic (chapter 10.2 · Prompt caching, budgets, fallbacks (AIL-45)) |
 | Everyday study on one cheap model | **DeepSeek directly**: its own features (continuing a started answer via the beta prefix from chapter 2.1, strict tools from chapter 2.2, `reasoning_content`) are documented, with no extra hop |
 | A specific provider's features (Anthropic's Batch API, Files API, fresh betas) | **Directly with the provider**: an aggregator often doesn't pass them through or lags behind |
 | Customer data, the order event log, a database snapshot, embeddings of our own data | **Ollama locally**, no alternatives |
@@ -301,4 +301,4 @@ def run_one(model: str, messages: list[dict]) -> dict:
 
 ## What's next
 
-Next is [2.5 · The first eval: extracting JSON from 20 texts (AIL-9)](AIL-9.md): we measure field-level extraction quality, and `compare.py` from this chapter lets us run the same eval through several models. Production-level fallbacks and budgets come back in chapter 11.2 · Prompt caching, budgets, fallbacks (AIL-45).
+Next is [2.5 · The first eval: extracting JSON from 20 texts (AIL-9)](AIL-9.md): we measure field-level extraction quality, and `compare.py` from this chapter lets us run the same eval through several models. Production-level fallbacks and budgets come back in chapter 10.2 · Prompt caching, budgets, fallbacks (AIL-45).

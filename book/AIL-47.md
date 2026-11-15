@@ -1,6 +1,6 @@
-# 11.4 · Локальная LLM через Ollama: сравнение на своих evals  (AIL-47)
+# 10.4 · Локальная LLM через Ollama: сравнение на своих evals  (AIL-47)
 
-> **Неделя 11** · Продакшен · ⏱ ~4 ч · Практика
+> **Неделя 10** · Продакшен · ⏱ ~4 ч · Практика
 
 <!-- description: Локальная LLM через Ollama: память под веса, квантизация Q4 и Q8, скорость генерации, vLLM и честное сравнение с облачной моделью на своих evals. -->
 
@@ -167,7 +167,7 @@ GENERATORS = {
 
 - `options={"num_ctx": 16384}` на запрос — контекст без отдельного Modelfile;
 - `keep_alive` на запрос (`-1` — держать модель в памяти, `0` — выгрузить сразу);
-- метрики по фазам в наносекундах (`load_duration`, `prompt_eval_duration`, `eval_duration`, `prompt_eval_cached_count`) — из них TTFT без сети и tokens/s, см. глава 11.3 (AIL-46);
+- метрики по фазам в наносекундах (`load_duration`, `prompt_eval_duration`, `eval_duration`, `prompt_eval_cached_count`) — из них TTFT без сети и tokens/s, см. глава 10.3 (AIL-46);
 - **structured output по JSON-схеме** через `format` ([Structured Outputs](https://docs.ollama.com/capabilities/structured-outputs)); в совместимом слое — через `response_format`.
 
 ```python
@@ -193,7 +193,7 @@ ans = StructuredAnswer.model_validate_json(r.message.content)   # still validate
 
 ### Ollama на Маке: нативно, не в Docker
 
-На macOS Ollama использует GPU Apple Silicon через Metal ([Hardware support](https://docs.ollama.com/gpu)), но **только при нативном запуске**: в Docker Desktop на macOS GPU недоступен — нет проброса GPU ([FAQ](https://docs.ollama.com/faq)). Контейнер `ollama/ollama` на Маке работает на CPU и в разы медленнее. Поэтому на Маке: Ollama — нативное приложение, ассистент поддержки в контейнере ходит к ней через `host.docker.internal:11434` (глава 11.1 · Docker: упаковать LLM-проект, AIL-66). Контейнер Ollama — для Linux-сервера с GPU и для ревьюера портфолио; поддержка видеокарт на Linux и Windows описана на той же странице Hardware support.
+На macOS Ollama использует GPU Apple Silicon через Metal ([Hardware support](https://docs.ollama.com/gpu)), но **только при нативном запуске**: в Docker Desktop на macOS GPU недоступен — нет проброса GPU ([FAQ](https://docs.ollama.com/faq)). Контейнер `ollama/ollama` на Маке работает на CPU и в разы медленнее. Поэтому на Маке: Ollama — нативное приложение, ассистент поддержки в контейнере ходит к ней через `host.docker.internal:11434` (глава 10.1 · Docker: упаковать LLM-проект, AIL-66). Контейнер Ollama — для Linux-сервера с GPU и для ревьюера портфолио; поддержка видеокарт на Linux и Windows описана на той же странице Hardware support.
 
 Память, кроме весов и KV-кэша из теории:
 
@@ -276,7 +276,7 @@ ans = StructuredAnswer.model_validate_json(r.message.content)   # still validate
 - [ ] (Для сравнения) Добавляем строку с Claude или OpenAI на тех же вопросах, если есть ключ: насколько дороже и лучше ли.
 - [ ] Structured output: переводим ответ локальной модели на `format` с Pydantic-схемой `StructuredAnswer` (`answer`, `sources`, `found`) через родной API. Сравниваем долю валидных ответов и корректных ссылок со свободным текстом.
 - [ ] Метрики из родного API: для 10 запросов записываем `load_duration`, `prompt_eval_duration`, `eval_count/eval_duration`. Сходится ли tokens/s с нашим замером через стриминг?
-- [ ] Разбор: 5 вопросов, где локальная ошиблась, а облачная нет. Какой тип ошибки (не нашла в контексте, нарушила формат, выдумала, перепутала Light и Light Mini, не отказала)? Записываем, можно кодами из 8.4 (AIL-34).
+- [ ] Разбор: 5 вопросов, где локальная ошиблась, а облачная нет. Какой тип ошибки (не нашла в контексте, нарушила формат, выдумала, перепутала Light и Light Mini, не отказала)? Записываем, можно кодами из 7.4 (AIL-34).
 - [ ] Вывод в 3–5 предложений: где локальная модель достаточно хороша (например, переформулировка запроса `plan_query_ollama` из AIL-60 — можно проверить отдельно через `eval/run_query_eval.py`), где нет, и что выбрать для приватных задач. Для них сравниваем только локальных кандидатов (облако там не вариант): бот-аналитик проекта 1 с `LLM_PROVIDER=ollama` на снимке `data/shop.db` (только чтение) — 10 вопросов из `questions.md` через `scripts/run_questions.py` на двух локальных моделях; `assert_data_policy` не даст случайно подставить облачную.
 - [ ] После работы: `ollama stop <model>`.
 
@@ -323,4 +323,4 @@ ans = StructuredAnswer.model_validate_json(r.message.content)   # still validate
 
 ## Что дальше
 
-Мы увидели, где маленькая модель проигрывает. Следующий вопрос — можно ли её подтянуть дообучением: в главе 11.5 · Файнтюнинг: базовый пример LoRA (AIL-48) разберём, когда это оправдано, а когда задачу решает промпт или RAG.
+Мы увидели, где маленькая модель проигрывает. Следующий вопрос — можно ли её подтянуть дообучением: в главе 10.5 · Файнтюнинг: базовый пример LoRA (AIL-48) разберём, когда это оправдано, а когда задачу решает промпт или RAG.

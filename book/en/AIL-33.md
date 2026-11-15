@@ -1,9 +1,9 @@
-# 8.3 · An experiment: choosing the model and a reranker for RAG  (AIL-33)
+# 7.3 · An experiment: choosing the model and a reranker for RAG  (AIL-33)
 
-> **Week 8** · Evals · ⏱ ~4–5 h · Project
+> **Week 7** · Evals · ⏱ ~4–5 h · Project
 
 <!-- description: Choosing an LLM by the numbers: a 2×2 experiment with a reranker, quality vs cost and latency, reading leaderboards, avoiding judge self-preference. -->
-<!-- source-sha256: 715aec16db87 -->
+<!-- source-sha256: 375d081e3946 -->
 
 ## Why an AI engineer needs this
 

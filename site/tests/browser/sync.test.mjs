@@ -2,9 +2,10 @@
 // copies without losing work, and what to show / upload after loading the account copy.
 import assert from 'node:assert/strict';
 import { describe, test } from 'node:test';
+import { PROGRESS_VERSION } from '../../src/config/app.mjs';
 import { mergeProgress, parseMarker, planLoad, sameProgress } from '../../src/scripts/progress/sync.mjs';
 
-const doc = (updatedAt, chapters) => ({ version: 1, updatedAt, chapters });
+const doc = (updatedAt, chapters) => ({ version: PROGRESS_VERSION, updatedAt, chapters });
 const EARLY = '2026-11-01T10:00:00.000Z';
 const LATE = '2026-11-10T10:00:00.000Z';
 
@@ -28,7 +29,7 @@ describe('mergeProgress', () => {
   });
 
   test('a copy without a date counts as the older one', () => {
-    const undated = { version: 1, chapters: { c1: { quiz: { 1: { picked: ['a'] } } } } };
+    const undated = { version: PROGRESS_VERSION, chapters: { c1: { quiz: { 1: { picked: ['a'] } } } } };
     const dated = doc(EARLY, { c1: { quiz: { 1: { picked: ['b'] } } } });
     assert.deepEqual(mergeProgress(undated, dated).chapters.c1.quiz[1], { picked: ['b'] });
   });

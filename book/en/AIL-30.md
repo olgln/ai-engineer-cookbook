@@ -3,7 +3,7 @@
 > **Week 6** · Evals · ⏱ ~4 h · Practice
 
 <!-- description: LLM observability: traces, spans and datasets in Langfuse, declarative prompt comparison in promptfoo, cloud or self-hosted. -->
-<!-- source-sha256: e4c43adf8553 -->
+<!-- source-sha256: c72a950f4998 -->
 
 ## Why an AI engineer needs this
 
@@ -114,7 +114,7 @@ Langfuse records the inputs and outputs of our functions in traces, so before th
 - **Langfuse Cloud**: quicker to start, there is a free tier (terms on the website). Traces go to someone else's server. For questions about the public knowledge base `kb/` and the made-up questions from the set, this is acceptable.
 - **Self-hosted via Docker Compose**: everything is local, suitable when the data must not leave. It needs Docker and several containers (Postgres, ClickHouse and others); for study on a single machine it is feasible if there is enough memory (see below).
 
-The rule: **no customers' personal data in cloud traces**. Langfuse records the full input and output of functions under `@observe`, that is, the customer's whole question, with the phone number, email and order number. While made-up questions from the set go through the pipeline, Langfuse Cloud is fine. As soon as real customer messages get into tracing (the support bot from [AIL-23](AIL-23.md), the week 9–10 agent with the shop's database snapshot), it is either self-hosted or masking before sending: the Langfuse SDK has a function for masking input and output (the masking section of the documentation), and the same check as `contains_personal_data()` from `rag/privacy.py` can be plugged into it. API keys must not get into traces either.
+The rule: **no customers' personal data in cloud traces**. Langfuse records the full input and output of functions under `@observe`, that is, the customer's whole question, with the phone number, email and order number. While made-up questions from the set go through the pipeline, Langfuse Cloud is fine. As soon as real customer messages get into tracing (the support bot from [AIL-23](AIL-23.md), the week 8–9 agent with the shop's database snapshot), it is either self-hosted or masking before sending: the Langfuse SDK has a function for masking input and output (the masking section of the documentation), and the same check as `contains_personal_data()` from `rag/privacy.py` can be plugged into it. API keys must not get into traces either.
 
 ### promptfoo: declarative comparison
 
@@ -361,4 +361,4 @@ What we take for the practice: Langfuse Cloud + DeepSeek for Project 3 (the know
 
 ## What's next
 
-Week 7 is a buffer, and in week 8 Project 3 moves on to experiments, starting with [AIL-62 · Eval statistics: noise and sample size](AIL-62.md): how to tell a real improvement from noise before running experiments.
+In week 7 Project 3 moves on to experiments, starting with [AIL-62 · Eval statistics: noise and sample size](AIL-62.md): how to tell a real improvement from noise before running experiments.

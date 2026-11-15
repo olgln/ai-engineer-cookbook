@@ -3,7 +3,7 @@
 > **Week 1** · Preparation · ⏱ ~1.5 h · Practice
 
 <!-- description: Jupyter notebooks in VS Code: a kernel from the uv environment, the hidden state trap, async and autoreload, when to move code into modules, notebooks in git. -->
-<!-- source-sha256: 09efbdb118d6 -->
+<!-- source-sha256: 0b7c6c99f070 -->
 
 ## Why an AI engineer needs this
 
@@ -101,7 +101,7 @@ The split "logic in a module, experiment in a notebook" leads to a general rule 
 | an explanation for a reader (tutorial, report) | anything other files import |
 | once, by hand | needs review in a git diff |
 
-The typical path in an AI project: an experiment in a notebook → the function moves into a module with a test → the notebook only imports it. For evals (weeks 6–8) a notebook is a convenient "showcase" of results, while the run itself is a script.
+The typical path in an AI project: an experiment in a notebook → the function moves into a module with a test → the notebook only imports it. For evals (weeks 6–7) a notebook is a convenient "showcase" of results, while the run itself is a script.
 
 ### 8. Notebooks and git
 

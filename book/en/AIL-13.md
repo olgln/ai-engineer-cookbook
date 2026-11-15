@@ -3,7 +3,7 @@
 > **Week 3** · LLM basics · ⏱ ~4 h · Project
 
 <!-- description: Project 1, a Telegram shop analyst bot: a tool-calling architecture, a read-only database copy via VACUUM INTO and why not text-to-SQL. -->
-<!-- source-sha256: 91162a48990a -->
+<!-- source-sha256: b2d5f65678ff -->
 
 ## Why an AI engineer needs this
 
@@ -152,7 +152,7 @@ The temptation: give the model a single function `run_sql(query)` and the databa
 | Response size | aggregates, ≤ 20 rows | easy to return 5000 rows into the context |
 | Testability | pytest for each function | almost none |
 
-Text-to-SQL is a legitimate pattern for "ask anything" analytics, but it requires evals and a sandbox. We come back to it in chapter 9.5 · An MCP server for the shop database (read-only) (AIL-39): there free-form SQL is allowed only as a separate tool with three layers of protection. Here — narrow functions.
+Text-to-SQL is a legitimate pattern for "ask anything" analytics, but it requires evals and a sandbox. We come back to it in chapter 8.5 · An MCP server for the shop database (read-only) (AIL-39): there free-form SQL is allowed only as a separate tool with three layers of protection. Here — narrow functions.
 
 ### 7. Stack and project structure
 

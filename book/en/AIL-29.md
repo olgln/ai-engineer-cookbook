@@ -3,11 +3,11 @@
 > **Week 6** · Evals · ⏱ ~4–5 h · Project
 
 <!-- description: A RAG evaluation script: retrieval and answer metrics, faithfulness, a binary LLM judge with critique and its validation, run cost, saving results. -->
-<!-- source-sha256: 46ad7f003e8a -->
+<!-- source-sha256: 4cf6539d89c1 -->
 
 ## Why an AI engineer needs this
 
-A dataset without a script is just a file. An evaluation script turns every change (chunking, model, prompt, reranker) into a table of numbers with a single command, the way `npm test` turns an edit into green or red tests. This is the main working tool of Project 3: all the experiments of week 8 will be runs of this script. Interviews often ask to describe an eval pipeline for RAG: which metrics, how the judge works, how we checked that the judge can be trusted.
+A dataset without a script is just a file. An evaluation script turns every change (chunking, model, prompt, reranker) into a table of numbers with a single command, the way `npm test` turns an edit into green or red tests. This is the main working tool of Project 3: all the experiments of week 7 will be runs of this script. Interviews often ask to describe an eval pipeline for RAG: which metrics, how the judge works, how we checked that the judge can be trusted.
 
 ## Theory
 
@@ -317,7 +317,7 @@ def judge_deepseek(prompt: str, model: str = "deepseek-v4-pro", retries: int = 3
 
 Three things that Claude/OpenAI don't have or that work differently there:
 
-1. **Thinking is on by default**, and in it `temperature` silently has no effect. For the judge we turn reasoning off by default: verdicts are more stable, cheaper and faster that way. The reasoning mode is a separate judge candidate: we turn it on and compare its agreement with our labels; if agreement is noticeably higher, we take it and measure the spread with repeated runs (chapter [8.1 · Eval statistics: noise and sample size](AIL-62.md)).
+1. **Thinking is on by default**, and in it `temperature` silently has no effect. For the judge we turn reasoning off by default: verdicts are more stable, cheaper and faster that way. The reasoning mode is a separate judge candidate: we turn it on and compare its agreement with our labels; if agreement is noticeably higher, we take it and measure the spread with repeated runs (chapter [7.1 · Eval statistics: noise and sample size](AIL-62.md)).
 2. **JSON mode without a schema.** So the `verdict in ("PASS", "FAIL")` check in code is mandatory, and the judge prompt must contain a JSON example (`FAITHFULNESS_PROMPT` above has one). An `ERROR` answer is counted separately, not as FAIL.
 3. **`seed` is not documented by DeepSeek.** The judge's repeatability comes only from temperature 0 without thinking plus our verdict cache.
 

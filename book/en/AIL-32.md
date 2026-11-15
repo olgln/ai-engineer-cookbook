@@ -1,9 +1,9 @@
-# 8.2 · A chunking experiment in RAG: A vs B  (AIL-32)
+# 7.2 · A chunking experiment in RAG: A vs B  (AIL-32)
 
-> **Week 8** · Evals · ⏱ ~4 h · Project
+> **Week 7** · Evals · ⏱ ~4 h · Project
 
 <!-- description: The first RAG experiment: a hypothesis, one change, an eval run. We fairly compare two chunking strategies and analyze the result question by question. -->
-<!-- source-sha256: fcd380398cc5 -->
+<!-- source-sha256: 5312568e7efe -->
 
 ## Why an AI engineer needs this
 

@@ -3,7 +3,7 @@
 > **Week 1** · Preparation · ⏱ ~4.5 h (+ 3.5 h of the second video in parts over the first weeks) · Theory
 
 <!-- description: How LLMs work, after Karpathy's lecture: tokens, training, the context window, why models hallucinate. Plus a DeepSeek key, Ollama setup and a first call. -->
-<!-- source-sha256: 2fa7ce613507 -->
+<!-- source-sha256: 3f0cafc83214 -->
 
 ## Why an AI engineer needs this
 
@@ -100,7 +100,7 @@ Now every typical model mistake can be derived from how the model works, and the
 | Doesn't know recent events | knowledge cutoff | search, fresh data in the context |
 | Ignores an instruction in the middle of a long prompt | weaker attention to the middle | structure, repeat what matters, shorter context |
 | Different answers to the same question | sampling | low temperature, structured output, evals |
-| "Obeys" text from a document | for the model, instructions and data are one stream of tokens | separating data from instructions, protection against prompt injection (week 9) |
+| "Obeys" text from a document | for the model, instructions and data are one stream of tokens | separating data from instructions, protection against prompt injection (week 8) |
 
 ### 7. API keys, money and security
 
@@ -263,7 +263,7 @@ Ollama also has its own library, [`ollama`](https://pypi.org/project/ollama/) (t
 
 ## Learning path
 
-1. [Intro to Large Language Models — Andrej Karpathy](https://www.youtube.com/watch?v=zjkBMFhNj_g) (1 h, required; with pauses ≈1.5 h). We watch with a notebook at hand. What to take away: "an LLM = two files" (parameters + the code that runs them), pretraining as compressing the internet, the training stages, the LLM as an "operating system", the security section (jailbreaks, prompt injection), which comes back in week 9.
+1. [Intro to Large Language Models — Andrej Karpathy](https://www.youtube.com/watch?v=zjkBMFhNj_g) (1 h, required; with pauses ≈1.5 h). We watch with a notebook at hand. What to take away: "an LLM = two files" (parameters + the code that runs them), pretraining as compressing the internet, the training stages, the LLM as an "operating system", the security section (jailbreaks, prompt injection), which comes back in week 8.
 2. [The Illustrated Transformer — Jay Alammar](https://jalammar.github.io/illustrated-transformer/) (≈45 min). We read up to and including the decoder section; the formulas can be skipped. What to take away: what an embedding is, how self-attention mixes information between tokens, why positional encoding is needed. We do not get stuck: the goal is intuition, not implementation.
 3. [OpenAI Tokenizer](https://platform.openai.com/tokenizer) (≈10 min). We paste in: an English sentence, the same sentence in another language (Russian, for example), the number `97342.15`, the product SKU `MUG-NORTH-350`, a piece of JSON. We compare token counts and how numbers get split.
 4. [Deep Dive into LLMs like ChatGPT — Karpathy](https://www.youtube.com/watch?v=7xTGNNLPyMI) (3.5 h, **in parts over the first weeks**, 30–40 min at a time). Now, the first hour: pretraining data, tokenization, neural network training, inference. The rest (hallucinations and tool use, "models need tokens to think", RL and reasoning) as we go through weeks 1–2.

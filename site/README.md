@@ -45,6 +45,7 @@ SITE_URL=https://your-domain.example npm run build   # → dist/
 
 - **Progress on the hosting** lives in the reader's browser (localStorage) and, for a signed-in reader, in their account (see "Accounts" below). On a static hosting without the Worker, `/api/progress` gets a 404 and the site falls back to the browser copy by design.
 - **Security headers.** Every page carries a Content Security Policy `<meta>` tag (Astro `security.csp`: scripts only from the site itself plus hashes of the inline scripts, no plugins, no foreign forms or `<base>`). The build also writes `dist/_headers` with the headers a `<meta>` cannot set: `frame-ancestors 'none'` (plus `X-Frame-Options: DENY` for old browsers), `nosniff`, `Referrer-Policy`, `Permissions-Policy`, `Cross-Origin-Opener-Policy`, `Cross-Origin-Resource-Policy: same-origin`, HSTS, and long caching for the hashed files in `/_astro/`. Netlify and Cloudflare Pages read `_headers` as is; on other hostings (Vercel, nginx, S3 + CloudFront) set the same headers in their config. GitHub Pages cannot set headers at all — prefer a hosting that can.
+- **Renumbered chapters.** A chapter's id and page path come from its number (`7-1`, `/week-07/7-1/`), so renumbering moves pages and renames the ids the reader's progress is stored under. List the renames under a new `PROGRESS_VERSION` in `CHAPTER_ID_RENAMES` (`src/config/app.mjs`): the browser migrates older progress (file, browser and account copies) on load, and the build writes `dist/_redirects` with a permanent redirect for every old page path that no longer exists. (Version 2: the empty buffer week 7 was removed, weeks 8–11 became 7–10.) An old path now used by another chapter shows that chapter.
 - **`robots.txt`** is written next to the pages; with `SITE_URL` set it points to `sitemap-index.xml`.
 - **Sitemap contents.** Every page, including the privacy page `/privacy/`, except the personal review page `/review/` (it is `noindex`; `SITEMAP_EXCLUDED_PATHS` in `src/config/app.mjs`).
 - **Sitemap dates.** Every page in the sitemap gets a `<lastmod>`: the date of the last commit that changed its source (`book/AIL-*.md`, `book/README.md` for the index, the root `README.md` for the plan), so search engines re-crawl edited chapters sooner. The converter reads them from `git log` into `src/generated/lastmod.json`. A shallow clone has no history to read: the build then logs `shallow git clone` and the sitemap goes without dates; run `git fetch --unshallow` before the build (see the Cloudflare build command below).
@@ -193,12 +194,12 @@ site/
 │   │                                 the account menu and save hint, the site footer, the 404 page props
 │   ├── pages/404.astro               the custom 404 page, in place of Starlight's built-in one
 │   ├── head/                         extra `<head>` tags: SEO and icons, Cloudflare Web Analytics with its CSP origins
-│   ├── integrations/                 Astro integrations: inline-script hashes for the CSP, `_headers` and `robots.txt`, the dev progress API
+│   ├── integrations/                 Astro integrations: inline-script hashes for the CSP, `_headers`, `_redirects` and `robots.txt`, the dev progress API
 │   ├── scripts/                      browser code, started by main.ts
 │   │   ├── main.ts                   boot: loads the progress and starts every widget of the page
 │   │   ├── page-locale.ts            the page's language: its strings and chapter list
 │   │   ├── dom.ts                    `$$` and `el` helpers
-│   │   ├── progress/                 progress store (file, account or browser) and its account sync
+│   │   ├── progress/                 progress store (file, account or browser), its account sync and format migrations
 │   │   ├── account/                  account menu and the one-time save hint
 │   │   ├── quiz/                     quizzes and the review page
 │   │   ├── chapter/                  "done when" checklist and the chapter done card
