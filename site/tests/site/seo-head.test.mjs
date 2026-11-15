@@ -2,7 +2,7 @@
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import { describe, test } from 'node:test';
-import { APPLE_TOUCH_ICON, FAVICON_ICO, OG_IMAGE } from '../../src/config/app.mjs';
+import { APPLE_TOUCH_ICON, DEFAULT_LOCALE, FAVICON_ICO, LOCALES, OG_IMAGE } from '../../src/config/app.mjs';
 import { publicToken } from '../../src/config/server.mjs';
 import strings from '../../src/locales/ru.json' with { type: 'json' };
 import { iconHead, seoHead } from '../../src/head/seo-head.mjs';
@@ -14,8 +14,8 @@ const content = (head, key, value) => head.find((e) => e.attrs[key] === value)?.
 describe('seoHead', () => {
   test('with the public address, the preview image is an absolute URL with its size and alt text', () => {
     const head = seoHead({ site: SITE, imageAlt });
-    assert.equal(content(head, 'property', 'og:image'), `https://cookbook.example.com${OG_IMAGE.path}`);
-    assert.equal(content(head, 'name', 'twitter:image'), `https://cookbook.example.com${OG_IMAGE.path}`);
+    assert.equal(content(head, 'property', 'og:image'), `https://cookbook.example.com${DEFAULT_LOCALE.ogImage}`);
+    assert.equal(content(head, 'name', 'twitter:image'), `https://cookbook.example.com${DEFAULT_LOCALE.ogImage}`);
     assert.equal(content(head, 'property', 'og:image:width'), String(OG_IMAGE.width));
     assert.equal(content(head, 'property', 'og:image:height'), String(OG_IMAGE.height));
     assert.equal(content(head, 'property', 'og:image:alt'), imageAlt);
@@ -33,12 +33,15 @@ describe('seoHead', () => {
     assert.equal(seoHead({ site: SITE, imageAlt }).some((e) => /verification/.test(e.attrs.name ?? '')), false);
   });
 
-  test('the preview image exists in public/ with the declared size', () => {
-    const png = fs.readFileSync(new URL(`../../public${OG_IMAGE.path}`, import.meta.url));
-    assert.equal(png.toString('ascii', 1, 4), 'PNG');
-    // IHDR: width and height are the first two 32-bit fields after the 16-byte header
-    assert.equal(png.readUInt32BE(16), OG_IMAGE.width);
-    assert.equal(png.readUInt32BE(20), OG_IMAGE.height);
+  test('every language has its own preview image in public/, of the declared size', () => {
+    assert.equal(new Set(LOCALES.map((l) => l.ogImage)).size, LOCALES.length);
+    for (const { lang, ogImage } of LOCALES) {
+      const png = fs.readFileSync(new URL(`../../public${ogImage}`, import.meta.url));
+      assert.equal(png.toString('ascii', 1, 4), 'PNG', lang);
+      // IHDR: width and height are the first two 32-bit fields after the 16-byte header
+      assert.equal(png.readUInt32BE(16), OG_IMAGE.width, lang);
+      assert.equal(png.readUInt32BE(20), OG_IMAGE.height, lang);
+    }
   });
 });
 

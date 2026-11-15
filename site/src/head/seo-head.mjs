@@ -1,7 +1,7 @@
 // Extra <head> tags for search engines and link previews, added to Starlight's own (title,
 // description, canonical, og:title, og:description). Pure, so it is tested without a build
 // (tests/site/seo-head.test.mjs).
-import { APPLE_TOUCH_ICON, OG_IMAGE } from '../config/app.mjs';
+import { APPLE_TOUCH_ICON, DEFAULT_LOCALE, OG_IMAGE } from '../config/app.mjs';
 
 /** @typedef {NonNullable<import('@astrojs/starlight/types').StarlightUserConfig['head']>} HeadEntries */
 
@@ -10,7 +10,8 @@ const meta = (attrs) => ({ tag: 'meta', attrs });
 
 /**
  * Starlight `head` entries: the preview image (needs the public address, since og:image must be an
- * absolute URL) and the search-console ownership tokens that are set.
+ * absolute URL) and the search-console ownership tokens that are set. The image and its text are the original
+ * language's; the route middleware switches both to the page's language (src/head/localized-head.mjs).
  * @param {{ site?: string, imageAlt: string, googleSiteVerification?: string, yandexVerification?: string }} options
  * @returns {HeadEntries}
  */
@@ -18,7 +19,7 @@ export function seoHead({ site, imageAlt, googleSiteVerification, yandexVerifica
   /** @type {HeadEntries} */
   const head = [];
   if (site) {
-    const image = new URL(OG_IMAGE.path, site).href;
+    const image = new URL(DEFAULT_LOCALE.ogImage, site).href;
     head.push(
       meta({ property: 'og:image', content: image }),
       meta({ property: 'og:image:type', content: OG_IMAGE.type }),
