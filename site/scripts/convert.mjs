@@ -1,4 +1,4 @@
-// Converts the book chapters and the root README.md into Starlight pages, then every translation
+// Converts the book chapters and the course plan (README.ru.md) into Starlight pages, then every translation
 // (LOCALES in src/config/app.mjs) into pages under its language prefix.
 // Source of truth stays in the book directory; everything under the docs directory is generated.
 // This file only reads and writes files; the rendering itself lives in ./convert/.

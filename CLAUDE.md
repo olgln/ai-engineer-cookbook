@@ -4,15 +4,16 @@ A course for developers who want to become AI engineers, written in Russian with
 progress, plus a local study site.
 
 - `book/AIL-*.md` — chapters (source of truth); `book/README.md` — table of contents by week.
-- `book/en/` — the English translation (same file names, table of contents required), `README.en.md` — the
-  English plan; partial is fine, see "Translations" in `site/README.md`.
-- `README.md` — the course plan; it is also rendered as the site's plan page.
+- `book/en/` — the English translation (same file names, table of contents required); partial is fine,
+  see "Translations" in `site/README.md`.
+- `README.ru.md` — the course plan (original), `README.md` — its English version, which GitHub shows by
+  default; both are also rendered as the site's plan pages.
 - `site/` — Astro/Starlight site generated from the book; see `site/README.md`.
 
 ## Language
 
 - Code, comments, logs, error messages, commit messages and developer docs are in English.
-- Reader-facing text lives only in `book/`, the root `README.md` / `README.en.md` and the UI strings in
+- Reader-facing text lives only in `book/`, the root `README.ru.md` / `README.md` and the UI strings in
   `site/src/locales/ru.json` / `en.json` (same keys). Never put reader-facing literals in code — add them
   to both JSON files.
 

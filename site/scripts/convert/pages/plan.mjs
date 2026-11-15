@@ -4,7 +4,7 @@ import { yamlStr } from '../markdown.mjs';
 import { RE } from '../patterns.mjs';
 
 
-/** Render the root README.md into the plan page. */
+/** Render a root plan file (README.ru.md, README.md for English) into the plan page. */
 export function renderPlan(ctx, src) {
   const { re: RE, strings: { site } } = ctx;
   const h1 = src.match(/^# (.+)$/m);

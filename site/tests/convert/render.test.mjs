@@ -4,7 +4,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import { describe, test } from 'node:test';
 import {
-  DESCRIPTION_MAX_LENGTH, DESCRIPTION_MARKER, PLAN_PATH, QUESTION_ANCHOR_PREFIX, QUESTION_PREVIEW_MAX_LENGTH, REPO_ONLY_END,
+  DEFAULT_LOCALE, DESCRIPTION_MAX_LENGTH, DESCRIPTION_MARKER, PLAN_PATH, QUESTION_ANCHOR_PREFIX, QUESTION_PREVIEW_MAX_LENGTH, REPO_ONLY_END,
   REPO_ONLY_START, REVIEW_PATH,
 } from '../../src/config/app.mjs';
 import { format, plural } from '../../src/locales/format.mjs';
@@ -357,7 +357,7 @@ describe('renderPlan, renderIndex, sidebar, chapters', () => {
   test('pageSources maps every page to the file it is rendered from', () => {
     assert.deepEqual(renderer().pageSources(), [
       { href: '/', source: 'book/README.md' },
-      { href: PLAN_PATH, source: 'README.md' },
+      { href: PLAN_PATH, source: DEFAULT_LOCALE.planFile },
       { href: '/week-01/1-1/', source: 'book/AIL-1.md' },
       { href: '/week-01/1-2/', source: 'book/AIL-56.md' },
     ]);

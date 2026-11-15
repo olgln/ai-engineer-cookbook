@@ -91,7 +91,7 @@ describe('a translated table of contents', () => {
   test('pageSources of a translation name its own files', () => {
     assert.deepEqual(createRenderer(enWeeks(), EN).pageSources(), [
       { href: '/en/', source: 'book/en/README.md' },
-      { href: '/en/plan/', source: 'README.en.md' },
+      { href: '/en/plan/', source: EN.planFile },
       { href: '/en/week-01/1-1/', source: 'book/en/AIL-1.md' },
       { href: '/en/week-01/1-2/', source: 'book/en/AIL-56.md' },
     ]);
