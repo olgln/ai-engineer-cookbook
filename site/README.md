@@ -140,7 +140,7 @@ npm test         # type check + unit tests of the converter, the progress API an
 npm run typecheck  # the type check alone
 ```
 
-`npm test` starts with `npm run typecheck`, which runs `tsc` twice: `tsconfig.json` checks the TypeScript files (`src/scripts/**/*.ts`, `content.config.ts`) in strict mode, and `tsconfig.mjs.json` checks the `.mjs` modules outside `tests/` by their JSDoc types, without requiring a type on every parameter (`noImplicitAny: false`). Nothing is emitted; Vite and Node still strip the types themselves. `.astro` files are not type-checked.
+`npm test` starts with `npm run typecheck`. It first runs the converter and `astro sync`, so the files the code imports exist on a fresh clone too (`src/generated/*.json`, the `astro:content` types in `.astro/`; both are git-ignored), then runs `tsc` twice: `tsconfig.json` checks the TypeScript files (`src/scripts/**/*.ts`, `content.config.ts`) in strict mode, and `tsconfig.mjs.json` checks the `.mjs` modules outside `tests/` by their JSDoc types, without requiring a type on every parameter (`noImplicitAny: false`). Nothing is emitted; Vite and Node still strip the types themselves. `.astro` files are not type-checked.
 
 Tests use the built-in `node:test`, no extra dependencies; the Python syntax check of the book's examples needs `python3` and is skipped without it. `npm run build` also fails when the converter reports a warning.
 

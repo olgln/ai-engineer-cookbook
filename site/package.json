@@ -13,7 +13,7 @@
     "build": "npm run convert && ASTRO_TELEMETRY_DISABLED=1 astro build",
     "dev:worker": "wrangler d1 migrations apply DB --local && wrangler dev",
     "deploy": "wrangler d1 migrations apply DB --remote && wrangler deploy",
-    "typecheck": "tsc -p tsconfig.json && tsc -p tsconfig.mjs.json",
+    "typecheck": "npm run convert && ASTRO_TELEMETRY_DISABLED=1 astro sync && tsc -p tsconfig.json && tsc -p tsconfig.mjs.json",
     "test": "npm run typecheck && node --test \"tests/**/*.test.mjs\""
   },
   "dependencies": {
