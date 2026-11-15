@@ -195,10 +195,11 @@ export const NEXT_DIST_DIR = 'dist-next';
 export const OLD_DIST_DIR = 'dist-old';
 
 /**
- * Preview image for links shared in messengers and social networks (og:image), in public/.
- * Rendered from assets/og-image.svg; 1200×630 is the size Telegram, VK, X and Facebook expect.
+ * Preview image for links shared in messengers and social networks (og:image): one PNG per language in public/
+ * (`ogImage` in LOCALES), all of this type and size. Rendered from assets/og-image*.svg; 1200×630 is the size
+ * Telegram, VK, X and Facebook expect.
  */
-export const OG_IMAGE = { path: '/og-image.png', type: 'image/png', width: 1200, height: 630 };
+export const OG_IMAGE = { type: 'image/png', width: 1200, height: 630 };
 
 /**
  * Icons in public/ besides favicon.svg (Starlight's favicon). The home-screen icon for iOS is rendered from
@@ -250,7 +251,7 @@ export const BOOK_DIR = 'book';
 export const CHAPTER_PREFIX = 'AIL-';
 
 /**
- * @typedef {{ lang: string, prefix: string, bookDir: string, planFile: string }} Locale
+ * @typedef {{ lang: string, prefix: string, bookDir: string, planFile: string, ogLocale: string, ogImage: string }} Locale
  */
 
 /**
@@ -258,12 +259,15 @@ export const CHAPTER_PREFIX = 'AIL-';
  * language under its `prefix`. Each language has its own book folder (chapters and table of contents,
  * relative to the repo root) and plan file. A chapter or plan a translation does not have yet gets a short
  * page in that language pointing to the original. Reading progress is shared: a chapter keeps its id in
- * every language.
+ * every language. `ogLocale` is the page's og:locale (language_TERRITORY, as Open Graph expects), `ogImage`
+ * the path of its preview image in public/ (OG_IMAGE).
  * @type {Locale[]}
  */
 export const LOCALES = [
-  { lang: 'ru', prefix: '', bookDir: BOOK_DIR, planFile: 'README.md' },
-  { lang: 'en', prefix: '/en', bookDir: `${BOOK_DIR}/en`, planFile: 'README.en.md' },
+  { lang: 'ru', prefix: '', bookDir: BOOK_DIR, planFile: 'README.md', ogLocale: 'ru_RU', ogImage: '/og-image.png' },
+  {
+    lang: 'en', prefix: '/en', bookDir: `${BOOK_DIR}/en`, planFile: 'README.en.md', ogLocale: 'en_US', ogImage: '/og-image.en.png',
+  },
 ];
 export const DEFAULT_LOCALE = LOCALES[0];
 

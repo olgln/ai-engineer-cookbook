@@ -30,6 +30,10 @@ describe('locales', () => {
     assert.deepEqual(splitLocale('/english-notes/'), { lang: 'ru', path: '/english-notes/' }, 'a prefix is a whole path segment');
   });
 
+  test('og:locale of every language is language_TERRITORY of that language', () => {
+    for (const { lang, ogLocale } of LOCALES) assert.match(ogLocale, new RegExp(`^${lang}_[A-Z]{2}$`), lang);
+  });
+
   test('Starlight gets the original as the root locale and a key per prefix', () => {
     assert.deepEqual(starlightLocales((lang) => stringsFor(lang).languageLabel), {
       root: { label: 'Русский', lang: 'ru' },
@@ -50,6 +54,11 @@ const placeholders = (v) => [...JSON.stringify(v).matchAll(/\{(\w+)\}/g)].map((m
 
 describe('UI strings', () => {
   const original = new Map(leaves(stringsFor(DEFAULT_LOCALE.lang)));
+
+  test('the index title differs from the site title, so the <title> does not repeat it', () => {
+    // Starlight writes the <title> as "page title | site title"
+    for (const { lang } of LOCALES) assert.notEqual(stringsFor(lang).site.indexTitle, stringsFor(lang).site.title, lang);
+  });
 
   test('there are strings for every language, with the language code of the file', () => {
     for (const { lang } of LOCALES) assert.equal(STRINGS[lang]?.lang, lang);

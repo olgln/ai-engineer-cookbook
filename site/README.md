@@ -49,7 +49,7 @@ SITE_URL=https://your-domain.example npm run build   # → dist/
 - **`robots.txt`** is written next to the pages; with `SITE_URL` set it points to `sitemap-index.xml`.
 - **Sitemap contents.** Every page, including the privacy page `/privacy/`, except the personal review page `/review/` (it is `noindex`; `SITEMAP_EXCLUDED_PATHS` in `src/config/app.mjs`).
 - **Sitemap dates.** Every page in the sitemap gets a `<lastmod>`: the date of the last commit that changed its source (`book/AIL-*.md`, `book/README.md` for the index, the root `README.md` for the plan), so search engines re-crawl edited chapters sooner. The converter reads them from `git log` into `src/generated/lastmod.json`. A shallow clone has no history to read: the build then logs `shallow git clone` and the sitemap goes without dates; run `git fetch --unshallow` before the build (see the Cloudflare build command below).
-- **Search engines.** Every page has a title, a description (chapters: the `<!-- description: … -->` line under the meta line of `book/AIL-*.md` and `book/en/AIL-*.md`, at most 160 characters, required — the build fails without it; the index and the plan: `indexDescription` / `planDescription` in `ru.json` / `en.json`), a canonical link and Open Graph tags; with `SITE_URL` set, also the preview image `public/og-image.png`. To get the site indexed, add it to Google Search Console (URL-prefix property) and Yandex Webmaster, choose the meta tag method, put the tokens into the `GOOGLE_SITE_VERIFICATION` / `YANDEX_VERIFICATION` build variables, redeploy, confirm, then submit `sitemap-index.xml` in both.
+- **Search engines.** Every page has a title, a description (chapters: the `<!-- description: … -->` line under the meta line of `book/AIL-*.md` and `book/en/AIL-*.md`, at most 160 characters, required — the build fails without it; the index and the plan: `indexDescription` / `planDescription` in `ru.json` / `en.json`), a canonical link and Open Graph tags; with `SITE_URL` set, also the preview image of the page's language (see "Preview image"). To get the site indexed, add it to Google Search Console (URL-prefix property) and Yandex Webmaster, choose the meta tag method, put the tokens into the `GOOGLE_SITE_VERIFICATION` / `YANDEX_VERIFICATION` build variables, redeploy, confirm, then submit `sitemap-index.xml` in both.
 - **CI** (`.github/workflows/ci.yml`) runs `npm ci`, `npm audit`, `npm test` and `npm run build` on every push and pull request and keeps `dist/` as a build artifact. Set the repository variable `SITE_URL` for production builds. Publishing is left to the hosting (connect the repository there, build command `npm run build`, base directory `site`, output `dist`) or to a deploy step added to the workflow.
 
 ### Cloudflare Workers
@@ -121,12 +121,15 @@ sips -s format ico /tmp/favicon-32.png --out public/favicon.ico
 
 ### Preview image
 
-`public/og-image.png` is rendered from `assets/og-image.svg` (no build dependency, the PNG is committed). After editing the SVG, re-render it with Chrome and check the result:
+Each language has its own preview image (`ogImage` in `LOCALES`, `src/config/app.mjs`): `public/og-image.png` from `assets/og-image.svg` (Russian) and `public/og-image.en.png` from `assets/og-image.en.svg` (English, same layout). Every page gets the original's image from `head`, and the route middleware (`src/route-data.ts`) switches it, its alt text and `og:locale` (`ru_RU` / `en_US`) to the page's language. There is no build dependency: the PNGs are committed. After editing an SVG, re-render it with Chrome and check the result:
 
 ```bash
 cd site
-"/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" --headless --hide-scrollbars \
-  --window-size=1200,630 --screenshot="$PWD/public/og-image.png" "file://$PWD/assets/og-image.svg"
+CHROME="/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"
+for name in og-image og-image.en; do
+  "$CHROME" --headless --hide-scrollbars \
+    --window-size=1200,630 --screenshot="$PWD/public/$name.png" "file://$PWD/assets/$name.svg"
+done
 ```
 
 ## Tests
@@ -165,8 +168,8 @@ site/
 ├── tsconfig.json, tsconfig.mjs.json  type check of the .ts files (strict) and of the .mjs modules (`npm run typecheck`)
 ├── wrangler.jsonc                    Cloudflare Workers deployment (static assets + /api/* Worker, D1, cron)
 ├── .env.example, .dev.vars.example   settings of the build and the local server; Worker secrets for local runs
-├── assets/                           SVG sources of the rendered icons and the preview image
-├── public/                           files served as is: favicon, iOS icon, og-image.png
+├── assets/                           SVG sources of the rendered icons and the preview images
+├── public/                           files served as is: favicon, iOS icon, og-image*.png
 ├── migrations/                       D1 schema, applied in order by `wrangler d1 migrations apply`
 ├── scripts/                          Node scripts, run by npm
 │   ├── convert.mjs                   book/*.md → pages: reads the book, writes the generated files, fails on warnings
@@ -189,7 +192,7 @@ site/
 │   ├── config/server.mjs             reads the environment (`.env`) into the server settings
 │   ├── locales/                      ru.json, en.json: every reader-facing string (the 404 page is in English on purpose);
 │   │                                 strings.mjs (strings of a language), locales.mjs (language prefixes), format.mjs
-│   ├── route-data.ts                 Starlight route middleware: hreflang only between real counterparts, image text per language
+│   ├── route-data.ts                 Starlight route middleware: hreflang only between real counterparts, preview image and og:locale per language
 │   ├── components/                   Starlight overrides (Footer, PageFrame, ThemeSelect) and the pure markup they render:
 │   │                                 the account menu and save hint, the site footer, the 404 page props
 │   ├── pages/404.astro               the custom 404 page, in place of Starlight's built-in one
