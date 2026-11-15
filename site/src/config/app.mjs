@@ -204,7 +204,7 @@ export const PRIVACY_PATH = '/privacy/';
  * MUST be filled in before sign-in goes live (site/README.md, "Accounts"); while empty the page shows
  * `privacy.contactPlaceholder` from ru.json.
  */
-export const PRIVACY_CONTACT = '';
+export const PRIVACY_CONTACT = 'https://t.me/oool_g';
 
 /** Date of the current privacy policy text (YYYY-MM-DD), shown on the page. Change it with the text. */
 export const PRIVACY_POLICY_DATE = '2026-11-15';
