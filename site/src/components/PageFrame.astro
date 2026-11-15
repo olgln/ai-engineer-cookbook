@@ -1,12 +1,15 @@
 ---
-// Starlight's page frame (header, sidebar, content) followed by a full-width site footer.
+// Starlight's page frame (header, sidebar, content), the one-time "progress only in this browser" hint
+// (hidden; src/scripts/account-ui.ts) and a full-width site footer.
 import Default from '@astrojs/starlight/components/PageFrame.astro';
 import strings from '../locales/ru.json';
 import { copyrightLine, footerLinks } from './footer.mjs';
+import { saveHintHtml } from './account-menu.mjs';
 
 const copyright = copyrightLine(strings, new Date().getFullYear());
 const links = footerLinks(strings);
 const current = Astro.url.pathname;
+const saveHint = saveHintHtml(strings);
 ---
 
 <Default>
@@ -14,6 +17,8 @@ const current = Astro.url.pathname;
   <slot name="sidebar" slot="sidebar" />
   <slot />
 </Default>
+
+<Fragment set:html={saveHint} />
 
 <footer class="site-footer print:hidden">
   <p>{copyright}</p>

@@ -44,13 +44,52 @@ const avatar = (cls) => [
 ].join('');
 
 /**
+ * Sign-in buttons, one per provider, hidden: the script shows those the account API lists and points them
+ * back to the current page.
+ * @param {typeof import('../locales/ru.json')} strings
+ */
+export function providerButtonsHtml(strings) {
+  const { ui } = strings;
+  return [
+    '<div class="account-providers">',
+    ...AUTH_PROVIDERS.map((p) => [
+      `<a class="account-provider" data-provider="${p}" href="${AUTH_API_PREFIX}${p}" hidden>`,
+      PROVIDER_ICONS[p],
+      `<span>${escape(format(ui.signInWith, { provider: ui.providerNames[p] ?? p }))}</span>`,
+      '</a>',
+    ].join('')),
+    '</div>',
+  ].join('');
+}
+
+/**
+ * The one-time hint for a new signed-out reader at their first piece of progress (src/scripts/save-hint.mjs):
+ * a card at the bottom of the window, not modal, with the sign-in buttons. Rendered once per page, hidden.
+ * @param {typeof import('../locales/ru.json')} strings
+ */
+export function saveHintHtml(strings) {
+  const { ui } = strings;
+  return [
+    '<div class="sr-only" aria-live="polite" data-save-hint-announce></div>',
+    '<section class="save-hint" popover="manual" role="dialog" aria-labelledby="save-hint-title" aria-describedby="save-hint-text">',
+    `<button type="button" class="save-hint-close" data-save-hint-close aria-label="${escape(ui.close)}">`,
+    '<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>',
+    '</button>',
+    `<p class="save-hint-title" id="save-hint-title">${escape(ui.saveHintTitle)}</p>`,
+    `<p class="save-hint-text" id="save-hint-text">${escape(ui.saveHintText)}</p>`,
+    providerButtonsHtml(strings),
+    `<button type="button" class="save-hint-later" data-save-hint-close>${escape(ui.notNow)}</button>`,
+    '</section>',
+  ].join('');
+}
+
+/**
  * Markup of one account menu. Starlight renders the theme switch twice (header and mobile menu), so a page
  * has two menus; the markup has no ids, the script links each button to its panel.
  * @param {typeof import('../locales/ru.json')} strings
  */
 export function accountMenuHtml(strings) {
   const ui = strings.ui;
-  const providerName = (p) => ui.providerNames[p] ?? p;
   const privacy = `<a class="account-privacy" href="${PRIVACY_PATH}">${escape(ui.privacyLink)}</a>`;
   return [
     '<div class="account-menu" data-state="out" hidden>',
@@ -65,14 +104,7 @@ export function accountMenuHtml(strings) {
     `<p class="account-error" role="alert" data-account-login-error hidden>${escape(ui.signInFailed)}</p>`,
     `<p class="account-title">${escape(ui.signInTitle)}</p>`,
     `<p class="account-text">${escape(ui.signInText)}</p>`,
-    '<div class="account-providers">',
-    ...AUTH_PROVIDERS.map((p) => [
-      `<a class="account-provider" data-provider="${p}" href="${AUTH_API_PREFIX}${p}" hidden>`,
-      PROVIDER_ICONS[p],
-      `<span>${escape(format(ui.signInWith, { provider: providerName(p) }))}</span>`,
-      '</a>',
-    ].join('')),
-    '</div>',
+    providerButtonsHtml(strings),
     `<p class="account-fine">${escape(ui.signInFinePrint)} ${privacy}</p>`,
     '</div>',
 

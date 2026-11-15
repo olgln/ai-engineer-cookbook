@@ -4,7 +4,7 @@ import assert from 'node:assert/strict';
 import { describe, test } from 'node:test';
 import { AUTH_API_PREFIX, AUTH_PROVIDERS, RETURN_TO_PARAM } from '../src/config/app.mjs';
 import { safeReturnTo } from '../worker/lib/oauth.mjs';
-import { accountState, PANEL_GAP, PANEL_MARGIN, panelPosition, signInHref } from '../src/scripts/account.mjs';
+import { accountState, PANEL_GAP, PANEL_MARGIN, panelPosition, progressNote, signInHref } from '../src/scripts/account.mjs';
 
 const JSON_TYPE = 'application/json; charset=utf-8';
 
@@ -95,5 +95,21 @@ describe('panelPosition', () => {
   test('a panel wider than the window starts at the margin', () => {
     const { left } = panelPosition(box(16, 300), { width: 500, height: 100 }, { width: 320, height: 600 });
     assert.equal(left, PANEL_MARGIN);
+  });
+});
+
+describe('progressNote', () => {
+  test('the local file and the account say where the progress is', () => {
+    assert.equal(progressNote('file', { state: 'hidden' }), 'file');
+    assert.equal(progressNote('account', { state: 'in' }), 'account');
+  });
+
+  test('signed out on the hosting: an invitation to sign in, not "only in this browser"', () => {
+    assert.equal(progressNote('browser', { state: 'out' }), 'signIn');
+  });
+
+  test('no accounts here, or the account copy did not load: nothing', () => {
+    assert.equal(progressNote('browser', { state: 'hidden' }), 'none');
+    assert.equal(progressNote('browser', { state: 'in' }), 'none');
   });
 });

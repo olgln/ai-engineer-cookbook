@@ -110,7 +110,7 @@ const progressBarHtml = () =>
   '<span class="progress-bar" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"><span class="progress-fill"></span></span>';
 
 /**
- * Course progress block: count, storage note, bar, the first chapter to start from, export and import.
+ * Course progress block: count, storage note, bar, the first chapter to start from.
  * One line: a blank line would end the raw HTML block in Markdown.
  * @param {{ num: string, title: string, href: string }[]} chapters chapters that have a page
  */
@@ -123,13 +123,12 @@ export function courseProgressHtml(chapters) {
     '<div class="course-progress">',
     '<div class="course-progress-head">',
     `<strong class="course-progress-count">${escapeHtml(count)}</strong>`,
-    `<span class="storage-note">${escapeHtml(ui.savedInBrowser)}</span>`,
+    // filled by the browser: where the progress is kept, or an invitation to sign in (src/scripts/main.ts)
+    '<span class="storage-note"></span>',
     '</div>',
     progressBarHtml(),
     '<div class="course-progress-actions">',
     `<a class="quiz-btn primary course-progress-next" href="${first.href}">${escapeHtml(start)}</a>`,
-    `<button type="button" class="quiz-btn ghost course-progress-export">${escapeHtml(ui.exportProgress)}</button>`,
-    `<button type="button" class="quiz-btn ghost course-progress-import">${escapeHtml(ui.importProgress)}</button>`,
     '</div>',
     '</div>',
   ].join('');
@@ -534,8 +533,6 @@ export function createRenderer(weeks) {
     const updated = longDate(date);
     if (!updated) warnings.push(`privacy policy date "${date}" is not a YYYY-MM-DD date`);
     const vars = {
-      indexPath: '/',
-      exportLabel: ui.exportProgress,
       deleteLabel: ui.deleteAccount,
       contact: contactMarkdown(contact),
     };

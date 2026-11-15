@@ -235,7 +235,3 @@ export function onChange(fn: () => void) {
   listeners.add(fn);
 }
 
-export function replaceAll(next: unknown) {
-  state = normalize(next);
-  save();
-}

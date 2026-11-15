@@ -4,7 +4,9 @@ import strings from '../locales/ru.json';
 import { format, plural as pluralForm } from '../locales/format.mjs';
 import { checkboxLabel, clickTogglesItem } from './checklist.mjs';
 import { reviewItems } from './review.mjs';
-import { initAccountMenus } from './account-ui';
+import { getAccountState, initAccountMenus, initSaveHint, openAccountMenu, type State as AccountState } from './account-ui';
+import { progressNote } from './account.mjs';
+import { hasProgress } from './save-hint.mjs';
 import { QUESTION_ANCHOR_PREFIX } from '../config/app.mjs';
 import type { MermaidConfig } from 'mermaid';
 
@@ -295,8 +297,11 @@ function initIndex() {
   const note = overall.querySelector<HTMLElement>('.storage-note');
   const nextLink = overall.querySelector<HTMLAnchorElement>('.course-progress-next');
   const allDone = el('span', {}, ui.allDone);
-  overall.querySelector('.course-progress-export')?.addEventListener('click', exportProgress);
-  overall.querySelector('.course-progress-import')?.addEventListener('click', importProgress);
+  // Signed out on the hosting the note invites to sign in and opens the account menu; the browser copy
+  // is not announced (the one-time save hint tells a new reader about it).
+  const signIn = el('button', { type: 'button', class: 'storage-note-signin', textContent: ui.signInToSave });
+  signIn.addEventListener('click', () => openAccountMenu());
+  let account: AccountState = { state: 'hidden' };
   const render = () => {
     const done = (id: string) => !!P.get().chapters[id]?.done;
     const total = chapters.length;
@@ -304,9 +309,10 @@ function initIndex() {
     const next = chapters.find((c) => !done(c.id));
     if (count) count.textContent = format(ui.courseProgress, { done: n, total, chapters: plural(total, ui.chaptersOf) });
     if (note) {
-      note.textContent = P.storage === 'file'
-        ? format(ui.savedTo, { path: P.storagePath || ui.progressFileFallback })
-        : P.storage === 'account' ? ui.savedInAccount : ui.savedInBrowser;
+      const kind = progressNote(P.storage, account);
+      if (kind === 'signIn') note.replaceChildren(signIn);
+      else if (kind === 'file') note.textContent = format(ui.savedTo, { path: P.storagePath || ui.progressFileFallback });
+      else note.textContent = kind === 'account' ? ui.savedInAccount : '';
     }
     setBar(overall.querySelector<HTMLElement>(':scope > .progress-bar'), n, total);
     if (nextLink && next) {
@@ -327,31 +333,10 @@ function initIndex() {
   };
   render();
   P.onChange(render);
-}
-
-function exportProgress() {
-  const blob = new Blob([JSON.stringify(P.get(), null, 2)], { type: 'application/json' });
-  const a = el('a', { href: URL.createObjectURL(blob), download: `progress-${new Date().toISOString().slice(0, 10)}.json` });
-  a.click();
-  setTimeout(() => URL.revokeObjectURL(a.href), 1000);
-}
-
-function importProgress() {
-  const input = el('input', { type: 'file', accept: 'application/json,.json' });
-  input.addEventListener('change', async () => {
-    const f = input.files?.[0];
-    if (!f) return;
-    try {
-      const data = JSON.parse(await f.text());
-      if (!data?.chapters) throw new Error(ui.importMissingChapters);
-      if (!confirm(ui.confirmImport)) return;
-      P.replaceAll(data);
-      location.reload();
-    } catch (e) {
-      alert(format(ui.importFailed, { error: (e as Error).message }));
-    }
+  void getAccountState().then((state) => {
+    account = state;
+    render();
   });
-  input.click();
 }
 
 // ---------------- review page ----------------
@@ -437,6 +422,7 @@ async function boot() {
   labelCheckboxes();
   void initMermaid();
   await P.load();
+  initSaveHint(hasProgress(P.get()));
   $$<HTMLElement>('.quiz').forEach(initQuiz);
   $$<HTMLElement>('.done-list').forEach(initChecklist);
   $$<HTMLElement>('.chapter-done').forEach(initChapterDone);

@@ -88,6 +88,12 @@ export const PROGRESS_FILE_HEADER = 'X-Progress-File';
 /** localStorage key of the browser copy of the progress. */
 export const STORAGE_KEY = 'ai-cookbook-progress';
 
+/**
+ * localStorage key set once the "your progress is only in this browser" hint has been shown, so a reader
+ * sees it once (src/scripts/save-hint.mjs).
+ */
+export const SAVE_HINT_STORAGE_KEY = 'ai-cookbook-save-hint-shown';
+
 /** Delay before changed progress is written to the file, in ms. */
 export const SAVE_DEBOUNCE_MS = 250;
 

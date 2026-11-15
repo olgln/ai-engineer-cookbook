@@ -1,5 +1,6 @@
 // Decisions of the account menu in the header, without the DOM (src/scripts/account-ui.ts does the DOM):
-// what the account API answer means, where the sign-in links point and where the menu panel opens.
+// what the account API answer means, where the sign-in links point, where the menu panel opens and what
+// the note under the course progress says.
 // Tested in tests/account.test.mjs.
 import { AUTH_API_PREFIX, AUTH_PROVIDERS, RETURN_TO_PARAM } from '../config/app.mjs';
 
@@ -64,4 +65,18 @@ export function panelPosition(button, panel, viewport) {
   const fitsBelow = below + panel.height <= viewport.height - PANEL_MARGIN;
   const top = !fitsBelow && above >= PANEL_MARGIN ? above : clamp(below, PANEL_MARGIN, maxTop);
   return { top: Math.round(top), left: Math.round(left) };
+}
+
+/**
+ * What the note next to the course progress on the index page says:
+ * - `'file'` where the local server writes the progress file (`npm start`);
+ * - `'account'` that the progress is kept in the account (signed in);
+ * - `'signIn'` an invitation to sign in (signed out on the hosting);
+ * - `'none'` nothing (no accounts here, or the account copy could not be loaded).
+ * @param {'file' | 'account' | 'browser'} storage
+ * @param {{ state: string }} account
+ */
+export function progressNote(storage, account) {
+  if (storage === 'file' || storage === 'account') return storage;
+  return account.state === 'out' ? 'signIn' : 'none';
 }

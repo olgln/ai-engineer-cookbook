@@ -7,7 +7,7 @@ import { describe, test } from 'node:test';
 import strings from '../src/locales/ru.json' with { type: 'json' };
 import { format } from '../src/locales/format.mjs';
 import { AUTH_PROVIDERS, OAUTH_PROVIDERS, PRIVACY_PATH } from '../src/config/app.mjs';
-import { accountMenuHtml, PROVIDER_ICONS } from '../src/components/account-menu.mjs';
+import { accountMenuHtml, PROVIDER_ICONS, saveHintHtml } from '../src/components/account-menu.mjs';
 
 const { ui } = strings;
 const html = accountMenuHtml(strings);
@@ -129,7 +129,13 @@ describe('account menu script', () => {
   });
 
   test('signed out: shows only the available providers, returning to this page', () => {
-    assert.match(script, /link\.hidden = !state\.available\.includes\(p\);\s*link\.href = signInHref\(p, location\.pathname\);/);
+    assert.match(script, /link\.hidden = !available\.includes\(p\);\s*link\.href = signInHref\(p, location\.pathname\);/);
+    assert.match(script, /if \(state\.state === 'out'\) showProviderButtons\(menu, state\.available\);/);
+  });
+
+  test('asks the account API once per page', () => {
+    assert.match(script, /export const getAccountState = \(\) => \(statePromise \?\?= fetchState\(\)\);/);
+    assert.equal(script.match(/(?<!function )fetchState\(\)/g).length, 1, 'only through getAccountState');
   });
 
   test('deleting asks inline first, then calls the store and reloads only on success', () => {
@@ -143,10 +149,78 @@ describe('account menu script', () => {
     assert.match(script, /await P\.signOut\(\);\s*location\.reload\(\);/);
   });
 
-  test('a failed sign-in opens the menu with the message, opening the mobile menu if needed', () => {
-    const failed = between(script, 'if (failed && ');
-    assert.match(failed, /\.sl-menu-button/);
-    assert.match(failed, /\[data-account-login-error\]'\)!\.hidden = false;/);
-    assert.match(failed, /\.showPopover\(\);/);
+  test('opening the menu opens the mobile menu first when the header one is not on screen', () => {
+    const open = between(script, 'export function openAccountMenu', 'export async function initAccountMenus');
+    assert.match(open, /if \(!onScreen\(\)\) document\.querySelector<HTMLButtonElement>\('\.sl-menu-button'\)\?\.click\(\);/);
+    assert.match(open, /panel\.showPopover\(\);/);
+  });
+
+  test('a failed sign-in opens the menu with the message', () => {
+    const failed = between(script, 'if (failed && ', '// ---- the one-time hint');
+    assert.match(failed, /const menu = openAccountMenu\(\);/);
+    assert.match(failed, /\[data-account-login-error\]'\);\s*if \(message\) message\.hidden = false;/);
+  });
+});
+
+describe('save hint', () => {
+  const hint = saveHintHtml(strings);
+  const script = read('../src/scripts/account-ui.ts');
+  const initHint = between(script, 'export function initSaveHint');
+
+  test('a hidden, non-modal card with a title, the explanation, the sign-in buttons, "not now" and a close button', () => {
+    assert.match(hint, /<section class="save-hint" popover="manual" role="dialog" aria-labelledby="save-hint-title" aria-describedby="save-hint-text">/);
+    assert.ok(hint.includes(`id="save-hint-title">${escaped(ui.saveHintTitle)}</p>`));
+    assert.ok(hint.includes(`id="save-hint-text">${escaped(ui.saveHintText)}</p>`));
+    for (const p of AUTH_PROVIDERS) assert.match(hint, new RegExp(`<a class="account-provider" data-provider="${p}" href="[^"]+" hidden>`));
+    assert.ok(hint.includes(`data-save-hint-close>${escaped(ui.notNow)}</button>`));
+    assert.ok(hint.includes(`data-save-hint-close aria-label="${escaped(ui.close)}">`));
+    assert.doesNotMatch(hint, /\son[a-z]+=|\sstyle=/i);
+  });
+
+  test('is on every page once, from the page frame', () => {
+    const frame = read('../src/components/PageFrame.astro');
+    assert.match(frame, /const saveHint = saveHintHtml\(strings\);/);
+    assert.equal(frame.match(/<Fragment set:html=\{saveHint\} \/>/g).length, 1);
+  });
+
+  test('starts watching only for a reader who loaded the page with no progress and has not seen it', () => {
+    assert.match(initHint, /if \(!hint \|\| startedWithProgress \|\| hintShown\(\)\) return;/);
+    assert.match(read('../src/scripts/main.ts'), /await P\.load\(\);\s*initSaveHint\(hasProgress\(P\.get\(\)\)\);/);
+  });
+
+  test('decides with the account state, remembers it before showing, and shows only available providers', () => {
+    assert.match(initHint, /const account = await getAccountState\(\);\s*if \(!shouldShowSaveHint\(\{ \.\.\.facts, account \}\) \|\| account\.state !== 'out'\) return;\s*markHintShown\(\);\s*showProviderButtons\(hint, account\.available\);/);
+  });
+
+  test('closes with its buttons and Escape, and is announced without taking the focus', () => {
+    assert.match(initHint, /\[data-save-hint-close\]/);
+    assert.match(initHint, /e\.key === 'Escape'/);
+    assert.match(initHint, /hint\.showPopover\(\);/);
+    assert.doesNotMatch(initHint, /\.focus\(\)/);
+    assert.match(initHint, /announce\.textContent = /);
+  });
+
+  test('its animation respects reduced motion and it fits a phone', () => {
+    const css = read('../src/styles/custom.css');
+    assert.match(css, /@media \(prefers-reduced-motion: reduce\) \{\s*\.save-hint:popover-open \{ animation: none; \}/);
+    assert.match(css, /@media \(max-width: 50rem\) \{\s*\.save-hint \{ inset: auto 0\.75rem 0\.75rem; width: auto; \}/);
+  });
+});
+
+describe('index note under the course progress', () => {
+  const main = read('../src/scripts/main.ts');
+
+  test('signed out it invites to sign in and opens the account menu; the browser copy is not announced', () => {
+    assert.match(main, /el\('button', \{ type: 'button', class: 'storage-note-signin', textContent: ui\.signInToSave \}\)/);
+    assert.match(main, /signIn\.addEventListener\('click', \(\) => openAccountMenu\(\)\);/);
+    assert.match(main, /if \(kind === 'signIn'\) note\.replaceChildren\(signIn\);/);
+    assert.ok(!('savedInBrowser' in ui));
+  });
+
+  test('export and import are gone', () => {
+    assert.doesNotMatch(main, /exportProgress|importProgress/);
+    for (const key of ['exportProgress', 'importProgress', 'importMissingChapters', 'confirmImport', 'importFailed']) {
+      assert.ok(!(key in ui), key);
+    }
   });
 });

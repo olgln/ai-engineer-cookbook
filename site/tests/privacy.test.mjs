@@ -39,9 +39,8 @@ describe('privacy page', () => {
     assert.ok(PRIVACY_SECTIONS.length <= 6);
   });
 
-  test('uses the button labels of the index page and leaves no placeholder unfilled', () => {
+  test('uses the label of the delete button and leaves no placeholder unfilled', () => {
     const text = page({ analytics: true });
-    assert.ok(text.includes(`«${ui.exportProgress}»`));
     assert.ok(text.includes(`«${ui.deleteAccount}»`));
     assert.doesNotMatch(text, /\{\w+\}/);
   });
