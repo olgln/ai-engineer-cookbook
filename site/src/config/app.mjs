@@ -82,12 +82,6 @@ export const ACCOUNT_PROGRESS_MAX_BYTES = 512 * 1024;
 /** localStorage key that ties the browser copy to the account copy: { rev, dirty } (src/scripts/sync.mjs). */
 export const SYNC_STORAGE_KEY = 'ai-cookbook-progress-sync';
 
-/**
- * localStorage key where Starlight keeps the chosen colour theme. Set by Starlight, not by our code; named
- * here for the privacy page, and checked against Starlight's source (tests/privacy.test.mjs).
- */
-export const THEME_STORAGE_KEY = 'starlight-theme';
-
 /** Response header that tells the browser where the progress file is stored. */
 export const PROGRESS_FILE_HEADER = 'X-Progress-File';
 
@@ -213,7 +207,7 @@ export const PRIVACY_PATH = '/privacy/';
 export const PRIVACY_CONTACT = '';
 
 /** Date of the current privacy policy text (YYYY-MM-DD), shown on the page. Change it with the text. */
-export const PRIVACY_POLICY_DATE = '2026-11-14';
+export const PRIVACY_POLICY_DATE = '2026-11-15';
 
 /** Pages left out of the sitemap: personal pages marked noindex (a noindex page in the sitemap is a Search Console error). */
 export const SITEMAP_EXCLUDED_PATHS = [REVIEW_PATH];

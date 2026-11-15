@@ -1,13 +1,10 @@
-// Tests for the privacy policy page (scripts/lib/render.mjs, renderPrivacy): the text follows the
-// constants in src/config/app.mjs, the analytics section follows the build, the contact placeholder, the
-// date, and the page is public (in the sitemap, out of the sidebar).
+// Tests for the privacy policy page (scripts/lib/render.mjs, renderPrivacy): the sections, the analytics
+// section follows the build, the button labels, the contact placeholder, the date, and the page is public
+// (in the sitemap, out of the sidebar).
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import { describe, test } from 'node:test';
-import {
-  OAUTH_COOKIE, PRIVACY_CONTACT, PRIVACY_PATH, PRIVACY_POLICY_DATE, SESSION_COOKIE, SITEMAP_EXCLUDED_PATHS, STORAGE_KEY,
-  SYNC_STORAGE_KEY, THEME_STORAGE_KEY,
-} from '../src/config/app.mjs';
+import { PRIVACY_CONTACT, PRIVACY_PATH, PRIVACY_POLICY_DATE, SITEMAP_EXCLUDED_PATHS } from '../src/config/app.mjs';
 import { format } from '../src/locales/format.mjs';
 import strings from '../src/locales/ru.json' with { type: 'json' };
 import { contactMarkdown, createRenderer, longDate, parseToc, PRIVACY_SECTIONS } from '../scripts/lib/render.mjs';
@@ -36,13 +33,10 @@ describe('privacy page', () => {
     assert.ok(!page().includes(privacy.sections.analytics.blocks[0]));
   });
 
-  test('names the cookies and storage keys the code uses, and their lifetimes', () => {
-    const text = page();
-    for (const name of [SESSION_COOKIE, OAUTH_COOKIE, STORAGE_KEY, SYNC_STORAGE_KEY, THEME_STORAGE_KEY]) {
-      assert.ok(text.includes(`\`${name}\``), name);
-    }
-    assert.ok(text.includes(`30 ${privacy.days.many}`));
-    assert.ok(text.includes(`10 ${privacy.minutes.many}`));
+  test('stays short: no hosting, database or cookie-name details', () => {
+    const text = page({ analytics: true });
+    assert.doesNotMatch(text, /Cloudflare|D1|__Host-|localStorage|SHA-256/);
+    assert.ok(PRIVACY_SECTIONS.length <= 6);
   });
 
   test('uses the button labels of the index page and leaves no placeholder unfilled', () => {
@@ -52,10 +46,9 @@ describe('privacy page', () => {
     assert.doesNotMatch(text, /\{\w+\}/);
   });
 
-  test('sections are paragraphs and bulleted lists', () => {
+  test('a text block is rendered as a paragraph', () => {
     const text = page();
-    const [first] = privacy.sections.signIn.blocks.filter(Array.isArray);
-    assert.ok(text.includes(`\n- ${first[0]}\n- ${first[1]}\n`));
+    assert.ok(text.includes(`\n${privacy.sections.withoutAccount.blocks[0]}\n`));
     assert.ok(text.endsWith('\n') && !text.endsWith('\n\n'));
   });
 
@@ -85,11 +78,6 @@ describe('privacy page', () => {
   test('the converter writes the page and turns the analytics section on from the build settings', () => {
     const convert = read('../scripts/convert.mjs');
     assert.match(convert, /PRIVACY_PATH\.replaceAll\('\/', ''\)\}\.md`\), r\.renderPrivacy\(\{ analytics: Boolean\(config\.webAnalyticsToken\) \}\)\)/);
-  });
-
-  test('the theme key is the one Starlight stores the theme under', () => {
-    const provider = read('../node_modules/@astrojs/starlight/dist/components/ThemeProvider.astro');
-    assert.ok(provider.includes(`localStorage.getItem('${THEME_STORAGE_KEY}')`));
   });
 });
 

@@ -2,9 +2,8 @@
 // Kept separate from convert.mjs so it can be unit-tested (tests/render.test.mjs).
 // All Russian text (site wording and the headings used to parse the book) lives in src/locales/ru.json.
 import {
-  BOOK_DIR, CHAPTER_PREFIX, DESCRIPTION_MARKER, DESCRIPTION_MAX_LENGTH, OAUTH_COOKIE, OAUTH_COOKIE_TTL_SECONDS, PLAN_PATH,
-  PRIVACY_CONTACT, PRIVACY_POLICY_DATE, QUESTION_ANCHOR_PREFIX, QUESTION_PREVIEW_MAX_LENGTH, REPO_ONLY_END,
-  REPO_ONLY_START, REVIEW_PATH, SESSION_COOKIE, SESSION_TTL_SECONDS, STORAGE_KEY, SYNC_STORAGE_KEY, THEME_STORAGE_KEY,
+  BOOK_DIR, CHAPTER_PREFIX, DESCRIPTION_MARKER, DESCRIPTION_MAX_LENGTH, PLAN_PATH, PRIVACY_CONTACT, PRIVACY_POLICY_DATE,
+  QUESTION_ANCHOR_PREFIX, QUESTION_PREVIEW_MAX_LENGTH, REPO_ONLY_END, REPO_ONLY_START, REVIEW_PATH,
 } from '../../src/config/app.mjs';
 import { escapeRegExp, format, plural } from '../../src/locales/format.mjs';
 import strings from '../../src/locales/ru.json' with { type: 'json' };
@@ -260,9 +259,7 @@ const yamlStr = (s) => JSON.stringify(s);
 // ---------- privacy page ----------
 
 /** Sections of the privacy page in order (keys of `privacy.sections` in ru.json); `analytics` only with the beacon. */
-export const PRIVACY_SECTIONS = [
-  'withoutAccount', 'signIn', 'server', 'cookies', 'hosting', 'analytics', 'sharing', 'retention', 'rights', 'contact',
-];
+export const PRIVACY_SECTIONS = ['withoutAccount', 'signIn', 'cookies', 'analytics', 'rights', 'contact'];
 
 /**
  * The privacy contact as Markdown: an e-mail becomes a mailto: link, an https:// address a link, anything
@@ -538,16 +535,7 @@ export function createRenderer(weeks) {
     const { privacy } = strings;
     const updated = longDate(date);
     if (!updated) warnings.push(`privacy policy date "${date}" is not a YYYY-MM-DD date`);
-    const days = SESSION_TTL_SECONDS / (24 * 60 * 60);
-    const minutes = OAUTH_COOKIE_TTL_SECONDS / 60;
     const vars = {
-      sessionCookie: SESSION_COOKIE,
-      oauthCookie: OAUTH_COOKIE,
-      sessionTtl: `${days} ${plural(strings.lang, days, privacy.days)}`,
-      oauthTtl: `${minutes} ${plural(strings.lang, minutes, privacy.minutes)}`,
-      storageKey: STORAGE_KEY,
-      syncKey: SYNC_STORAGE_KEY,
-      themeKey: THEME_STORAGE_KEY,
       indexPath: '/',
       exportLabel: ui.exportProgress,
       deleteLabel: ui.deleteAccount,
