@@ -1,21 +1,26 @@
 ---
-// Starlight's page frame (header, sidebar, content), the one-time "progress only in this browser" hint
-// (hidden; src/scripts/account/save-hint-ui.ts) and a full-width site footer.
+// Starlight's page frame (header, sidebar, content), the language note above the content and the one-time
+// "progress only in this browser" hint (both hidden; src/scripts/language/language-ui.ts,
+// src/scripts/account/save-hint-ui.ts) and a full-width site footer.
 import Default from '@astrojs/starlight/components/PageFrame.astro';
 import { stringsFor } from '../locales/strings.mjs';
 import { copyrightLine, footerLinks } from './footer.mjs';
 import { saveHintHtml } from './account-menu.mjs';
+import { languageNotesHtml } from './language-note.mjs';
+import i18n from '../generated/i18n.json';
 
 const strings = stringsFor(Astro.locals.starlightRoute.lang);
 const copyright = copyrightLine(strings, new Date().getFullYear());
 const links = footerLinks(strings);
 const current = Astro.url.pathname;
 const saveHint = saveHintHtml(strings);
+const languageNotes = languageNotesHtml({ pageLang: strings.lang, pathname: current, shared: i18n.shared });
 ---
 
 <Default>
   <slot name="header" slot="header" />
   <slot name="sidebar" slot="sidebar" />
+  <Fragment set:html={languageNotes} />
   <slot />
 </Default>
 

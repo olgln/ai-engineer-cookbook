@@ -71,6 +71,8 @@
     "saveHintText": "To keep it for good and have it on any device, sign in with Google or GitHub.",
     "notNow": "Not now",
     "close": "Close",
+    "languageNoteText": "This site is also available in English.",
+    "languageNoteLink": "Read in English",
     "signIn": "Sign in",
     "signInTitle": "Progress on every device",
     "signInText": "Sign in, and your finished chapters, checkmarks and quiz answers will be on your phone and on any computer. Without signing in everything works the same, only the progress stays in this browser.",
@@ -123,7 +125,7 @@
       "cookies": {
         "heading": "Cookies",
         "blocks": [
-          "Cookies appear only when you sign in, to keep you signed in. There are no advertising or tracking cookies."
+          "Cookies appear only when you sign in, to keep you signed in, and when you choose the site language, to remember it. There are no advertising or tracking cookies."
         ]
       },
       "analytics": {
