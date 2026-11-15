@@ -2,15 +2,15 @@
 import { defineConfig } from 'astro/config';
 import starlight from '@astrojs/starlight';
 import sitemap from '@astrojs/sitemap';
-import sidebar from './src/sidebar.json' with { type: 'json' };
-import lastmod from './src/lastmod.json' with { type: 'json' };
+import sidebar from './src/generated/sidebar.json' with { type: 'json' };
+import lastmod from './src/generated/lastmod.json' with { type: 'json' };
 import strings from './src/locales/ru.json' with { type: 'json' };
 import progressApi from './src/integrations/progress-api.mjs';
 import deployFiles from './src/integrations/deploy-files.mjs';
 import cspInlineHashes from './src/integrations/csp-inline-hashes.mjs';
-import { iconHead, seoHead } from './src/components/seo-head.mjs';
-import { inSitemap, withLastmod } from './scripts/lib/lastmod.mjs';
-import { webAnalyticsHead, withWebAnalytics } from './src/components/web-analytics.mjs';
+import { iconHead, seoHead } from './src/head/seo-head.mjs';
+import { inSitemap, withLastmod } from './scripts/convert/lastmod.mjs';
+import { webAnalyticsHead, withWebAnalytics } from './src/head/web-analytics.mjs';
 import { CSP, SITEMAP_EXCLUDED_PATHS } from './src/config/app.mjs';
 import { config } from './src/config/server.mjs';
 
@@ -51,7 +51,18 @@ export default defineConfig({
       // src/pages/404.astro replaces Starlight's built-in 404 page
       disable404Route: true,
       pagination: true,
-      customCss: ['./src/styles/custom.css'],
+      customCss: [
+        './src/styles/base.css',
+        './src/styles/quiz.css',
+        './src/styles/chapter.css',
+        './src/styles/sidebar.css',
+        './src/styles/index-page.css',
+        './src/styles/mermaid.css',
+        './src/styles/footer.css',
+        './src/styles/review.css',
+        './src/styles/account.css',
+        './src/styles/save-hint.css',
+      ],
       components: {
         Footer: './src/components/Footer.astro',
         PageFrame: './src/components/PageFrame.astro',

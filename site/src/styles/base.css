@@ -1,0 +1,77 @@
+/* ---------- theme ---------- */
+:root {
+  --sl-content-width: 66rem;
+  --toc-width: 16rem;
+  --radius: 0.6rem;
+  /* Muted text: hints, counters, footer. Starlight's dark gray-3 gives 4.47:1 on the sidebar and card
+     background (gray-6), just under WCAG AA 4.5:1; this gives 5.1:1 (tests/site/styles.test.mjs). */
+  --site-color-muted: hsl(224, 6%, 60%);
+}
+:root[data-theme='dark'] {
+  --sl-color-accent-low: #10263a;
+  --sl-color-accent: #3b9ae0;
+  --sl-color-accent-high: #b8dcf7;
+}
+:root[data-theme='light'] {
+  --site-color-muted: var(--sl-color-gray-3);
+  --sl-color-accent-low: #d4e9f9;
+  --sl-color-accent: #1767a8;
+  --sl-color-accent-high: #0e3a5e;
+}
+
+.sl-markdown-content table {
+  font-size: 0.9rem;
+}
+.sl-markdown-content blockquote {
+  border-inline-start-color: var(--sl-color-accent);
+  background: var(--sl-color-accent-low);
+  padding: 0.6rem 1rem;
+  border-radius: 0 var(--radius) var(--radius) 0;
+  color: var(--sl-color-white);
+}
+
+/* ---------- layout: narrower "On this page" column, wider content ---------- */
+@media (min-width: 72rem) {
+  .right-sidebar-container { width: var(--toc-width); }
+  [data-has-sidebar][data-has-toc] .main-pane { width: calc(100% - var(--toc-width)); }
+  .right-sidebar-panel .sl-container { width: calc(var(--toc-width) - 2 * var(--sl-sidebar-pad-x)); max-width: none; }
+}
+
+/* ---------- buttons ---------- */
+.quiz-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font: inherit;
+  font-size: 0.875rem;
+  font-weight: 600;
+  line-height: 1.2;
+  padding: 0.45rem 0.9rem;
+  border-radius: 999px;
+  border: 1px solid var(--sl-color-gray-5);
+  background: var(--sl-color-bg);
+  color: var(--sl-color-white);
+  cursor: pointer;
+  text-decoration: none;
+  transition: background 0.15s, border-color 0.15s, transform 0.05s;
+}
+.quiz-btn:hover { border-color: var(--sl-color-accent); }
+.quiz-btn:active { transform: translateY(1px); }
+.quiz-btn:disabled { opacity: 0.45; cursor: not-allowed; }
+.quiz-btn.primary { background: var(--sl-color-accent); border-color: var(--sl-color-accent); color: var(--sl-color-black); }
+:root[data-theme='light'] .quiz-btn.primary { color: #fff; }
+.quiz-btn.primary:hover { filter: brightness(1.08); }
+.quiz-btn.ghost { background: transparent; }
+.quiz-btn.good { border-color: var(--sl-color-green); color: var(--sl-color-green-high); }
+.quiz-btn.bad { border-color: var(--sl-color-red); color: var(--sl-color-red-high); }
+/* Destructive action; --sl-color-black is the page background (white in the light theme). */
+.quiz-btn.danger { background: var(--sl-color-red-high); border-color: var(--sl-color-red-high); color: var(--sl-color-black); }
+.quiz-btn.danger:hover { filter: brightness(1.08); }
+.sl-markdown-content a.quiz-btn { color: var(--sl-color-black); }
+:root[data-theme='light'] .sl-markdown-content a.quiz-btn { color: #fff; }
+.sl-markdown-content a.quiz-btn:not(.primary), :root[data-theme='light'] .sl-markdown-content a.quiz-btn:not(.primary) { color: var(--sl-color-white); }
+
+/* flex rows: cancel Starlight's sibling margin-top */
+.quiz-actions > *, .quiz-toolbar > *, .quiz-toolbar-actions > *, .course-progress-actions > *, .course-progress-head > *, .week-progress > * {
+  margin-top: 0 !important;
+}

@@ -121,7 +121,7 @@ async function signInCallback(request, { db, now, env, fetch }, provider) {
       provider, query: url.searchParams, flow, ...credentials(env, provider), origin: url.origin, now, fetch,
     });
   } catch (error) {
-    console.warn(`sign-in with ${provider} failed: ${error.message}`);
+    console.warn(`sign-in with ${provider} failed: ${error instanceof Error ? error.message : error}`);
     return redirect(failedLanding(flow?.returnTo, url.origin), cookies);
   }
   const userId = await findOrCreateUser(db, provider, subject, now);

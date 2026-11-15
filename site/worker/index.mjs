@@ -8,7 +8,7 @@ const nowSeconds = () => Math.floor(Date.now() / 1000);
 
 export default {
   fetch(request, env) {
-    return handleApi(request, { db: env.DB, now: nowSeconds(), env, fetch: (...args) => fetch(...args) });
+    return handleApi(request, { db: env.DB, now: nowSeconds(), env, fetch: (input, init) => fetch(input, init) });
   },
 
   /** Daily cron (wrangler.jsonc `triggers`): drop expired sessions. */

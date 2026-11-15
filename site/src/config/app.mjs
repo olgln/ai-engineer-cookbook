@@ -79,7 +79,7 @@ export const OAUTH_PROVIDERS = {
 export const PROGRESS_REV_HEADER = 'X-Progress-Rev';
 /** Largest progress document the Worker stores, in bytes. A full course of answers is well under 100 KB. */
 export const ACCOUNT_PROGRESS_MAX_BYTES = 512 * 1024;
-/** localStorage key that ties the browser copy to the account copy: { rev, dirty } (src/scripts/sync.mjs). */
+/** localStorage key that ties the browser copy to the account copy: { rev, dirty } (src/scripts/progress/sync.mjs). */
 export const SYNC_STORAGE_KEY = 'ai-cookbook-progress-sync';
 
 /** Response header that tells the browser where the progress file is stored. */
@@ -90,7 +90,7 @@ export const STORAGE_KEY = 'ai-cookbook-progress';
 
 /**
  * localStorage key set once the "your progress is only in this browser" hint has been shown, so a reader
- * sees it once (src/scripts/save-hint.mjs).
+ * sees it once (src/scripts/account/save-hint.mjs).
  */
 export const SAVE_HINT_STORAGE_KEY = 'ai-cookbook-save-hint-shown';
 
@@ -131,7 +131,7 @@ export const CSP = {
 /**
  * Cloudflare Web Analytics (cookieless page views, referrers, countries), on only when the build has
  * CLOUDFLARE_WEB_ANALYTICS_TOKEN. The beacon script loads from `scriptOrigin` and reports to
- * `reportOrigin`; both are added to the CSP of that build only (src/components/web-analytics.mjs).
+ * `reportOrigin`; both are added to the CSP of that build only (src/head/web-analytics.mjs).
  */
 export const WEB_ANALYTICS = {
   scriptUrl: 'https://static.cloudflareinsights.com/beacon.min.js',
@@ -230,14 +230,15 @@ export const CHAPTER_PREFIX = 'AIL-';
 
 /** Generated output, relative to site/. */
 export const DOCS_DIR = 'src/content/docs';
-export const SIDEBAR_FILE = 'src/sidebar.json';
-export const CHAPTERS_FILE = 'src/chapters.json';
+export const GENERATED_DIR = 'src/generated';
+export const SIDEBAR_FILE = `${GENERATED_DIR}/sidebar.json`;
+export const CHAPTERS_FILE = `${GENERATED_DIR}/chapters.json`;
 /** Last change of each page's source, from git ({ "/week-01/1-1/": "2026-11-14T…" }); feeds <lastmod> in the sitemap. */
-export const LASTMOD_FILE = 'src/lastmod.json';
+export const LASTMOD_FILE = `${GENERATED_DIR}/lastmod.json`;
 /** Every quiz question by chapter (number, short text, answer key); loaded by the review page only. */
-export const QUIZ_INDEX_FILE = 'src/quiz-index.json';
+export const QUIZ_INDEX_FILE = `${GENERATED_DIR}/quiz-index.json`;
 /** Everything scripts/convert.mjs writes under site/: ignored by git and by the `npm start` watcher (no rebuild loop). */
-export const GENERATED_PATHS = [DOCS_DIR, SIDEBAR_FILE, CHAPTERS_FILE, LASTMOD_FILE, QUIZ_INDEX_FILE];
+export const GENERATED_PATHS = [DOCS_DIR, GENERATED_DIR];
 
 /** Blocks of the root README.md between these markers are not shown on the site. */
 export const REPO_ONLY_START = '<!-- repo-only:start -->';

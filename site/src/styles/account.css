@@ -1,0 +1,167 @@
+/* ---------- account menu (header; src/components/account-menu.mjs) ---------- */
+.account-menu { position: relative; display: flex; align-items: center; }
+.account-menu[hidden] { display: none; }
+.account-menu[data-state='in'] [data-when='out'],
+.account-menu:not([data-state='in']) [data-when='in'] { display: none; }
+
+.account-trigger {
+  display: inline-flex;
+  align-items: center;
+  font: inherit;
+  font-size: var(--sl-text-sm);
+  font-weight: 600;
+  line-height: 1.2;
+  padding: 0.4rem 0.95rem;
+  border: 1px solid var(--sl-color-gray-5);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--sl-color-white);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: border-color 0.15s, background 0.15s;
+}
+.account-trigger:hover { border-color: var(--sl-color-accent); background: var(--sl-color-accent-low); }
+/* Kept apart from :hover, so a browser without :popover-open drops only this rule. */
+.account-trigger:has(+ .account-panel:popover-open) { border-color: var(--sl-color-accent); background: var(--sl-color-accent-low); }
+.account-menu[data-state='in'] .account-trigger { padding: 0; border-color: transparent; background: transparent; }
+.account-menu[data-state='in'] .account-trigger:hover .account-avatar { box-shadow: 0 0 0 2px var(--sl-color-accent); }
+.account-menu[data-state='in'] .account-trigger:has(+ .account-panel:popover-open) .account-avatar { box-shadow: 0 0 0 2px var(--sl-color-accent); }
+.account-trigger:focus-visible { outline: 2px solid var(--sl-color-accent); outline-offset: 2px; }
+
+/* The reader's avatar: a person (we know no name or photo) with the sign-in provider's logo in the corner. */
+.account-avatar {
+  position: relative;
+  display: inline-grid;
+  place-items: center;
+  flex: none;
+  border-radius: 50%;
+  background: var(--sl-color-accent-low);
+  color: var(--sl-color-accent-high);
+  transition: box-shadow 0.15s;
+}
+.account-avatar-small { width: 2rem; height: 2rem; }
+.account-avatar-large { width: 2.75rem; height: 2.75rem; }
+.account-person { width: 62%; height: 62%; }
+.account-badge {
+  position: absolute;
+  inset-inline-end: -0.2rem;
+  inset-block-end: -0.2rem;
+  display: grid;
+  place-items: center;
+  width: 46%;
+  height: 46%;
+  border-radius: 50%;
+  border: 2px solid var(--sl-color-bg-nav);
+  box-sizing: content-box;
+}
+.account-badge[hidden] { display: none; }
+.account-badge[data-provider='google'] { background: #fff; }
+.account-badge[data-provider='github'] { background: var(--sl-color-white); color: var(--sl-color-black); }
+.account-badge .account-logo { width: 62%; height: 62%; }
+
+/* The panel: a popover in the top layer, placed by src/scripts/account/account-ui.ts under (or above) its button. */
+.account-panel {
+  position: fixed;
+  inset: auto;
+  margin: 0;
+  width: min(21rem, calc(100vw - 1rem));
+  max-height: calc(100vh - 1rem);
+  overflow-y: auto;
+  padding: 1.15rem 1.2rem 1rem;
+  border: 1px solid var(--sl-color-gray-5);
+  border-radius: var(--radius);
+  background: var(--sl-color-bg-nav);
+  color: var(--sl-color-white);
+  box-shadow: var(--sl-shadow-lg);
+  font-size: var(--sl-text-sm);
+  line-height: 1.5;
+}
+.account-panel:not(.is-placed) { visibility: hidden; }
+.account-panel.is-placed { animation: account-panel-in 0.14s ease-out; }
+@keyframes account-panel-in {
+  from { opacity: 0; transform: translateY(-4px); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .account-panel.is-placed { animation: none; }
+}
+.account-panel p { margin: 0; }
+.account-title { font-size: var(--sl-text-base); font-weight: 700; line-height: 1.35; }
+.account-text { margin-top: 0.3rem !important; color: var(--sl-color-gray-2); }
+.account-fine { margin-top: 0.9rem !important; font-size: 0.8rem; color: var(--site-color-muted); }
+.account-privacy { color: var(--site-color-muted); text-underline-offset: 0.2em; white-space: nowrap; }
+.account-privacy:hover { color: var(--sl-color-white); }
+.account-error {
+  margin-bottom: 0.9rem !important;
+  padding: 0.55rem 0.75rem;
+  border-radius: calc(var(--radius) * 0.75);
+  background: var(--sl-color-red-low);
+  color: var(--sl-color-red-high);
+}
+.account-error[hidden] { display: none; }
+
+/* Sign-in buttons, styled by the providers' guidelines: Google's "Sign in with Google" light and dark
+   themes (fill, 1px outline, text colour, its logo unchanged on the left); GitHub's mark in the same frame. */
+.account-providers { display: grid; gap: 0.6rem; margin-top: 1rem; }
+.account-provider {
+  --provider-fill: #fff;
+  --provider-stroke: #747775;
+  --provider-text: #1f1f1f;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  min-height: 2.5rem;
+  padding: 0 1rem 0 0.75rem;
+  border: 1px solid var(--provider-stroke);
+  border-radius: 999px;
+  background: var(--provider-fill);
+  color: var(--provider-text);
+  font-weight: 500;
+  font-size: 0.875rem;
+  letter-spacing: 0.01em;
+  text-decoration: none;
+  transition: background 0.15s;
+}
+:root[data-theme='dark'] .account-provider { --provider-fill: #131314; --provider-stroke: #8e918f; --provider-text: #e3e3e3; }
+.account-provider[hidden] { display: none; }
+/* Google's hover state: an 8% layer of the text colour over the fill. */
+.account-provider:hover { background: color-mix(in srgb, var(--provider-text) 8%, var(--provider-fill)); color: var(--provider-text); }
+.account-provider:focus-visible { outline: 2px solid var(--sl-color-accent); outline-offset: 2px; }
+.account-provider .account-logo { width: 1.125rem; height: 1.125rem; flex: none; }
+
+/* Signed in */
+.account-who { display: flex; align-items: center; gap: 0.85rem; }
+.account-who .account-badge { border-color: var(--sl-color-bg-nav); }
+.account-signout { width: 100%; justify-content: center; margin-top: 1rem; }
+.account-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 1rem;
+  margin-top: 0.9rem;
+  padding-top: 0.8rem;
+  border-top: 1px solid var(--sl-color-gray-5);
+  font-size: 0.8rem;
+}
+.account-delete {
+  font: inherit;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--sl-color-red-high);
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+}
+.account-footer[hidden] { display: none; }
+.account-delete:focus-visible { outline: 2px solid var(--sl-color-accent); outline-offset: 2px; border-radius: 2px; }
+.account-confirm {
+  margin-top: 0.9rem;
+  padding: 0.8rem 0.85rem;
+  border: 1px solid var(--sl-color-red);
+  border-radius: calc(var(--radius) * 0.75);
+  background: var(--sl-color-red-low);
+}
+.account-confirm[hidden] { display: none; }
+.account-confirm-actions { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 0.7rem; }
+[data-account-delete-error] { margin: 0.9rem 0 0 !important; }

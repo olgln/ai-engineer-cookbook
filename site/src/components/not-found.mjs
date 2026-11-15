@@ -1,5 +1,5 @@
 // Props of the custom 404 page (src/pages/404.astro). Pure, so it can be tested without rendering
-// Astro components (tests/not-found.test.mjs). The wording (ru.json `notFound`) is in English on purpose.
+// Astro components (tests/site/not-found.test.mjs). The wording (ru.json `notFound`) is in English on purpose.
 
 /**
  * @param {typeof import('../locales/ru.json')} strings

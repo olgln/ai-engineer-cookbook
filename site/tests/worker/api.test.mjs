@@ -1,0 +1,472 @@
+// Tests for the Worker API through its entry point (worker/index.mjs): routing, /api/me, /api/logout,
+// /api/account, /api/progress, sign-in with Google and GitHub (fake provider endpoints), same-origin checks, security
+// headers and the cron clean-up. D1 is the node:sqlite stand-in.
+import assert from 'node:assert/strict';
+import { beforeEach, describe, test } from 'node:test';
+import {
+  ACCOUNT_API_PATH, ACCOUNT_PROGRESS_MAX_BYTES, AUTH_API_PREFIX, AUTH_PROVIDERS, LOGIN_ERROR_PARAM, LOGOUT_API_PATH, ME_API_PATH,
+  OAUTH_COOKIE, OAUTH_PROVIDERS, PROGRESS_API_PATH, PROGRESS_REV_HEADER, RETURN_TO_PARAM, SECURITY_HEADERS,
+  SESSION_COOKIE, SESSION_RENEW_AFTER_SECONDS, SESSION_TTL_SECONDS,
+} from '../../src/config/app.mjs';
+import worker from '../../worker/index.mjs';
+import { handleApi } from '../../worker/lib/api.mjs';
+import { createSession, getSession, newToken } from '../../worker/lib/session.mjs';
+import { deleteUser, findOrCreateUser } from '../../worker/lib/users.mjs';
+import { createD1 } from '../helpers/d1.mjs';
+import { githubTokenResponse, googleTokenResponse, jsonResponse, ORIGIN } from '../helpers/oauth.mjs';
+
+const NOW = 1_800_000_000;
+const [FIRST, SECOND] = AUTH_PROVIDERS;
+const ENV = { GOOGLE_CLIENT_ID: 'cid', GOOGLE_CLIENT_SECRET: 'csecret' };
+const GITHUB_ENV = { GITHUB_CLIENT_ID: 'gh-cid', GITHUB_CLIENT_SECRET: 'gh-csecret' };
+const BOTH_ENV = { ...ENV, ...GITHUB_ENV };
+
+let db, userId, token;
+beforeEach(async () => {
+  db = createD1();
+  userId = await findOrCreateUser(db, FIRST, 'subject-1', NOW);
+  token = await createSession(db, userId, NOW);
+});
+
+function request(path, { method = 'GET', cookie, origin, headers = {}, body } = {}) {
+  const all = { ...headers };
+  if (cookie !== undefined) all.Cookie = cookie;
+  if (origin !== undefined) all.Origin = origin;
+  return new Request(ORIGIN + path, { method, headers: all, body });
+}
+
+/**
+ * The provider endpoints of a test: the token endpoints answer with `tokenResponse`, GitHub's user endpoint
+ * with `githubUser` (401 when null); `tokenCalls` and `userCalls` count the calls.
+ */
+let tokenResponse, tokenCalls, githubUser, userCalls;
+beforeEach(() => {
+  tokenResponse = null;
+  tokenCalls = 0;
+  githubUser = null;
+  userCalls = 0;
+});
+const fakeFetch = async (url) => {
+  if (url === OAUTH_PROVIDERS.google.tokenUrl || url === OAUTH_PROVIDERS.github.tokenUrl) {
+    tokenCalls++;
+    return jsonResponse(tokenResponse, tokenResponse ? 200 : 400);
+  }
+  assert.equal(url, OAUTH_PROVIDERS.github.userUrl);
+  userCalls++;
+  return jsonResponse(githubUser, githubUser ? 200 : 401);
+};
+
+const call = (req, now = NOW, env = ENV) => handleApi(req, { db, now, env, fetch: fakeFetch });
+const withSession = (t = token) => `other=1; ${SESSION_COOKIE}=${t}`;
+
+describe('routing', () => {
+  test('unknown API paths get a JSON 404', async () => {
+    const res = await call(request('/api/nope'));
+    assert.equal(res.status, 404);
+    assert.deepEqual(await res.json(), { error: 'not found' });
+  });
+
+  test('signed out, the progress path is not OK, so pages keep the browser copy', async () => {
+    const res = await call(request(PROGRESS_API_PATH));
+    assert.equal(res.status, 401);
+    assert.equal(res.headers.get(PROGRESS_REV_HEADER), null);
+  });
+
+  test('sign-in routes exist only for providers with credentials', async () => {
+    assert.equal((await call(request(`${AUTH_API_PREFIX}google`), NOW, {})).status, 404);
+    assert.equal((await call(request(`${AUTH_API_PREFIX}github`))).status, 404);
+    assert.equal((await call(request(`${AUTH_API_PREFIX}google/nope`))).status, 404);
+    assert.equal((await call(request(`${AUTH_API_PREFIX}google`))).status, 302);
+  });
+
+  test('a wrong method gets 405 with Allow', async () => {
+    const res = await call(request(ME_API_PATH, { method: 'POST', origin: ORIGIN }));
+    assert.equal(res.status, 405);
+    assert.equal(res.headers.get('Allow'), 'GET');
+  });
+
+  test('responses are not cached and carry the security headers', async () => {
+    const res = await call(request(ME_API_PATH));
+    assert.equal(res.headers.get('Cache-Control'), 'no-store');
+    assert.match(res.headers.get('Content-Type'), /^application\/json/);
+    for (const [name, value] of Object.entries(SECURITY_HEADERS)) assert.equal(res.headers.get(name), value, name);
+  });
+
+  test('an unexpected error becomes a JSON 500 without details', async (t) => {
+    t.mock.method(console, 'error', () => {});
+    const broken = { prepare: () => { throw new Error('db down'); } };
+    const res = await handleApi(request(ME_API_PATH, { cookie: withSession() }), { db: broken, now: NOW, env: ENV });
+    assert.equal(res.status, 500);
+    assert.deepEqual(await res.json(), { error: 'internal error' });
+  });
+});
+
+describe(`GET ${ME_API_PATH}`, () => {
+  test('without a cookie: 401 with the providers one can sign in with, and no Set-Cookie', async () => {
+    const res = await call(request(ME_API_PATH, { cookie: 'other=1' }));
+    assert.equal(res.status, 401);
+    assert.deepEqual(await res.json(), { error: 'unauthorized', available: ['google'] });
+    assert.equal(res.headers.get('Set-Cookie'), null);
+    const none = await call(request(ME_API_PATH), NOW, {});
+    assert.deepEqual((await none.json()).available, []);
+  });
+
+  test('401 lists GitHub when it has credentials, after Google', async () => {
+    const both = await call(request(ME_API_PATH), NOW, BOTH_ENV);
+    assert.deepEqual((await both.json()).available, ['google', 'github']);
+    const github = await call(request(ME_API_PATH), NOW, GITHUB_ENV);
+    assert.deepEqual((await github.json()).available, ['github']);
+  });
+
+  test('a stale or forged cookie gets 401 and is removed', async () => {
+    for (const value of [newToken(), 'forged']) {
+      const res = await call(request(ME_API_PATH, { cookie: withSession(value) }));
+      assert.equal(res.status, 401);
+      assert.match(res.headers.get('Set-Cookie'), new RegExp(`^${SESSION_COOKIE}=;.*Max-Age=0`));
+    }
+  });
+
+  test('signed in: the linked providers, no cookie while the session is fresh', async () => {
+    const res = await call(request(ME_API_PATH, { cookie: withSession() }));
+    assert.equal(res.status, 200);
+    assert.deepEqual(await res.json(), { providers: [FIRST] });
+    assert.equal(res.headers.get('Set-Cookie'), null);
+  });
+
+  test('every linked provider is listed', async () => {
+    db.sqlite.prepare('INSERT INTO identities (provider, subject, user_id, created_at) VALUES (?, ?, ?, ?)')
+      .run(SECOND, 'other', userId, NOW + 1);
+    const res = await call(request(ME_API_PATH, { cookie: withSession() }));
+    assert.deepEqual(await res.json(), { providers: [FIRST, SECOND] });
+  });
+
+  test('a session due for renewal is extended and the cookie is sent again', async () => {
+    const res = await call(request(ME_API_PATH, { cookie: withSession() }), NOW + SESSION_RENEW_AFTER_SECONDS);
+    assert.equal(res.status, 200);
+    assert.match(res.headers.get('Set-Cookie'), new RegExp(`^${SESSION_COOKIE}=${token};.*Max-Age=${SESSION_TTL_SECONDS}`));
+  });
+});
+
+describe(`POST ${LOGOUT_API_PATH}`, () => {
+  test('ends the session and removes the cookie', async () => {
+    const res = await call(request(LOGOUT_API_PATH, { method: 'POST', cookie: withSession(), origin: ORIGIN }));
+    assert.equal(res.status, 204);
+    assert.match(res.headers.get('Set-Cookie'), /Max-Age=0/);
+    assert.equal(await getSession(db, token, NOW), null);
+  });
+
+  test('is fine when signed out', async () => {
+    const res = await call(request(LOGOUT_API_PATH, { method: 'POST', origin: ORIGIN }));
+    assert.equal(res.status, 204);
+  });
+
+  test('refuses other origins and requests without Origin, and keeps the session', async () => {
+    for (const origin of ['https://evil.test', 'null', undefined]) {
+      const res = await call(request(LOGOUT_API_PATH, { method: 'POST', cookie: withSession(), origin }));
+      assert.equal(res.status, 403, String(origin));
+    }
+    assert.ok(await getSession(db, token, NOW));
+  });
+});
+
+describe(`DELETE ${ACCOUNT_API_PATH}`, () => {
+  const count = (table, id) => db.sqlite.prepare(`SELECT COUNT(*) AS n FROM ${table} WHERE ${table === 'users' ? 'id' : 'user_id'} = ?`).get(id).n;
+  const rowsOf = (id) => Object.fromEntries(['users', 'identities', 'sessions', 'progress'].map((t) => [t, count(t, id)]));
+  const remove = (opts = {}) => call(request(ACCOUNT_API_PATH, { method: 'DELETE', cookie: withSession(), origin: ORIGIN, ...opts }));
+
+  /** A user with two identities, two sessions (two devices) and stored progress. */
+  async function fullUser(subject) {
+    const id = await findOrCreateUser(db, FIRST, subject, NOW);
+    db.sqlite.prepare('INSERT INTO identities (provider, subject, user_id, created_at) VALUES (?, ?, ?, ?)').run(SECOND, subject, id, NOW);
+    const sessions = [await createSession(db, id, NOW), await createSession(db, id, NOW)];
+    db.sqlite.prepare('INSERT INTO progress (user_id, data, rev, updated_at) VALUES (?, ?, 1, ?)').run(id, '{"chapters":{}}', NOW);
+    return { id, sessions };
+  }
+
+  test('deletes the user with every identity, session and the progress, and nothing of another user', async () => {
+    const me = await fullUser('me');
+    const other = await fullUser('other');
+    const res = await remove({ cookie: withSession(me.sessions[0]) });
+    assert.equal(res.status, 204);
+    assert.equal(await res.text(), '');
+    assert.match(res.headers.get('Set-Cookie'), new RegExp(`^${SESSION_COOKIE}=;.*Max-Age=0`));
+    assert.deepEqual(rowsOf(me.id), { users: 0, identities: 0, sessions: 0, progress: 0 });
+    assert.deepEqual(rowsOf(other.id), { users: 1, identities: 2, sessions: 2, progress: 1 });
+    assert.deepEqual(rowsOf(userId), { users: 1, identities: 1, sessions: 1, progress: 0 });
+  });
+
+  test('the other sessions of the deleted user stop working at once', async () => {
+    const me = await fullUser('me');
+    await remove({ cookie: withSession(me.sessions[0]) });
+    const res = await call(request(ME_API_PATH, { cookie: withSession(me.sessions[1]) }));
+    assert.equal(res.status, 401);
+    const progress = await call(request(PROGRESS_API_PATH, { cookie: withSession(me.sessions[1]) }));
+    assert.equal(progress.status, 401);
+  });
+
+  test('signing in again after the deletion starts a new, empty account', async () => {
+    const me = await fullUser('me');
+    await remove({ cookie: withSession(me.sessions[0]) });
+    const again = await findOrCreateUser(db, FIRST, 'me', NOW + 1);
+    assert.notEqual(again, me.id);
+    assert.deepEqual(rowsOf(again), { users: 1, identities: 1, sessions: 0, progress: 0 });
+  });
+
+  test('signed out or with a stale session: 401 and nothing is deleted', async () => {
+    for (const cookie of [undefined, 'other=1', withSession(newToken())]) {
+      const res = await remove({ cookie });
+      assert.equal(res.status, 401, String(cookie));
+    }
+    assert.equal(count('users', userId), 1);
+  });
+
+  test('refuses other origins and requests without Origin, and keeps the account', async () => {
+    for (const origin of ['https://evil.test', 'null', undefined]) {
+      const res = await remove({ origin });
+      assert.equal(res.status, 403, String(origin));
+    }
+    assert.deepEqual(rowsOf(userId), { users: 1, identities: 1, sessions: 1, progress: 0 });
+  });
+
+  test('other methods get 405 with Allow: DELETE', async () => {
+    for (const method of ['GET', 'POST', 'PUT']) {
+      const res = await call(request(ACCOUNT_API_PATH, { method, cookie: withSession(), origin: ORIGIN }));
+      assert.equal(res.status, 405, method);
+      assert.equal(res.headers.get('Allow'), 'DELETE');
+    }
+    assert.equal(count('users', userId), 1);
+  });
+
+  test('deleteUser says whether there was a user to delete', async () => {
+    assert.equal(await deleteUser(db, userId), true);
+    assert.equal(await deleteUser(db, userId), false);
+  });
+});
+
+describe(PROGRESS_API_PATH, () => {
+  const doc = (chapters = { '1-1': { done: '2026-11-14' } }) => ({ version: 1, chapters });
+  const put = (body, { rev = '0', cookie = withSession(), origin = ORIGIN, type = 'application/json' } = {}) => {
+    const headers = {};
+    if (type) headers['Content-Type'] = type;
+    if (rev !== null) headers[PROGRESS_REV_HEADER] = rev;
+    return call(request(PROGRESS_API_PATH, { method: 'PUT', cookie, origin, headers, body: typeof body === 'string' ? body : JSON.stringify(body) }));
+  };
+  const get = async () => {
+    const res = await call(request(PROGRESS_API_PATH, { cookie: withSession() }));
+    return { status: res.status, rev: res.headers.get(PROGRESS_REV_HEADER), body: await res.json() };
+  };
+
+  test('a new reader has empty progress at revision 0', async () => {
+    assert.deepEqual(await get(), { status: 200, rev: '0', body: { version: 1, chapters: {} } });
+  });
+
+  test('writes go on top of the current revision, stale ones get 409 with the current revision', async () => {
+    const first = await put(doc());
+    assert.equal(first.status, 200);
+    assert.deepEqual(await first.json(), { rev: 1 });
+    assert.equal(first.headers.get(PROGRESS_REV_HEADER), '1');
+    assert.deepEqual(await get(), { status: 200, rev: '1', body: doc() });
+
+    const stale = await put(doc({}), { rev: '0' });
+    assert.equal(stale.status, 409);
+    assert.deepEqual(await stale.json(), { error: 'conflict', rev: 1 });
+    assert.equal((await put(doc({}), { rev: '5' })).status, 409);
+
+    assert.equal((await put(doc({ x: {} }), { rev: '1' })).status, 200);
+    assert.deepEqual(await get(), { status: 200, rev: '2', body: doc({ x: {} }) });
+  });
+
+  test('each reader has their own progress', async () => {
+    await put(doc());
+    const other = await findOrCreateUser(db, SECOND, 'someone', NOW);
+    const otherToken = await createSession(db, other, NOW);
+    const res = await call(request(PROGRESS_API_PATH, { cookie: withSession(otherToken) }));
+    assert.deepEqual(await res.json(), { version: 1, chapters: {} });
+  });
+
+  test('refuses bad writes', async () => {
+    assert.equal((await put(doc(), { cookie: 'x=1' })).status, 401);
+    assert.equal((await put(doc(), { origin: 'https://evil.test' })).status, 403);
+    assert.equal((await put(doc(), { type: 'text/plain' })).status, 415);
+    assert.equal((await put(doc(), { rev: null })).status, 400);
+    assert.equal((await put(doc(), { rev: '-1' })).status, 400);
+    assert.equal((await put('{not json')).status, 400);
+    assert.equal((await put({ chapters: [] })).status, 400);
+    assert.equal((await put(doc({ big: { note: 'x'.repeat(ACCOUNT_PROGRESS_MAX_BYTES) } }))).status, 413);
+    assert.equal((await get()).rev, '0', 'nothing was stored');
+  });
+});
+
+describe('sign-in with Google', () => {
+  const start = (returnTo = '/week-01/1-1/') =>
+    call(request(`${AUTH_API_PREFIX}google?${RETURN_TO_PARAM}=${encodeURIComponent(returnTo)}`));
+  const flowCookie = (res) => res.headers.getSetCookie().find((c) => c.startsWith(`${OAUTH_COOKIE}=`)).split(';')[0];
+  const callback = (params, cookie) =>
+    call(request(`${AUTH_API_PREFIX}google/callback?${new URLSearchParams(params)}`, { cookie }));
+  const claims = (state, over = {}) => ({ iss: 'https://accounts.google.com', aud: 'cid', sub: 'g-new', nonce: state.nonce, exp: NOW + 600, ...over });
+
+  /** Starts a sign-in and returns the flow cookie and the state and nonce sent to Google. */
+  async function begin(returnTo) {
+    const res = await start(returnTo);
+    assert.equal(res.status, 302);
+    const q = new URL(res.headers.get('Location')).searchParams;
+    return { cookie: flowCookie(res), state: q.get('state'), nonce: q.get('nonce') };
+  }
+
+  test('a full sign-in creates the user, starts a session and returns to the page', async () => {
+    const flow = await begin('/week-01/1-1/');
+    tokenResponse = googleTokenResponse(claims(flow));
+    const res = await callback({ state: flow.state, code: 'abc' }, flow.cookie);
+    assert.equal(res.status, 302);
+    assert.equal(res.headers.get('Location'), '/week-01/1-1/');
+    const cookies = res.headers.getSetCookie();
+    assert.ok(cookies.some((c) => c.startsWith(`${OAUTH_COOKIE}=;`)), 'the flow cookie is removed');
+    const session = cookies.find((c) => c.startsWith(`${SESSION_COOKIE}=`)).split(';')[0];
+    const me = await call(request(ME_API_PATH, { cookie: session }));
+    assert.deepEqual(await me.json(), { providers: ['google'] });
+    // signing in again finds the same user
+    const again = await begin('/');
+    tokenResponse = googleTokenResponse(claims(again));
+    await callback({ state: again.state, code: 'def' }, again.cookie);
+    assert.equal(db.sqlite.prepare("SELECT COUNT(*) AS n FROM identities WHERE subject = 'g-new'").get().n, 1);
+  });
+
+  test('a wrong state, a missing flow, a refusal or a bad token land back with the error mark', async (t) => {
+    const warnings = t.mock.method(console, 'warn', () => {});
+    const flow = await begin('/week-01/1-1/');
+    tokenResponse = googleTokenResponse(claims(flow));
+    const cases = [
+      [{ state: 'forged', code: 'abc' }, flow.cookie],
+      [{ state: flow.state, code: 'abc' }, undefined],
+      [{ state: flow.state, error: 'access_denied' }, flow.cookie],
+    ];
+    for (const [params, cookie] of cases) {
+      const res = await callback(params, cookie);
+      assert.equal(res.status, 302);
+      const landing = new URL(res.headers.get('Location'), ORIGIN);
+      assert.equal(landing.searchParams.get(LOGIN_ERROR_PARAM), '1');
+      assert.equal(landing.pathname, cookie ? '/week-01/1-1/' : '/');
+      assert.ok(!res.headers.getSetCookie().some((c) => c.startsWith(`${SESSION_COOKIE}=`)), 'no session');
+    }
+    assert.equal(tokenCalls, 0, 'Google is not called before state is checked');
+    tokenResponse = googleTokenResponse(claims(flow, { nonce: 'replayed' }));
+    const replay = await callback({ state: flow.state, code: 'abc' }, flow.cookie);
+    assert.match(replay.headers.get('Location'), new RegExp(`${LOGIN_ERROR_PARAM}=1`));
+    assert.equal(db.sqlite.prepare("SELECT COUNT(*) AS n FROM identities WHERE subject = 'g-new'").get().n, 0);
+    assert.equal(warnings.mock.callCount(), 4, 'each failure is logged');
+  });
+
+  test('an outside return address is not followed', async () => {
+    const flow = await begin('https://evil.test/');
+    tokenResponse = googleTokenResponse(claims(flow));
+    const res = await callback({ state: flow.state, code: 'abc' }, flow.cookie);
+    assert.equal(res.headers.get('Location'), '/');
+  });
+});
+
+describe('sign-in with GitHub', () => {
+  const callGithub = (req) => call(req, NOW, BOTH_ENV);
+  const flowCookie = (res) => res.headers.getSetCookie().find((c) => c.startsWith(`${OAUTH_COOKIE}=`)).split(';')[0];
+  const sessionOf = (res) => res.headers.getSetCookie().find((c) => c.startsWith(`${SESSION_COOKIE}=`))?.split(';')[0];
+  const identities = (subject) =>
+    db.sqlite.prepare('SELECT provider, user_id FROM identities WHERE subject = ? ORDER BY provider').all(subject);
+
+  async function begin(provider = 'github', returnTo = '/week-01/1-1/') {
+    const res = await callGithub(request(`${AUTH_API_PREFIX}${provider}?${RETURN_TO_PARAM}=${encodeURIComponent(returnTo)}`));
+    assert.equal(res.status, 302);
+    const q = new URL(res.headers.get('Location')).searchParams;
+    return { cookie: flowCookie(res), state: q.get('state'), nonce: q.get('nonce'), location: res.headers.get('Location') };
+  }
+  const callback = (provider, params, cookie) =>
+    callGithub(request(`${AUTH_API_PREFIX}${provider}/callback?${new URLSearchParams(params)}`, { cookie }));
+
+  test('the sign-in route sends the browser to GitHub', async () => {
+    const flow = await begin();
+    assert.ok(flow.location.startsWith(`${OAUTH_PROVIDERS.github.authorizeUrl}?`));
+    assert.equal(flow.nonce, null);
+  });
+
+  test('a full sign-in creates a GitHub user, starts a session and returns to the page', async () => {
+    const flow = await begin();
+    tokenResponse = githubTokenResponse('gho_token');
+    githubUser = { id: 9001, login: 'reader' };
+    const res = await callback('github', { state: flow.state, code: 'abc' }, flow.cookie);
+    assert.equal(res.status, 302);
+    assert.equal(res.headers.get('Location'), '/week-01/1-1/');
+    const me = await callGithub(request(ME_API_PATH, { cookie: sessionOf(res) }));
+    assert.deepEqual(await me.json(), { providers: ['github'] });
+    assert.deepEqual(identities('9001').map((r) => r.provider), ['github']);
+    assert.equal(db.sqlite.prepare("SELECT COUNT(*) AS n FROM identities WHERE subject = 'reader'").get().n, 0, 'the login is not kept');
+    // renaming the account on GitHub keeps the same user
+    const again = await begin();
+    githubUser = { id: 9001, login: 'renamed' };
+    await callback('github', { state: again.state, code: 'def' }, again.cookie);
+    assert.equal(identities('9001').length, 1);
+  });
+
+  test('a GitHub user and a Google user with the same id are different users', async () => {
+    const github = await begin();
+    tokenResponse = githubTokenResponse('gho_token');
+    githubUser = { id: 12345 };
+    await callback('github', { state: github.state, code: 'a' }, github.cookie);
+    const google = await begin('google');
+    tokenResponse = googleTokenResponse({ iss: 'https://accounts.google.com', aud: 'cid', sub: '12345', nonce: google.nonce, exp: NOW + 600 });
+    await callback('google', { state: google.state, code: 'b' }, google.cookie);
+    const rows = identities('12345');
+    assert.deepEqual(rows.map((r) => r.provider), ['github', 'google']);
+    assert.notEqual(rows[0].user_id, rows[1].user_id);
+  });
+
+  test('a refused exchange (200 with error), no token or a failed user lookup land back with the error mark', async (t) => {
+    const warnings = t.mock.method(console, 'warn', () => {});
+    const cases = [
+      [{ error: 'bad_verification_code', error_description: 'The code passed is incorrect or expired.' }, { id: 1 }],
+      [{ token_type: 'bearer', scope: '' }, { id: 1 }],
+      [githubTokenResponse('gho_token'), null],
+      [githubTokenResponse('gho_token'), { login: 'no-id' }],
+    ];
+    for (const [token, user] of cases) {
+      const flow = await begin();
+      tokenResponse = token;
+      githubUser = user;
+      const res = await callback('github', { state: flow.state, code: 'abc' }, flow.cookie);
+      assert.equal(res.status, 302);
+      const landing = new URL(res.headers.get('Location'), ORIGIN);
+      assert.equal(landing.pathname, '/week-01/1-1/');
+      assert.equal(landing.searchParams.get(LOGIN_ERROR_PARAM), '1');
+      assert.equal(sessionOf(res), undefined, 'no session');
+    }
+    assert.equal(userCalls, 2, 'GitHub is asked for the user only with an access token');
+    assert.equal(db.sqlite.prepare("SELECT COUNT(*) AS n FROM identities WHERE provider = 'github'").get().n, 0);
+    assert.equal(warnings.mock.callCount(), cases.length);
+    for (const [message] of warnings.mock.calls.map((c) => c.arguments)) assert.ok(!message.includes('gho_token'), message);
+  });
+
+  test('a Google flow cookie cannot finish a GitHub sign-in', async (t) => {
+    t.mock.method(console, 'warn', () => {});
+    const google = await begin('google');
+    const res = await callback('github', { state: google.state, code: 'abc' }, google.cookie);
+    assert.match(res.headers.get('Location'), new RegExp(`${LOGIN_ERROR_PARAM}=1`));
+    assert.equal(tokenCalls, 0);
+  });
+});
+
+describe('worker entry', () => {
+  test('fetch passes the D1 binding and the env through', async () => {
+    const res = await worker.fetch(request(ME_API_PATH, { cookie: withSession() }), { DB: db });
+    assert.equal(res.status, 200);
+    const out = await worker.fetch(request(ME_API_PATH), { DB: db, ...ENV });
+    assert.deepEqual((await out.json()).available, ['google']);
+  });
+
+  test('the cron drops expired sessions only', async (t) => {
+    t.mock.method(console, 'log', () => {});
+    await createSession(db, userId, Math.floor(Date.now() / 1000) - SESSION_TTL_SECONDS - 1);
+    const live = await createSession(db, userId, Math.floor(Date.now() / 1000));
+    await worker.scheduled({}, { DB: db });
+    const left = db.sqlite.prepare('SELECT COUNT(*) AS n FROM sessions').get().n;
+    // `token` from beforeEach was created at NOW (2027) and is still live too.
+    assert.equal(left, 2);
+    assert.ok(await getSession(db, live, Math.floor(Date.now() / 1000)));
+  });
+});

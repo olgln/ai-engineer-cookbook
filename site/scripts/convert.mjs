@@ -1,6 +1,6 @@
 // Converts the book chapters and the root README.md into Starlight pages.
 // Source of truth stays in the book directory; everything under the docs directory is generated.
-// This file only reads and writes files; the rendering itself lives in ./lib/render.mjs.
+// This file only reads and writes files; the rendering itself lives in ./convert/.
 // Exits with code 1 when there are warnings, so `npm run build` fails on a broken chapter.
 import { execFileSync } from 'node:child_process';
 import fs from 'node:fs';
@@ -10,8 +10,9 @@ import {
   BOOK_DIR, CHAPTERS_FILE, DOCS_DIR, LASTMOD_FILE, PLAN_PATH, PRIVACY_PATH, QUIZ_INDEX_FILE, REVIEW_PATH, SIDEBAR_FILE,
 } from '../src/config/app.mjs';
 import { config } from '../src/config/server.mjs';
-import { GIT_LOG_ARGS, pageDates, parseGitLog } from './lib/lastmod.mjs';
-import { chapterFile, createRenderer, pagedChapters, parseToc } from './lib/render.mjs';
+import { GIT_LOG_ARGS, pageDates, parseGitLog } from './convert/lastmod.mjs';
+import { createRenderer } from './convert/renderer.mjs';
+import { chapterFile, pagedChapters, parseToc } from './convert/toc.mjs';
 
 const SITE = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const ROOT = path.resolve(SITE, '..');

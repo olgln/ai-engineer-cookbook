@@ -1,0 +1,37 @@
+/* ---------- checklist ---------- */
+.done-list ul { list-style: none; padding-inline-start: 0; }
+.done-list li {
+  position: relative;
+  padding: 0.5rem 0.7rem 0.5rem 2.4rem;
+  margin: 0 !important;
+  border-radius: 0.5rem;
+  cursor: pointer;
+}
+.done-list li:hover { background: var(--sl-color-gray-6); }
+.done-list li.checked { color: var(--site-color-muted); }
+.done-list input[type='checkbox'] {
+  position: absolute;
+  inset-inline-start: 0.7rem;
+  /* Center the box on the first text line: inherit the item's font so 1lh is its line height. */
+  font: inherit;
+  top: calc(0.5rem + (1lh - 1.15rem) / 2);
+  margin: 0 !important;
+  width: 1.15rem;
+  height: 1.15rem;
+  accent-color: var(--sl-color-green);
+  cursor: pointer;
+}
+.done-counter { font-size: 0.85rem; color: var(--site-color-muted); }
+.done-counter.complete { color: var(--sl-color-green-high); font-weight: 600; }
+
+/* ---------- chapter done card ---------- */
+.chapter-done {
+  margin-top: 2.5rem !important;
+  padding: 1.1rem 1.25rem;
+  border: 1px dashed var(--sl-color-gray-4);
+  border-radius: var(--radius);
+}
+.chapter-done:empty { display: none; }
+.chapter-done.is-done { border-style: solid; border-color: var(--sl-color-green); background: var(--sl-color-green-low); }
+.chapter-done-title { font-weight: 700; font-size: 1.1rem; margin: 0 !important; }
+.chapter-done-facts { font-size: 0.9rem; color: var(--sl-color-gray-2); margin: 0.4rem 0 0.9rem !important; }

@@ -1,0 +1,6 @@
+{
+  "extends": "./tsconfig.json",
+  "include": ["**/*.mjs"],
+  "exclude": ["dist", "dist-next", "dist-old", "node_modules", "tests"],
+  "compilerOptions": { "checkJs": true, "noImplicitAny": false }
+}
