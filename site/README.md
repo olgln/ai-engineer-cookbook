@@ -94,8 +94,9 @@ Readers can sign in with Google or GitHub and keep their progress in their accou
   2. Make sure the deploy command on Cloudflare is `npm run deploy` (it applies the D1 migrations before `wrangler deploy`).
   3. Google Auth Platform → *Branding*: home page `https://ai-engineer-cookbook.olgln.workers.dev/`, privacy policy `https://ai-engineer-cookbook.olgln.workers.dev/privacy/`, and the authorized domain. `workers.dev` is on the Public Suffix List, so the domain to enter is most likely `olgln.workers.dev`, and Google may ask to verify it in Search Console first — not checked yet. Then *Audience* → External → *Publish app*, and add the production redirect URI `https://ai-engineer-cookbook.olgln.workers.dev/api/auth/google/callback` to the client.
   4. GitHub: an OAuth App for the site with the callback URL `https://ai-engineer-cookbook.olgln.workers.dev/api/auth/github/callback` (see "GitHub client" above).
-  5. `npx wrangler secret put GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `GITHUB_CLIENT_ID`, `GITHUB_CLIENT_SECRET`.
-  6. Merge to `main`: the push deploys, and the sign-in buttons appear for each provider with both secrets.
+  5. Merge to `main`: the push deploys the Worker and applies the D1 migrations. Without secrets `/api/me` lists no providers, so the account menu stays hidden and the site looks as before. Check that the deploy succeeded and `/api/me` answers 401 with an empty `available`.
+  6. `npx wrangler secret put GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `GITHUB_CLIENT_ID`, `GITHUB_CLIENT_SECRET` with the production clients' values. Each `secret put` deploys the current Worker version with the new secret, so the sign-in button of a provider appears as soon as both of its secrets are set. Secrets go after the merge because before it there is no Worker script in production to attach them to.
+  7. Check in production: sign-in with each provider, progress sync between two browsers, sign-out and account deletion.
 - **Tests** run the Worker against an in-memory stand-in for D1 on `node:sqlite` with the real migrations (`tests/helpers/d1.mjs`) and fake provider endpoints (token endpoints, GitHub's `/user`; `tests/helpers/oauth.mjs`); the browser side of the sync runs `src/scripts/progress.ts` under Node with fake `fetch` and `localStorage` (`tests/progress-sync.test.mjs`).
 
 ### Icons
