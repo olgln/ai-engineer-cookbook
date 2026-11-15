@@ -388,11 +388,17 @@ describe('index progress blocks', () => {
     assert.ok(block, 'one-line raw HTML block (a blank line would end it in Markdown)');
     const count = format(ui.courseProgress, { done: 0, total: 2, chapters: plural(strings.lang, 2, ui.chaptersOf) });
     assert.ok(block.includes(`<strong class="course-progress-count">${count}</strong>`));
-    assert.ok(block.includes(`<span class="storage-note">${ui.savedInBrowser}</span>`));
+    assert.ok(block.includes('<span class="storage-note"></span>'), 'filled by the browser once it knows where the progress goes');
     assert.ok(block.includes('aria-valuenow="0"'));
     assert.ok(block.includes(`href="/week-01/1-1/">${format(ui.startFrom, { chapter: '1.1 · Python' })}</a>`));
-    assert.ok(block.includes(`>${ui.exportProgress}</button>`));
-    assert.ok(block.includes(`>${ui.importProgress}</button>`));
+  });
+
+  test('no export or import of the progress', () => {
+    assert.doesNotMatch(index(), /course-progress-(export|import)/);
+  });
+
+  test('the index has no sign-in box of its own: signing in lives in the header on every page', () => {
+    assert.ok(!index().includes('account-'));
   });
 
   test('a week with chapter pages gets a 0/N progress row, a week without pages gets none', () => {
@@ -409,7 +415,7 @@ describe('index progress blocks', () => {
 
   test('every element the index script updates is in the pre-rendered page', () => {
     const script = fs.readFileSync(new URL('../src/scripts/main.ts', import.meta.url), 'utf8');
-    const initIndex = script.slice(script.indexOf('function initIndex'), script.indexOf('function exportProgress'));
+    const initIndex = script.slice(script.indexOf('function initIndex'), script.indexOf('// ---------------- review page'));
     const classes = [...new Set([...initIndex.matchAll(/'[^']*?\.([a-z][\w-]*)'/g)].map((m) => m[1]))];
     assert.ok(classes.length >= 6, `found ${classes.join(', ')}`);
     const html = index();

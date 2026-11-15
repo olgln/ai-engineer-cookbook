@@ -1,0 +1,12 @@
+---
+// Starlight's theme switch followed by the account menu. Starlight renders ThemeSelect at the right end of
+// the header on wide screens and at the bottom of the mobile menu on narrow ones, so the menu is in both.
+import Default from '@astrojs/starlight/components/ThemeSelect.astro';
+import strings from '../locales/ru.json';
+import { accountMenuHtml } from './account-menu.mjs';
+
+const accountMenu = accountMenuHtml(strings);
+---
+
+<Default />
+<Fragment set:html={accountMenu} />

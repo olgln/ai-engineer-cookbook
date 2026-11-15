@@ -6,7 +6,10 @@ import { execFileSync } from 'node:child_process';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { BOOK_DIR, CHAPTERS_FILE, DOCS_DIR, LASTMOD_FILE, PLAN_PATH, QUIZ_INDEX_FILE, REVIEW_PATH, SIDEBAR_FILE } from '../src/config/app.mjs';
+import {
+  BOOK_DIR, CHAPTERS_FILE, DOCS_DIR, LASTMOD_FILE, PLAN_PATH, PRIVACY_PATH, QUIZ_INDEX_FILE, REVIEW_PATH, SIDEBAR_FILE,
+} from '../src/config/app.mjs';
+import { config } from '../src/config/server.mjs';
 import { GIT_LOG_ARGS, pageDates, parseGitLog } from './lib/lastmod.mjs';
 import { chapterFile, createRenderer, pagedChapters, parseToc } from './lib/render.mjs';
 
@@ -33,6 +36,8 @@ const missing = r.unlisted(fs.readdirSync(BOOK));
 if (missing.length) r.warnings.push(`files not in ${BOOK_DIR}/README.md: ${missing.join(', ')}`);
 write(path.join(OUT, `${PLAN_PATH.replaceAll('/', '')}.md`), r.renderPlan(read(path.join(ROOT, 'README.md'))));
 write(path.join(OUT, `${REVIEW_PATH.replaceAll('/', '')}.md`), r.renderReview());
+// the analytics paragraph only in builds that load the beacon (CLOUDFLARE_WEB_ANALYTICS_TOKEN)
+write(path.join(OUT, `${PRIVACY_PATH.replaceAll('/', '')}.md`), r.renderPrivacy({ analytics: Boolean(config.webAnalyticsToken) }));
 write(path.join(OUT, 'index.md'), r.renderIndex());
 write(path.join(SITE, SIDEBAR_FILE), JSON.stringify(r.sidebar(), null, 2));
 write(path.join(SITE, CHAPTERS_FILE), JSON.stringify(r.chapters(), null, 2));
