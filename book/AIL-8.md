@@ -31,13 +31,13 @@
 - **формат ответа**: весь ответ модели — JSON по схеме (у Anthropic `output_config.format` / `client.messages.parse(...)`, у OpenAI Structured Outputs через `text.format` / `client.responses.parse(...)`);
 - **строгий инструмент**: модели описывают функцию (инструмент), которую она может «вызвать», вернув её аргументы в JSON; со `strict: true` эти аргументы гарантированно соответствуют схеме. Подходит, когда JSON нужен как вызов функции; подробно инструменты разберём в главе 2.6 (AIL-10). Исторически «JSON через tool use» был основным способом получить структуру от Claude.
 
-Ключевое: **схема гарантирует форму, а не правду.** Модель вернёт идеально валидный `{"product": "Кружка «Север»", "supplier": "Керамика Севера"}`, даже если в тексте был другой товар и другой поставщик. Валидность ≠ корректность — корректность проверяют evals (глава 2.5 (AIL-9)).
+Ключевое: **схема гарантирует форму, а не правду.** Модель вернёт идеально валидный `{"product": "North Mug", "supplier": "Northern Ceramics"}`, даже если в тексте был другой товар и другой поставщик. Валидность ≠ корректность — корректность проверяют evals (глава 2.5 (AIL-9)).
 
 ### Pydantic: модель данных и схема
 
 Для уровня 3 нужна JSON Schema, а для уровней 1–2 — проверка ответа. Писать схему и валидатор по отдельности не придётся: оба получаются из одного класса Pydantic. Pydantic мы встречали в главе 1.3 · Python: uv, async, Pydantic (AIL-2) (модель `OrderItem`): это библиотека, в которой класс описывает форму данных, из него генерируется JSON Schema, и он же валидирует входящие данные. Похожие инструменты есть во многих языках (например, Zod в JavaScript).
 
-Сквозной пример главы — сообщения поставщиков магазина «Полка» о товарах: новое поступление, снятие с производства, изменение цены. Из каждого такого текста хотим получить одну запись:
+Сквозной пример главы — сообщения поставщиков магазина Shelf о товарах: новое поступление, снятие с производства, изменение цены. Из каждого такого текста хотим получить одну запись:
 
 ```python
 from datetime import date
@@ -46,8 +46,8 @@ from pydantic import BaseModel, Field
 
 class ProductUpdate(BaseModel):
     product: str = Field(description="Product name only, as written in the text, without quotes, "
-                                     "article or price, e.g. 'Кружка Север'")
-    supplier: str = Field(description="Supplier name as written in the text, e.g. 'Керамика Севера'")
+                                     "article or price, e.g. 'North Mug'")
+    supplier: str = Field(description="Supplier name as written in the text, e.g. 'Northern Ceramics'")
     effective_date: date | None = Field(
         description="Date the change takes effect, ISO 8601. null if the text gives no date")
     update_type: Literal["new_arrival", "discontinued", "price_change"] | None = Field(
@@ -61,7 +61,7 @@ print(ProductUpdate.model_json_schema())   # this is what the model sees
 
 `ProductUpdate.model_validate(dict)` проверяет словарь и возвращает объект, `ProductUpdate.model_validate_json(text)` — то же сразу из строки; при несоответствии — `ValidationError` со списком ошибок по полям.
 
-**`Field(description=...)` — это промпт.** Описания попадают в JSON Schema, и модель читает их как инструкции. «Product name only, without quotes, article or price» в описании резко снижает число `"Кружка «Север», арт. MUG-NORTH, 590 ₽"`.
+**`Field(description=...)` — это промпт.** Описания попадают в JSON Schema, и модель читает их как инструкции. «Product name only, without quotes, article or price» в описании резко снижает число `"North Mug, арт. MUG-NORTH, $5.90"`.
 
 **`Literal` вместо `str`** для закрытых множеств: схема с `enum` не даст модели написать `"price_update"` вместо `"price_change"`.
 
@@ -89,7 +89,7 @@ class ProductUpdate(BaseModel):
     @classmethod
     def bare_name(cls, v: str) -> str:
         v = v.strip().strip('«»"„“').strip()
-        if not v or len(v) > 80 or "₽" in v or "арт." in v.lower():
+        if not v or len(v) > 80 or "$" in v or "арт." in v.lower():
             raise ValueError(f"'{v}' is not a bare product name")
         return v
 ```
@@ -212,7 +212,7 @@ r = deepseek.chat.completions.create(
     model="deepseek-flash",
     messages=[
         {"role": "system", "content": "Extract product update info and answer in json. Use null for anything "
-                                      'not stated. Example: {"product": "Кружка Север", "supplier": "Керамика Севера", '
+                                      'not stated. Example: {"product": "North Mug", "supplier": "Northern Ceramics", '
                                       '"effective_date": "2026-11-20", "update_type": "new_arrival", "confidence": 0.9}'},
         {"role": "user", "content": f"<message>{text}</message>"},
     ],
@@ -289,7 +289,7 @@ update = ds.create(response_model=ProductUpdate, max_retries=2,
 
 ## Практика
 
-Тексты — сообщения поставщиков «Полки» о товарах: новое поступление, снятие с производства, изменение цены, с датами, названиями поставщиков и товаров. Пишем их сами (или просим модель набросать черновики и правим руками). Данные выдуманы и не содержат персональных данных клиентов, поэтому эти тексты можно отправлять и в облачные модели.
+Тексты — сообщения поставщиков магазина Shelf о товарах: новое поступление, снятие с производства, изменение цены, с датами, названиями поставщиков и товаров. Пишем их сами (или просим модель набросать черновики и правим руками). Данные выдуманы и не содержат персональных данных клиентов, поэтому эти тексты можно отправлять и в облачные модели.
 
 Способы извлечения идут по уровням надёжности из теории: сначала просьба в промпте (уровень 1), затем строгая схема (уровень 3; у DeepSeek заодно сравниваем её с уровнем 2), затем Instructor с циклом повтора. Каждая функция возвращает `ProductUpdate`, так что результаты сравниваются один к одному.
 
@@ -302,7 +302,7 @@ update = ds.create(response_model=ProductUpdate, max_retries=2,
 - [ ] **4в. (Для сравнения)** То же через `client.messages.parse` у Claude или `responses.parse` у OpenAI, если есть ключ.
 - [ ] **5. Способ 3: Instructor.** `extract_instructor(text) -> ProductUpdate` с `max_retries=2` — поверх DeepSeek (`Mode.MD_JSON` или `Mode.JSON`) и поверх Ollama. Перед установкой проверяем пакет: точное имя `instructor` на PyPI, автор/организация (567-labs), свежесть релиза, нет ли подозрительных install-скриптов; фиксируем версию.
 - [ ] **6. Сломать.** На тексте про выходные склада: что вернул каждый способ? Модель выдумала товар и дату? Добавляем в модель `is_product_update: bool` (или возвращаем `{"updates": []}`) и правило в промпт/описания; проверяем, что выдумки исчезли.
-- [ ] **7. Валидаторы.** Добавляем валидатор названия товара и валидатор даты «не раньше даты сообщения» (дату сообщения передаём отдельным полем контекста или проверяем в функции после парсинга). Подсовываем Instructor'у текст, где модель склонна ошибиться (например, «Кружка „Север“, арт. MUG-NORTH, 590 ₽» в одной строке), и смотрим в логе, как он «переспрашивает» (логирование запросов `log_call` из главы 1.6 (AIL-4)).
+- [ ] **7. Валидаторы.** Добавляем валидатор названия товара и валидатор даты «не раньше даты сообщения» (дату сообщения передаём отдельным полем контекста или проверяем в функции после парсинга). Подсовываем Instructor'у текст, где модель склонна ошибиться (например, «North Mug, арт. MUG-NORTH, $5.90» в одной строке), и смотрим в логе, как он «переспрашивает» (логирование запросов `log_call` из главы 1.6 (AIL-4)).
 - [ ] **8. Итоговая функция.** `extract(text: str) -> ProductUpdate` (или `-> list[ProductUpdate]`) — способ выбираем сами, с обработкой `max_tokens` и отказа. Прогоняем 5 текстов 3 раза: все 15 результатов должны быть валидными объектами.
 - [ ] **9. Заметка.** В `notes/structured-output.md`: таблица «провайдер → способ → валидных из 5 → выдумок на пустом тексте → токенов → стоимость», и 3–4 строки вывода: где у каждого провайдера уровень 3 и чем мы за него платим.
 

@@ -2,7 +2,7 @@
 // Astro components (tests/site/not-found.test.mjs). The wording (ru.json `notFound`) is in English on purpose.
 
 /**
- * @param {typeof import('../locales/ru.json')} strings
+ * @param {import('../locales/strings.mjs').Strings} strings
  * @returns {{ lang: string, frontmatter: Record<string, unknown> }} props for Starlight's <StarlightPage>
  */
 export function notFoundPage(strings) {

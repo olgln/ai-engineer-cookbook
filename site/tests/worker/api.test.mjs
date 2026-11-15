@@ -5,7 +5,7 @@ import assert from 'node:assert/strict';
 import { beforeEach, describe, test } from 'node:test';
 import {
   ACCOUNT_API_PATH, ACCOUNT_PROGRESS_MAX_BYTES, AUTH_API_PREFIX, AUTH_PROVIDERS, LOGIN_ERROR_PARAM, LOGOUT_API_PATH, ME_API_PATH,
-  OAUTH_COOKIE, OAUTH_PROVIDERS, PROGRESS_API_PATH, PROGRESS_REV_HEADER, RETURN_TO_PARAM, SECURITY_HEADERS,
+  OAUTH_COOKIE, OAUTH_PROVIDERS, PROGRESS_API_PATH, PROGRESS_REV_HEADER, PROGRESS_VERSION, RETURN_TO_PARAM, SECURITY_HEADERS,
   SESSION_COOKIE, SESSION_RENEW_AFTER_SECONDS, SESSION_TTL_SECONDS,
 } from '../../src/config/app.mjs';
 import worker from '../../worker/index.mjs';
@@ -244,7 +244,7 @@ describe(`DELETE ${ACCOUNT_API_PATH}`, () => {
 });
 
 describe(PROGRESS_API_PATH, () => {
-  const doc = (chapters = { '1-1': { done: '2026-11-14' } }) => ({ version: 1, chapters });
+  const doc = (chapters = { '1-1': { done: '2026-11-14' } }) => ({ version: PROGRESS_VERSION, chapters });
   const put = (body, { rev = '0', cookie = withSession(), origin = ORIGIN, type = 'application/json' } = {}) => {
     const headers = {};
     if (type) headers['Content-Type'] = type;
@@ -257,7 +257,7 @@ describe(PROGRESS_API_PATH, () => {
   };
 
   test('a new reader has empty progress at revision 0', async () => {
-    assert.deepEqual(await get(), { status: 200, rev: '0', body: { version: 1, chapters: {} } });
+    assert.deepEqual(await get(), { status: 200, rev: '0', body: { version: PROGRESS_VERSION, chapters: {} } });
   });
 
   test('writes go on top of the current revision, stale ones get 409 with the current revision', async () => {
@@ -281,7 +281,7 @@ describe(PROGRESS_API_PATH, () => {
     const other = await findOrCreateUser(db, SECOND, 'someone', NOW);
     const otherToken = await createSession(db, other, NOW);
     const res = await call(request(PROGRESS_API_PATH, { cookie: withSession(otherToken) }));
-    assert.deepEqual(await res.json(), { version: 1, chapters: {} });
+    assert.deepEqual(await res.json(), { version: PROGRESS_VERSION, chapters: {} });
   });
 
   test('refuses bad writes', async () => {

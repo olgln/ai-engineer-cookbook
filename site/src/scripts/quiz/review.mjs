@@ -4,7 +4,7 @@
 /**
  * @typedef {{ picked?: string[], revealed?: boolean, self?: 'yes' | 'no' }} QuizAnswer
  * @typedef {{ n: number, text: string, correct?: string[] }} IndexedQuestion
- * @typedef {{ id: string, num: string, title: string, href: string }} Chapter
+ * @typedef {{ id: string, num: string, title: string, href: string, readHref?: string }} Chapter
  * @typedef {'wrong' | 'revealed' | 'didntKnow'} ReviewReason
  */
 

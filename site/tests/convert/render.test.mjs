@@ -206,7 +206,7 @@ describe('buildQuiz', () => {
     assert.match(html, new RegExp(`<section class="quiz-q" id="${QUESTION_ANCHOR_PREFIX}1" data-n="1" data-correct="b">`));
     assert.match(html, new RegExp(`<section class="quiz-q" id="${QUESTION_ANCHOR_PREFIX}2" data-n="2">`));
     assert.match(html, /- \*\*a\)\*\* x/);
-    assert.deepEqual(r.stats, { chapters: 0, questions: 2, choice: 1, choiceWithKey: 1, checks: 0, mermaid: 0 });
+    assert.deepEqual(r.stats, { chapters: 0, untranslated: 0, questions: 2, choice: 1, choiceWithKey: 1, checks: 0, mermaid: 0 });
     assert.deepEqual(r.warnings, []);
   });
 

@@ -1,10 +1,7 @@
 import { QUESTION_ANCHOR_PREFIX, QUESTION_PREVIEW_MAX_LENGTH } from '../../src/config/app.mjs';
 import { format } from '../../src/locales/format.mjs';
-import strings from '../../src/locales/ru.json' with { type: 'json' };
 import { splitNumbered, tagLines } from './markdown.mjs';
-import { RE } from './patterns.mjs';
-
-const { site } = strings;
+import { RE as ORIGINAL_RE } from './patterns.mjs';
 
 /** Plain text of a question's first line for the review page: no Markdown, at most QUESTION_PREVIEW_MAX_LENGTH. */
 export function questionPreview(line) {
@@ -76,8 +73,12 @@ export function splitInline(s) {
   return parts;
 }
 
-/** Find the correct option letter(s) at the start of an answer; null when there are none. */
-export function answerKey(answerLines) {
+/**
+ * Find the correct option letter(s) at the start of an answer; null when there are none.
+ * @param {string[]} answerLines
+ * @param {{ answerLetters: RegExp, answerStart: RegExp }} [RE] patterns of the book's language
+ */
+export function answerKey(answerLines, RE = ORIGINAL_RE) {
   const first = answerLines[0] ?? '';
   const m = first.match(RE.answerLetters);
   if (!m || !RE.answerStart.test(first)) return null;
@@ -85,7 +86,7 @@ export function answerKey(answerLines) {
 }
 
 export function buildQuiz(ctx, chapterId, testLines, answerLines) {
-  const { stats, warnings } = ctx;
+  const { stats, warnings, strings: { site } } = ctx;
   const tests = splitNumbered(testLines);
   const answers = splitNumbered(answerLines);
   const answerMap = new Map(answers.items.map((a) => [a.n, a.lines]));
@@ -101,7 +102,7 @@ export function buildQuiz(ctx, chapterId, testLines, answerLines) {
     const ans = answerMap.get(q.n);
     if (!ans) warnings.push(`${chapterId}: no answer for question ${q.n}`);
     const opts = extractOptions(q.lines);
-    const key = opts && ans ? answerKey(ans) : null;
+    const key = opts && ans ? answerKey(ans, ctx.re) : null;
     if (opts) stats.choice++;
     if (key) stats.choiceWithKey++;
     if (opts && !key) warnings.push(`${chapterId} q${q.n}: options but no answer letter: "${(ans?.[0] ?? '').slice(0, 40)}"`);

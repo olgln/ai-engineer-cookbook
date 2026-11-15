@@ -18,7 +18,9 @@
     "week": "Неделя {n} · {title}",
     "chapterRef": "гл. {num}",
     "questionLabel": "Вопрос {n}",
-    "noAnswer": "_Ответа нет в исходнике._"
+    "noAnswer": "_Ответа нет в исходнике._",
+    "untranslatedDescription": "{title}: эта страница пока есть только в оригинале.",
+    "untranslatedNote": "Эта страница пока не переведена. [Читать оригинал]({href})."
   },
   "book": {
     "weekHeading": "Неделя",

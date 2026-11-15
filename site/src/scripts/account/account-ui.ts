@@ -2,10 +2,10 @@
 // answers, fills in the sign-in links or the signed-in state, opens the panel next to its button, and runs
 // sign-out and account deletion through the progress store. Decisions live in ./account.mjs.
 import * as P from '../progress/store';
-import strings from '../../locales/ru.json';
 import { format } from '../../locales/format.mjs';
 import { LOGIN_ERROR_PARAM, ME_API_PATH } from '../../config/app.mjs';
 import { accountState, panelPosition, signInHref } from './account.mjs';
+import { strings } from '../page-locale';
 
 const ui = strings.ui;
 const providerName = (p: string) => (ui.providerNames as Record<string, string>)[p] ?? p;

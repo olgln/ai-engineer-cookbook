@@ -5,12 +5,13 @@
 import assert from 'node:assert/strict';
 import { beforeEach, describe, test } from 'node:test';
 import {
-  ACCOUNT_API_PATH, LOGOUT_API_PATH, PROGRESS_API_PATH, PROGRESS_REV_HEADER, SAVE_DEBOUNCE_MS, STORAGE_KEY, SYNC_STORAGE_KEY,
+  ACCOUNT_API_PATH, LOGOUT_API_PATH, PROGRESS_API_PATH, PROGRESS_REV_HEADER, PROGRESS_VERSION, SAVE_DEBOUNCE_MS, STORAGE_KEY,
+  SYNC_STORAGE_KEY,
 } from '../../src/config/app.mjs';
 
 /** In-memory account API: one progress document with a revision, like worker/lib/progress.mjs. */
 class FakeAccount {
-  constructor(data = { version: 1, chapters: {} }, rev = 0) {
+  constructor(data = { version: PROGRESS_VERSION, chapters: {} }, rev = 0) {
     this.data = data;
     this.rev = rev;
     this.signedIn = true;
@@ -77,7 +78,7 @@ beforeEach(() => {
 const fresh = () => import(`../../src/scripts/progress/store.ts?copy=${++loads}`);
 const marker = () => JSON.parse(store.get(SYNC_STORAGE_KEY) ?? 'null');
 const local = () => JSON.parse(store.get(STORAGE_KEY));
-const doc = (chapters, updatedAt) => ({ version: 1, ...(updatedAt && { updatedAt }), chapters });
+const doc = (chapters, updatedAt) => ({ version: PROGRESS_VERSION, ...(updatedAt && { updatedAt }), chapters });
 
 /** Waits for the debounced upload and every request it leads to. */
 async function settle() {
@@ -94,6 +95,17 @@ describe('progress store with an account', () => {
     await P.load();
     assert.equal(P.storage, 'browser');
     assert.deepEqual(P.get().chapters, { c1: { done: '2026-11-01' } });
+  });
+
+  test('an older browser copy and account copy get the current chapter ids; the account gets them on upload', async () => {
+    account = new FakeAccount({ version: 1, chapters: { '8-1': { done: '2026-11-01' } } }, 2);
+    store.set(STORAGE_KEY, JSON.stringify({ version: 1, chapters: { '9-1': { done: '2026-11-02' } } }));
+    const P = await fresh();
+    await P.load();
+    assert.deepEqual(P.get().chapters, { '7-1': { done: '2026-11-01' }, '8-1': { done: '2026-11-02' } });
+    assert.equal(P.get().version, PROGRESS_VERSION);
+    await settle();
+    assert.deepEqual(account.data, { version: PROGRESS_VERSION, chapters: { '7-1': { done: '2026-11-01' }, '8-1': { done: '2026-11-02' } } });
   });
 
   test('the first sync merges the browser copy into the account and uploads it', async () => {

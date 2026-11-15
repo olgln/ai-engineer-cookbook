@@ -75,6 +75,22 @@ export const OAUTH_PROVIDERS = {
   },
 };
 
+/**
+ * Format version of the progress document ({ version, updatedAt?, chapters: { <chapter id>: … } }). A chapter's
+ * id is its number (`7-1`), so renumbering chapters renames ids: each version lists the renames that lead to
+ * it from the one before, and the browser migrates an older document on load (src/scripts/progress/migrate.mjs).
+ */
+export const PROGRESS_VERSION = 2;
+
+/**
+ * Version 2: the empty buffer week 7 was removed, so weeks 8–11 became weeks 7–10 (8.1 → 7.1 … 11.5 → 10.5).
+ * @type {Record<number, Record<string, string>>}
+ */
+export const CHAPTER_ID_RENAMES = {
+  2: Object.fromEntries([[8, 5], [9, 5], [10, 4], [11, 5]].flatMap(([week, count]) =>
+    Array.from({ length: count }, (_, i) => [`${week}-${i + 1}`, `${week - 1}-${i + 1}`]))),
+};
+
 /** Revision of the reader's progress on the server: sent with GET, required with PUT (optimistic locking). */
 export const PROGRESS_REV_HEADER = 'X-Progress-Rev';
 /** Largest progress document the Worker stores, in bytes. A full course of answers is well under 100 KB. */
@@ -165,6 +181,8 @@ export const IMMUTABLE_CACHE_CONTROL = 'public, max-age=31536000, immutable';
 
 /** Files written next to the built site for the hosting (Netlify / Cloudflare Pages format). */
 export const HEADERS_FILE = '_headers';
+/** Permanent redirects of pages that moved (Netlify / Cloudflare format), e.g. chapters of a renumbered week. */
+export const REDIRECTS_FILE = '_redirects';
 export const ROBOTS_FILE = 'robots.txt';
 export const SITEMAP_FILE = 'sitemap-index.xml';
 
@@ -215,7 +233,10 @@ export const PRIVACY_CONTACT = 'https://t.me/oool_g';
 /** Date of the current privacy policy text (YYYY-MM-DD), shown on the page. Change it with the text. */
 export const PRIVACY_POLICY_DATE = '2026-11-15';
 
-/** Pages left out of the sitemap: personal pages marked noindex (a noindex page in the sitemap is a Search Console error). */
+/**
+ * Pages left out of the sitemap, in every language: personal pages marked noindex (a noindex page in the
+ * sitemap is a Search Console error). Placeholders of untranslated chapters are left out too (I18N_FILE).
+ */
 export const SITEMAP_EXCLUDED_PATHS = [REVIEW_PATH];
 
 /** Each quiz question is a link target: <chapter>#<QUESTION_ANCHOR_PREFIX><n>. */
@@ -228,6 +249,32 @@ export const QUESTION_PREVIEW_MAX_LENGTH = 160;
 export const BOOK_DIR = 'book';
 export const CHAPTER_PREFIX = 'AIL-';
 
+/**
+ * @typedef {{ lang: string, prefix: string, bookDir: string, planFile: string }} Locale
+ */
+
+/**
+ * Site languages. The first one is the original: its pages are served at the root (`/`), every other
+ * language under its `prefix`. Each language has its own book folder (chapters and table of contents,
+ * relative to the repo root) and plan file. A chapter or plan a translation does not have yet gets a short
+ * page in that language pointing to the original. Reading progress is shared: a chapter keeps its id in
+ * every language.
+ * @type {Locale[]}
+ */
+export const LOCALES = [
+  { lang: 'ru', prefix: '', bookDir: BOOK_DIR, planFile: 'README.md' },
+  { lang: 'en', prefix: '/en', bookDir: `${BOOK_DIR}/en`, planFile: 'README.en.md' },
+];
+export const DEFAULT_LOCALE = LOCALES[0];
+
+/**
+ * A translated chapter records the version of the original it was translated from: one hidden line
+ * `<!-- source-sha256: <first SOURCE_HASH_LENGTH hex digits of the SHA-256 of the original file> -->`.
+ * The build lists translations whose original has changed since.
+ */
+export const SOURCE_HASH_MARKER = 'source-sha256:';
+export const SOURCE_HASH_LENGTH = 12;
+
 /** Generated output, relative to site/. */
 export const DOCS_DIR = 'src/content/docs';
 export const GENERATED_DIR = 'src/generated';
@@ -237,6 +284,11 @@ export const CHAPTERS_FILE = `${GENERATED_DIR}/chapters.json`;
 export const LASTMOD_FILE = `${GENERATED_DIR}/lastmod.json`;
 /** Every quiz question by chapter (number, short text, answer key); loaded by the review page only. */
 export const QUIZ_INDEX_FILE = `${GENERATED_DIR}/quiz-index.json`;
+/**
+ * Languages of the pages: the page paths (without a language prefix) that exist in every language, for the
+ * hreflang links, and the placeholder pages of untranslated chapters, kept out of the sitemap.
+ */
+export const I18N_FILE = `${GENERATED_DIR}/i18n.json`;
 /** Everything scripts/convert.mjs writes under site/: ignored by git and by the `npm start` watcher (no rebuild loop). */
 export const GENERATED_PATHS = [DOCS_DIR, GENERATED_DIR];
 

@@ -7,7 +7,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import {
-  BOOK_DIR, DIST_DIR, GENERATED_PATHS, NEXT_DIST_DIR, OLD_DIST_DIR, PROGRESS_API_PATH,
+  BOOK_DIR, DIST_DIR, GENERATED_PATHS, LOCALES, NEXT_DIST_DIR, OLD_DIST_DIR, PROGRESS_API_PATH,
   REBUILD_DEBOUNCE_MS, RELOAD_EVENTS_PATH, RELOAD_SCRIPT_PATH, SECURITY_HEADERS,
 } from '../src/config/app.mjs';
 import { config } from '../src/config/server.mjs';
@@ -59,7 +59,8 @@ const isGenerated = (file) => GENERATED.some((g) => file === g || file.startsWit
 /** Watched places: a directory, whether to descend into it, and which changed files count. */
 const WATCHED = [
   { dir: path.join(ROOT, BOOK_DIR), recursive: true, accept: (f) => f.endsWith('.md') },
-  { dir: ROOT, recursive: false, accept: (f) => path.basename(f) === 'README.md' },
+  // the plan of every language (README.md, README.en.md)
+  { dir: ROOT, recursive: false, accept: (f) => LOCALES.some((l) => l.planFile === path.basename(f)) },
   { dir: path.join(SITE, 'src'), recursive: true, accept: (f) => !isGenerated(f) },
   { dir: SITE, recursive: false, accept: (f) => /^(astro|ec)\.config\.mjs$/.test(path.basename(f)) },
 ];

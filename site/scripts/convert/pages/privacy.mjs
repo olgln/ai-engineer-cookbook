@@ -1,19 +1,21 @@
 import { PRIVACY_CONTACT, PRIVACY_POLICY_DATE } from '../../../src/config/app.mjs';
 import { format } from '../../../src/locales/format.mjs';
-import strings from '../../../src/locales/ru.json' with { type: 'json' };
+import { stringsFor } from '../../../src/locales/strings.mjs';
 import { escapeHtml, yamlStr } from '../markdown.mjs';
 
-const { ui } = strings;
+/** @typedef {import('../../../src/locales/strings.mjs').Strings} Strings */
+const ORIGINAL = stringsFor(undefined);
 
-/** Sections of the privacy page in order (keys of `privacy.sections` in ru.json); `analytics` only with the beacon. */
+/** Sections of the privacy page in order (keys of `privacy.sections` in the strings); `analytics` only with the beacon. */
 export const PRIVACY_SECTIONS = ['withoutAccount', 'signIn', 'cookies', 'analytics', 'rights', 'contact'];
 
 /**
  * The privacy contact as Markdown: an e-mail becomes a mailto: link, an https:// address a link, anything
- * else plain text; empty (not filled in yet) gives the placeholder from ru.json.
+ * else plain text; empty (not filled in yet) gives the placeholder from the strings of the page's language.
  * @param {string} contact
+ * @param {Strings} [strings]
  */
-export function contactMarkdown(contact) {
+export function contactMarkdown(contact, strings = ORIGINAL) {
   const value = contact.trim();
   if (!value) return `_${strings.privacy.contactPlaceholder}_`;
   if (/^[^\s@<>()[\]]+@[^\s@<>()[\]]+\.[^\s@<>()[\]]+$/.test(value)) return `[${value}](mailto:${value})`;
@@ -21,32 +23,37 @@ export function contactMarkdown(contact) {
   return escapeHtml(value).replace(/[\\`*_[\]]/g, '\\$&');
 }
 
-/** A YYYY-MM-DD date in words in the site language (day, month name, year), or null when it is not a real date. */
-export function longDate(isoDate) {
+/**
+ * A YYYY-MM-DD date in words in the page's language (day, month name, year), or null when it is not a real date.
+ * @param {string} isoDate
+ * @param {Strings} [strings]
+ */
+export function longDate(isoDate, strings = ORIGINAL) {
   if (!/^\d{4}-\d{2}-\d{2}$/.test(isoDate)) return null;
   const date = new Date(`${isoDate}T00:00:00Z`);
   if (Number.isNaN(date.getTime()) || date.toISOString().slice(0, 10) !== isoDate) return null;
   return new Intl.DateTimeFormat(strings.dateLocale, { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC' }).format(date);
 }
 
-/** Markdown of one section block from ru.json: a string is a paragraph, an array a bulleted list. */
+/** Markdown of one section block of the strings: a string is a paragraph, an array a bulleted list. */
 const privacyBlock = (block, vars) =>
   Array.isArray(block) ? block.map((item) => `- ${format(item, vars)}`).join('\n') : format(block, vars);
 
 /**
- * Render the privacy policy page from `privacy` in ru.json. Names, lifetimes and storage keys come from
+ * Render the privacy policy page from `privacy` in the strings of its language. Names, lifetimes and storage keys come from
  * src/config/app.mjs, so the text follows the code. The analytics section appears only in builds with the
  * Cloudflare Web Analytics beacon; an empty contact shows a placeholder (fill it in before going live).
  * @param {{ analytics?: boolean, contact?: string, date?: string }} [options]
  */
 export function renderPrivacy(ctx, options = {}) {
   const { analytics = false, contact = PRIVACY_CONTACT, date = PRIVACY_POLICY_DATE } = options;
-  const { privacy } = strings;
-  const updated = longDate(date);
+  const { strings } = ctx;
+  const { privacy, ui } = strings;
+  const updated = longDate(date, strings);
   if (!updated) ctx.warnings.push(`privacy policy date "${date}" is not a YYYY-MM-DD date`);
   const vars = {
     deleteLabel: ui.deleteAccount,
-    contact: contactMarkdown(contact),
+    contact: contactMarkdown(contact, strings),
   };
   const sections = PRIVACY_SECTIONS
     .filter((key) => analytics || key !== 'analytics')
