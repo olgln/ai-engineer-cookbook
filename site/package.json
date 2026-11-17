@@ -14,7 +14,8 @@
     "dev:worker": "wrangler d1 migrations apply DB --local && wrangler dev",
     "deploy": "wrangler d1 migrations apply DB --remote && wrangler deploy",
     "typecheck": "npm run convert && ASTRO_TELEMETRY_DISABLED=1 astro sync && tsc -p tsconfig.json && tsc -p tsconfig.mjs.json",
-    "test": "npm run typecheck && node --test \"tests/**/*.test.mjs\""
+    "test": "npm run typecheck && node --test \"tests/**/*.test.mjs\"",
+    "audit:deps": "node scripts/audit.mjs"
   },
   "dependencies": {
     "@astrojs/sitemap": "3.7.4",
