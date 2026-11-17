@@ -322,3 +322,20 @@ export const GENERATED_PATHS = [DOCS_DIR, GENERATED_DIR];
 /** Blocks of the root plan files (README.md, README.ru.md) between these markers are not shown on the site. */
 export const REPO_ONLY_START = '<!-- repo-only:start -->';
 export const REPO_ONLY_END = '<!-- repo-only:end -->';
+
+/** Lowest severity that fails `npm run audit` (CI): low, moderate, high or critical. */
+export const AUDIT_LEVEL = 'high';
+
+/**
+ * Advisories `npm run audit` lets through until a fixed release exists, each with a review date (inclusive,
+ * UTC) after which it fails again. Add one only when no patched version exists and the flaw does not reach
+ * readers of the site.
+ * @type {{ advisory: string, until: string, reason: string }[]}
+ */
+export const AUDIT_ALLOWED = [
+  {
+    advisory: 'GHSA-fc5q-39xc-vjpf',
+    until: '2026-11-24',
+    reason: 'picomatch <=4.0.7 ReDoS with no patched release yet; it only matches glob patterns from our own code at build time',
+  },
+];
