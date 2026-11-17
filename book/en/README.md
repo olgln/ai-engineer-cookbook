@@ -2,8 +2,6 @@
 
 Chapters in reading order: number = week.order.
 
-Translation in progress: chapters that are not translated yet link to the original in Russian.
-
 ## Week 1 · Python + the first API
 
 - [1.1 · Python for developers who already code](AIL-1.md)

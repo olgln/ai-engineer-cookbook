@@ -1,11 +1,11 @@
 # AI Engineer Cookbook
 
-A course for developers who want to become AI engineers, written in Russian with an English translation in
-progress, plus a local study site.
+A course for developers who want to become AI engineers, written in Russian with a full English translation,
+plus a local study site.
 
 - `book/AIL-*.md` — chapters (source of truth); `book/README.md` — table of contents by week.
-- `book/en/` — the English translation (same file names, table of contents required); partial is fine,
-  see "Translations" in `site/README.md`.
+- `book/en/` — the English translation (same file names, table of contents required); a new language can
+  start partial, see "Translations" in `site/README.md`.
 - `README.ru.md` — the course plan (original), `README.md` — its English version, which GitHub shows by
   default; both are also rendered as the site's plan pages.
 - `site/` — Astro/Starlight site generated from the book; see `site/README.md`.
